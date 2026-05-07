@@ -450,571 +450,754 @@ Based on the literature review and the identified research gaps, our proposal is
 
 
 
-\section{Problem Description}
-The main objective of the presented problem is to minimise the transportation and inventory holding costs of a manufacturing site by integrating procurement transport, RTI management and inventory decisions with 3D full-truck loading constraints. The supply chain under study has a single source and a single destination. FTL is employed as the mode of transport. Products are shipped in different RTI types. RTIs are transported inside trucks, and the loading configuration is determined. Therefore, a distinction is made to the classic nomenclature of $C\&P$ problems. Hereafter, small objects are RTIs and large objects are trucks.
-
-The assembler’s demand drives the procurement process because it determines the optimal quantity of the products to procure from the supplier to the manufacturing site. Raw materials and assembled parts are produced at the supplier following the production plan. Then, they are packed in their corresponding RTI. The full RTIs with RM and AP are transported using an FTL mode of transport with 3D loading constraints. Each RTI can only carry the same product type at a given time.
-Furthermore, each RM or AP can only be shipped in one RTI type. Once the full RTIs are at the plant, the RM and AP are used for production, and the RTIs are emptied. Once emptied, they are folded and shipped back to the supplier using FTL transport with 3D loading constraints. Figure \ref{fig:FormulacionContenedor} is an example of the assignment of RM and AP to RTI types, where three container types and six product types are represented in different colours. The arrow indicates the amount of product that can be shipped in the containers.
-
-
-\begin{figure}[h!]
-  \centering
-  % \includegraphics[scale=0.25]{fig_container_formulation.png}
-  \input{vistex/product_box_vis}
-
-  \caption{Product to type of reusable container}
-  \label{fig:FormulacionContenedor}
-\end{figure}
-\FloatBarrier
-In our problem, two distinct transport decisions are made: procuring RM and AP for the manufacturing plant with full RTIs. And the supply of empty RTIs to the supplier.
-\begin{figure}[h!]
-  \centering
-  \includegraphics[width=0.75\linewidth]{figures/SupplyChain.png}
-  \caption{Enter Caption}
-  \label{fig:enter-label}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.5\linewidth]{figures/Untitled-2025-03-24-0935.png}
-  \caption{Enter Caption}
-  \label{fig:enter-label}
-\end{figure}
-
-Several constraints and assumptions are considered in this model formulation. Firstly, the physical transport constraints ensure that RTIs do not overlap and are contained in the truck. A truck’s maximum weight limit must not be exceeded. Maintaining the static stability of containers during transport is crucial to prevent tipping or shifting because it could damage RM and AP. Rotations of containers about z-axes are allowed. As FTL is the mode of transport employed, trucks should be loaded to achieve a minimum utilisation percentage. Furthermore, we assume that the supplier's production plans and the plan are synchronised to guarantee the production of the manufacturing site. Minimum inventory coverage constraints are considered, subject to the product’s future demand.
-Thus, the problem can be formulated in the following way:
-
-
-\textbf{Initial data:}
-\begin{itemize}
-  \item Product data: initial inventory, demand for each time period of the plant in terms of full RTIs, the type of reusable container in which it must travel, production demand for each time period at the supplier in terms of RTIs, and the weight of the RTI when loaded with the given product
-  \item Reusable container data: RTI dimensions when full and folded.
-  \item Transport data: number of available trucks, minimum utilisation percentage, dimensions and maximum weight
-\end{itemize}
-\textbf{To determine:}
-\begin{itemize}
-  \item The number of trucks used daily with their corresponding loading configuration.
-  \item The inventory level in terms of full RTIs for each product in the factory and supplier, given that everything goes according to plan.
-  \item The inventory level of folded RTIs in the factory and supplier.
-\end{itemize}
-\textbf{Subject to:}
-\begin{itemize}
-  \item Loading restrictions (i,e: containers cannot overlap, rotations about z axes are allowed, the maximum weight of a truck can not be exceeded, static stability)
-  \item Minimum coverage stock
-\end{itemize}
-\textbf{In order to:}
-\begin{itemize}
-  \item Minimise the total transportation cost
-  \item Minimise the total inventory holding cost
-\end{itemize}
-
-\section{Mathematical model}
-The 3D-SCPTOP mathematical programming model integrates container loading constraints and procurement transport decisions. It differs from  traditional 3D container packing problems in two significant aspects. Firstly, the quantity of containers required for loading depends on product demand and the inventory levels of the manufacturing site. Therefore, the specific products to be transported are identified to minimise transport and inventory costs. As inventory levels depend on past loading decisions, a time dimension has to be taken into account. Secondly, it combines output maximisation problems and input minimisation. On the one hand, the number of trucks to be used is minimised, i.e. input minimisation. On the other hand, trucks must be fully loaded, i.e. output maximisation. It also extends traditional procurement transport planning approaches by taking into account 3D loading constraints and RTI management.
-
-
-Table \ref{tab:Nomenclature} presents the nomenclature of the 3D-SCPTOP model.
-\FloatBarrier
-\begin{longtable}[hbt!]{  |p{0.13\textwidth}|p{0.85\textwidth}  |}
-  \caption{Nomenclature of 3D-SCPTOP}
-  \label{tab:Nomenclature}
-  \\
-  \hline
-  \multicolumn{2}{|l|}{\textbf{Indices}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \\ \hline
-  $R$                                                                                            & Set of RTI types $(r = 1, \dots, R)$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           \\
-  $I$                                                                                            & Set of RTIs $(i = 1, \dots , I)$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \\
-  $K$                                                                                            & Set of trucks $(k =1,\dots , K)$
-  \\
-  \textit{N}                                                                                     & Set of products $(n =   1,\dots,N)$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \\
-  $L$                                                                                            & Set of loading configurations $(l =1,2,\dots , L)$
-  \\
-  \textit{T}                                                                                     & Set of planning periods \textit{(t} =1, \dots \textit{T)}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      \\
-  $G$                                                                                            & Set corresponding to the supplier and plant nodes $G = \lbrace s, p \rbrace$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \\
-  \hline
-  \multicolumn{2}{|l|}{\textbf{Set of indices}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \\ \hline
-  $M(r)$                                                                                         & Set of RM or AP that are carried in RTI $r \in R$, $n = 1, \dots, M(r)$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \\
-  \hline
-  \multicolumn{2}{|l|}{\textbf{Parameters}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       \\ \hline
-  $cK$                                                                                           & Cost of using a truck                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \\
-  $lt$                                                                                           & Lead transport time between the plant and the supplier and viceversa.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \\
-  \textit{$i_{gn}$}                                                                              & Initial inventory level of $n\in N$ in $g \in G$ in terms of full RTIs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \\
-  \textit{$ie_{gr}$}                                                                             & Initial inventory level of empty RTIs $r\in R$ in $g \in G$ RTIs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \\
-  \textit{$ic_{gn}$}                                                                             & Inventory cost of $n\in N$ at $g \in G$ in terms of full RTIs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  \\
-  $d_{gnt}$                                                                                      & Production plan of $n \in N$ at $g \in G$ during time period $t\in T$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \\
-  $q_{rt}$                                                                                       & Initial quantity of empty RTIs $r\in R$ arriving at supplier $s\in G$ in time period $t \in (1,\dots , lt)$                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \\
-  $q_{nt}$                                                                                       & Initial quantity of full RTIs of $n \in R$ arriving at $p$ in time period $t \in (1,\dots , lt)$                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \\
-  $lc_{lrg}$                                                                                     & Number of containers of type $c$ used in loading configuration $l$ arriving at $g\in G$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \\
-  $ss_{gnt}$                                                                                     & Security stock for product $n\in N$  in time period $t \in T$ in $g \in G$ in terms of full RTIs                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \\
-  $ss_{gtr}$                                                                                     & Security stock of empty RTIs $r\in R$  in time period $t \in T$ in $g \in G$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \\
-  \textit{$w_{n}$}                                                                               & Weight of a container carrying product \textit{n}
-  \\
-  \textit{$pK$}                                                                                  & Maximum  weight capacity of a truck                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \\
-  \textit{$pK$}                                                                                  & Maximum  weight capacity of truck a truck                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      \\
-  \textit{$\Gamma_c$}                                                                            & Volume of a container type $c$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \\
-  \textit{$\Gamma$}                                                                              & Volume of a truck                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              \\
-  \textit{$\alpha$}                                                                              & Minimum volume utilisation of a truck                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \\
-  \textit{M}                                                                                     & A large enough number to make the logic of the model work;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \\
-  $p_{gr}, q_{gr}, r_{gr}$                                                                       & length, width, and height of a container of type c;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \\
-  $p{K}, q{K}, r{K}$                                                                             & Length, width and height of a truck;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           \\[0.15cm]
-  \hline
-  \multicolumn{2}{|l|}{\textbf{Decision Variables}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \\ \hline
-  $I_{gnt}$                                                                                      & Inventory of product $n\in N$ at the end of $t\in T$ time period at $g\in G$ in terms of full RTIs                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \\
-  $Ie_{gtr}$                                                                                     & Inventory of empty RTIs $r\in R$ at the end of $t\in T$ time period at $g\in G$                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \\
-  $Y_{gkt}$                                                                                      & Binary variable, if one then  truck $k \in K$ is used in time period $t\in T$ arriving at $g\in G$ and zero otherwise                                                                                                                                                                                                                                                                                                                                                                                                                                                          \\
-  $Y_{gklt}$                                                                                     & Binary variable, if one then truck $k \in K$ is used in time period $t\in T$ departing from $g\in G$ using loading configuration $l$, 0 otherwise                                                                                                                                                                                                                                                                                                                                                                                                                              \\
-  $Q_{nt}$                                                                                       & Integer variable indicating the number of RM or AP $n\in N$ in transport during time period $t$ to the manufacturing plant $p$                                                                                                                                                                                                                                                                                                                                                                                                                                                 \\
-  $Q_{rt}$                                                                                       & Integer variable the number of empty RTIs $r\in R$ in transport during time period $t$ to the supplier $s$                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \\
-  $V_{gklrt}$                                                                                    & Number of RTIs $r\in R$ in truck $k\in K$ using loading configuration $l\in L$ at time period $t\in T$ departing from $g\in G$                                                                                                                                                                                                                                                                                                                                                                                                                                                 \\
-  $V_{kglnt}$                                                                                    & Number of full RTIs with RM or AP $n\in N$ in truck $k\in K$ using loading configuration $l\in L$ at time period $t\in T$ departing from $g\in G$                                                                                                                                                                                                                                                                                                                                                                                                                              \\
-  \textit{I$_{nt}$}                                                                              & Inventory of product \textit{n} at the end of  time period  \textit{t}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \\[0.15cm]
-  \textit{$X_{gil}$}                                                                             & Binary variable indicating whether container \textit{i} is used in loading configuration \textit{l}                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \\[0.15cm]
-  \textit{$X_{gilr}$}                                                                            & Binary variable indicating whether container \textit{i} is going to be of type \textit{c} for loading configuration \textit{l}                                                                                                                                                                                                                                                                                                                                                                                                                                                 \\[0.15cm]
-  \textit{$V_{gklrt}$}                                                                           & Number of containers of type $c$ in truck $k$ using loading configuration $l$ at time period $t$                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \\[0.15cm]
-  \textit{$V_{kglnt}$}                                                                           & Integer variable indicating the quantity of containers carrying product \textit{n} supplied on truck \textit{k} using loading configuration $l$ at time period $t$.                                                                                                                                                                                                                                                                                                                                                                                                            \\[0.15cm]
-  \textit{$PX_{gil},$ $PY_{gil},$ $PZ_{gil}$}                                                    & Coordinates of the lower left front corner of container \textit{i} on the truck \textit{k} during planning period \textit{t};                                                                                                                                                                                                                                                                                                                                                                                                                                                  \\[0.15cm]
-  \textit{$LX_{gilr},LY_{gilr}$ $,LZ_{gilr}$}                                                    & Defines whether the length of container \textit{i} of type c is on the same direction as the x-, y- or z-axis in loading configuration $l$. For example, $LX_{gilr}$ equals one if the length of container \textit{i} of type c is is on the same direction as the x-axis, otherwise $LX_{gilr}$ equals 0;                                                                                                                                                                                                                                                                     \\[0.15cm]
-  $WX_{gilr}$ $,WY_{gilr}$ $,WZ_{gilr}$                                                          & Defines whether the width of container \textit{i} of type c is on the same direction as the x-, y- or z-axis on truck \textit{k} axis during planning period \textit{t}. For example, $WX_{gilr}$ equals 1 if the width of  container \textit{i} of type c is is on the same direction as the x-axis, otherwise $WX_{gilr}$ equals 0;                                                                                                                                                                                                                                          \\[0.25cm]
-  \textit{$HX_{gilr}, $ $ HY_{gilr}$ $,HZ_{gilr}$}                                               & Defines whether the height of container \textit{i} of type c is on the same direction as the x-, y- or z-axis on the truck \textit{k} axis during planning period \textit{t}. For example, $HX_{gilr}$ equals 1 if the width of container \textit{i} of type c is is on the same direction as the x-axis, otherwise $HX_{gilr}$ equals 0                                                                                                                                                                                                                                       \\[0.15cm]
-  $A_{g i j l}, $ $ B_{g i j l}, $ $C_{g i j l}, $ $ D_{g i j l},$ $E_{g i j l}, $ $F_{g i j l}$ & Binary variables indicating the relative position between two boxes. Variable $A_{g i j l}$ equals 1 if container \textit{i} is to the left of container j on truck \textit{k} during planning period \textit{t}. Similarly, variables $B_{g i j l}$,$C_{g i j l}$$, D_{g i j l}$ $, E_{g i j l}$ $, F_{g i j l}$ indicate whether container \textit{i} is to the right, behind, in front, on top or below container \textit{j}, respectively, on truck \textit{k} during planning period \textit{t}. These variables are only necessary when \textit{i} $\not = $ \textit{k}. \\[0.15cm]
-  \hline
-\end{longtable}
-
-\FloatBarrier
-
-{We wish to minimise the total cost, which is given by  transportation and inventory costs.}
-\begin{equation}
-  \text{\textit{Min} } z= \sum_{g \in G}{\sum_{k \in K}{\sum_{t \in T}{Y_{gkt}\cdot cK}}}+ \sum_{g \in G}{\sum_{n \in N}{\sum_{t \in T}{I_{gnt}\cdot ic_{gn}}}}
-\end{equation}
-
-
-\eqref{eq:1PLC} - \eqref{eq:2PLC}  define the inventory level of RM or AP according to the production demand and supply of RM or AP  from the supplier $s$ at the plant  $p$
-\begin{align}
-  I_{pnt}  & =I_{pnt^{\prime}}-d_{pnt}+Q_{nt^{\prime}}\quad             & \forall n \in N,t \in T : t\ge    lt +1,t^{\prime}\coloneqq t-lt \label{eq:1PLC} \\
-  I_{pnt}  & =I_{pnt'}-d_{pnt}+q_{nt}\quad                              & \forall n \in N,t \in (2,\dots, lt) : ,t^{\prime}\coloneqq t-lt\label{eq:3PLC}   \\
-  I_{pnt}  & =i_{pn}-d_{pnt}+q_{nt}\quad                                & \forall n \in N: t \coloneqq 1 \label{eq:2PLC}                                   \\
-  Ie_{ptr} & =Ie_{pt^{\prime}r}+\sum_{n \in M(r)}{d_{pnt}}-Q_{rt} \quad & \forall r \in R,t \in T : t\ge 2                                                 \\
-  Ie_{ptr} & =ie_{pr}+\sum_{n \in M(r)}{d_{pnt}}-Q_{rt}\quad            & \forall r \in R , t\coloneqq 1
-\end{align}
-\eqref{eq:1PLC-s} - \eqref{eq:2PLC-s}  the empty RTIs according to the production demand and supply of RTIs from the plant $p$ at the supplier $s$
-\begin{align}
-  I_{snt}  & =I_{snt^{\prime}}+d_{snt}-Q_{nt}\quad                              & \forall n \in N,t \in T,t^{\prime} \in T, : t\ge    2,t^{\prime}\coloneqq t-lt \label{eq:1PLC-s} \\
-  I_{snt}  & =i_{sn}+d_{snt}-Q_{nt}\quad                                        & \forall r \in R : t\coloneqq 1 \label{eq:2PLC-s}                                                 \\
-  Ie_{str} & =Ie_{st^{\prime}r}+Q_{rt^{\prime}}-\sum_{n \in M(r)}{d_{snt}}\quad & \forall r \in R,t \in T : t\ge    lt +1,t^{\prime}\coloneqq t-lt                                 \\
-  Ie_{str} & =Ie_{st^{\prime}r}+q_{rt}-\sum_{n \in M(r)}{d_{snt}}\quad          & \forall r \in R,t \in (2,\dots, lt) : ,t^{\prime}\coloneqq t-lt
-  \\
-  Ie_{str} & =ie_{pr}+q_{rt}-\sum_{n \in M(r)}{d_{snt}}\quad                    & \forall r \in R:t=1
-\end{align}
-Each product must satisfy a minimum security stock $ss_{gnt}$.
-
-\begin{equation}
-  I_{gnt}\ge ss_{gnt}\quad \forall g \in G,n \in N,t \in T
-\end{equation}
-\eqref{eq:onelpertPLC} imposes that a truck $k$ can only use one loading configuration $l$ with direction $g\in G $ in time period $t$.
-\begin{align}
-  \sum_{l\in L}Y_{gklt}=Y_{gkt}\quad \forall g\in G, k \in K ,t \in T \label{eq:onelpertPLC}
-\end{align}
-
-\begin{align}
-  X_{gil}= \sum_{r \in R} X_{gilr} \quad  & \forall g\in G, i \in I, l     \in L \label{eq:onecperi} \\
-  V_{glr} = \sum_{i\in I } X_{gilr} \quad & \forall g\in G, r\in R, l\in L \label{eq:numcinl}
-\end{align}
-
-\eqref{eq:containerstotruck} ensures that a truck is used if it is carrying containers. Meanwhile, \eqref{eq:sameasloading1} - \eqref{eq:sameaslaoding2} impose that  the truck $k$ at time period $t$ using loading configuration $l$ uses the same loading configuration as $l$.
-\begin{align}
-  V_{gklrt}                 & \leq M (1-Y_{gklt}) \quad            & \forall g\in G, r\in R, k \in K, t \in T \label{eq:containerstotruck} \\
-  V_{gklrt}+ M (1-Y_{gklt}) & \geq V_{glr}  \quad                  & \forall g\in G, r\in R, k \in K, t \in T \label{eq:sameasloading1}    \\
-  V_{gklrt}                 & \leq  V_{glr} + M (1-Y_{gklt}) \quad & \forall g\in G, r\in R, k \in K, t \in T \label{eq:sameaslaoding2}
-\end{align}
-Since a product can only be carried by one container type \eqref{eq:numnpercPLC} sets that the number of containers of type $c$ carried at truck $k$ using loading configuration $l$ at time period $c$ is equal to the sum of containers carried of products $n$ which containers of type $c$ can carry. Moreover, \eqref{eq:amountnattPLC} sets the total amount of product $n$ being transported from $s$ to $p$ in time period $t$, and \eqref{eq:amountnattPLC2} sets the total amount of RTIs $r$ being transported from $p$ to $s$ in time period $t$,
-
-\begin{align}
-  V_{pklrt} & =\sum_{n \in M(r)}{V_{pklnt}}\quad              & \forall k \in K,l \in L,t \in T,r \in R \label{eq:numnpercPLC} \\
-  Q_{nt}    & =\sum_{l \in L}{\sum_{k \in K}{V_{kslnt}}}\quad & \forall n \in N,t \in T\label{eq:amountnattPLC}                \\
-  Q_{rt}    & =\sum_{l \in L}{\sum_{k \in K}{V_{pklrt}}}\quad & \forall r \in R,t \in T\label{eq:amountnattPLC2}
-\end{align}
-
-
-\eqref{eq11PLC} guarantees that the maximum weight allowed for truck \textit{k} is not surpassed.
-
-\begin{align}
-   & \sum_{l\in L}\sum_{n\in N} w_{n}V_{kglnt} \leq pK & \forall k\in K,t\in T, g \in G \label{eq11PLC}
-\end{align}
-
-
-
-
-We ensure that two containers are not overlapped by their relative positions.  \eqref{eq:ra} and \eqref{eq:rb} to identify whether container \textit{i} is to the left or the right of container j.
-\begin{align}
-   & PX_{gil}+\sum_{r \in R} (p_{gr} L X_{gilr}+ q_{gr}WX_{gilr}+ r_{gr}HX_{gilr})  \leq PX_{gjl}+\left(1-A_{g i j l}\right)M \quad & \forall g\in G,  i \in I, j \in I: i \neq j , t \in T
-  \label{eq:ra}                                                                                                                                                                             \\
-   & PX_{gjl}+\sum_{r \in R} (p_{gr} L X_{gjlr}+ q_{gr}WX_{gjlr} +r_{gr}HX_{gjlr}) \leq PX_{gil}+\left(1-B_{g i j l}\right) M \quad & \forall g\in G,  i \in I, j \in I: i \neq j, t \in T
-  \label{eq:rb}
-\end{align}
-Similarly, \eqref{eq6}-\eqref{eq7} determine whether one container is ahead, behind, on top of or below one another.
-\begin{align}
-   & PY_{gil}+\sum_{r \in R} (q_{gr} W Y_{gilr}+ p_{gr}LY_{gilr}+r_{gr}HY_{gilr})  \leq PY_{gjl}+\left(1-C_{g i j l}\right) M \quad & \forall g\in G,  i \in I, j \in I: i \neq j , t \in T \label{eq6} \\[0.15cm]
-   & PY_{gjl}+\sum_{r \in R} (q_{gr} W Y_{gjlr}+ p_{gr}LY_{gjlr}+r_{gr}hy_{gjlr}) \leq PY_{gil}+\left(1-D_{g i j l}\right) M \quad  & \forall g\in G,  i \in I, j \in I: i \neq j , t \in T
-  \\[0.15cm]
-   & PZ_{gil}+\sum_{r \in R} (r_{gr} H Z_{gilr} + q_{gr}WZ_{gilr}+ p_{gr} L Z_{gilr}) \leq PZ_{gjl}+\left(1-E_{g i j l}\right) M    & \forall g\in G,  i \in I, j \in I: i \neq j ,t \in T              \\[0.15cm]
-   & PZ_{gjl}+\sum_{r \in R} (r_{gr} H Z_{gjlr} +q_{gr}WZ_{gjlr}+ p_{gr} L Z_{gjlr}) \leq PZ_{gil}+\left(1-F_{g i j l}\right) M     & \forall g\in G,  i \in I, j \in I: i \neq j , t \in T \label{eq7}
-\end{align}
-
-\eqref{eq8} ensures that if containers \textit{i} and \textit{j} are being used, they must be to the left, right, in front, behind, on top of or below one another.
-\begin{align}
-   & A_{g i j l}+B_{g i j l}+C_{g i j l}+D_{g i j l}+E_{g i j l}+F_{g i j l}+(1-X_{gil})+(1-X_{gjl}) \geq 1 & \forall g\in G,  i \in I, j \in I: i \neq j,  t \in T  \label{eq8}
-\end{align}
-
-\eqref{eq:rlxc} links the container type chosen with orientation.
-\begin{align}
-  LX_{gilr}+LY_{gilr}+LZ_{gilr}+WX_{gilr}+WY_{gilr}+WZ_{gilr}+HX_{gilr}+HY_{gilr}+HZ_{gilr} & \leq 3\cdot X_{gilr} \quad & \forall g\in G, r\in R, i \in I,k\in K,t\in T \label{eq:rlxc}
-\end{align}
-
-
-
-
-
-\eqref{eq:r_din} - \eqref{eq:r_dim} restrict the solution  so that containers are in the truck.
-\begin{align}
-   & PX_{gil}+\sum_{r \in R} (p_{gr} L X_{gilr}+ q_{gr}WX_{gilr}+r_{gr}HX_{gilr})  \leq p_k+\left(1-X_{gil}\right) M    & \forall g\in G, i\in I , k \in K  , t \in T \label{eq:r_din} \\
-   & PY_{gil}+\sum_{r \in R} (q_{gr} W Y_{gilr}+ p_{gr}LY_{gilr}+r_{gr}ZY_{gilr})   \leq q_{k}+\left(1-X_{gil}\right) M & \forall g\in G, i\in I , k \in K  , t \in T \label{eq:r_dim} \\
-   & PZ_{gil}+\sum_{r \in R} (r_{gr} HZ_{gilr}+ p_{gr}LZ_{gilr}+q_{gr}WZ_{gilr})   \leq r_k+\left(1-X_{gil}\right) M    & \forall g\in G, i\in I , k \in K  , t \in T \label{eq:r_dim}
-\end{align}
-A possible orientation of a container must satisfy that the length, width and height of  container \textit{i} are x-, y- or z-axis a single axis. Moreover, these have to be different from one another. Therefore, the following constraints must hold.
-\begin{align}
-   & L X_{gilr}+L Y_{gilr}+L Z_{gilr}=X_{gilr}  & \forall g\in G, r\in R,i \in I , t \in T                \\
-   & W X_{gilr}+W Y_{gilr}+ WZ_{gilr}=X_{gilr}  & \forall g\in G, r\in R,i \in I , t \in T                \\
-   & H X_{gilr}+H Y_{gilr}+ HZ_{gilr}=X_{gilr}  & \forall g\in G, r\in R,i \in I , t \in T                \\
-   & L X_{gilr}+W X_{gilr}+ H X_{gilr}=X_{gilr} & \forall g\in G, r\in R,i \in I , t \in T                \\
-   & L Y_{gilr}+W Y_{gilr}+ H Y_{gilr}=X_{gilr} & \forall g\in G, r\in R,i \in I , t \in T                \\
-   & L Z_{gilr}+W Z_{gilr}+ H Z_{gilr}=X_{gilr} & \forall g\in G, r\in R,i \in I , t \in T \label{eq:l3d}
-\end{align}
-
-To ensure trucks are loaded to minimum utilisation, the equation constrains the solutions so the truck must at least be loaded to $\alpha_k$ of its capacity.
-\begin{align}
-   & \alpha_k \leq \dfrac{\sum_{c,l}V_{gklrt}\Gamma_c}{\Gamma_k} \quad & \forall g\in G, k\in K,t\in T
-\end{align}
-
-% A lower bound for the number of trucks needed is given by the following formula.
-
-% \begin{align}
-%     \sum_{k,t} Y_{kt} \geq \min_{c,k'\in K} \left( \dfrac{ \left(\sum_{n} IC_n + \sum_{t} d_{nt}\right)\frac{\Gamma_c}{\mu_{cn}}}{\Gamma_k'}\right) 
-% \end{align}
-Finally, we define the domain of the variables.
-\begin{align}
-   & I_{nt}\geq 0                                                                                                    & \forall n\in N, t \in T                          \\
-   & Y_{kt} \in \lbrace0, 1\rbrace                                                                                   & \forall k \in K , t \in T                        \\
-   & X_{gil}, X_{gilr}, X^n_{gilr} \in \lbrace0,1\rbrace                                                             & \forall r\in R, i \in I, k\in K, n\in N, t \in T \\
-   & V^n_t, V^k_{int} \in \mathbb{N} \cup \lbrace 0 \rbrace                                                          & \forall i \in I, k \in K, n \in N, t \in T       \\
-   & PX_{gil}, PY_{gil}, PY_{gil}\geq 0                                                                              & \forall i\in I, t\in T, k\in K                   \\
-   & L X_{gilr},L Y_{gilr},L Z_{gilr}, W X_{gilr},W Y_{gilr}, WZ_{gilr} , H X_{gilr},H Y_{gilr},HZ_{gilr} \in\{0,1\} & \forall r\in R, i \in I, k \in K, t\in T         \\
-   & A_{g i j l}, B_{g i j l},C_{g i j l}, D_{g i j l}, E_{g i j l}, F_{g i j l}\in\{0,1\}                           & \forall i\in I, j\in J, k\in K, t\in T
-\end{align}
-
-Regarding vertical stability, the 3D-SCPTOP model is extended to ensure that loaded boxes resist the force of gravity. Similar to \autocite{2016Paquay}, vertical stability is ensured by determining if the vertices of containers are supported by one another when they do not directly contact the ground. Furthermore, we impose that for an RTI to be in top of another, it has to have all four corners in top of another RTI, unless it's at the ground level. The four bottom corners are denoted by a tuple \((u,u')\) where \(u,u' \in U = \{0,1\}\). Parameter \(u\) refers to the position on the \(x\)-axis (with \(u=0\) indicating a minimum \(x\) value and \(u=1\) a maximum \(x\) value). Parameter \(u'\) is defined analogously for the \(y\)-axis (see Figure~\ref{fig:M1}).
-
-\begin{figure}[h!]
-  \centering
-  \begin{tikzpicture}
-    \draw (0,0) -- (0,1) -- (1,1) -- (1,0) -- (0,0);
-    \filldraw[black] (0,1) circle (1pt) node[below left] {\tiny (0,0)};
-    \filldraw[black] (1,1) circle (1pt) node[above left] {\tiny (0,1)};
-    \filldraw[black] (1,0) circle (1pt) node[above right] {\tiny (1,1)};
-    \filldraw[black] (0,0) circle (1pt) node[below right] {\tiny (1,0)};
-    \node at (0.5,0.5) {i};
-  \end{tikzpicture}
-  \caption{Description of the bottom corners position}
-  \label{fig:M1}
-\end{figure}
-
-The following additional variables are defined:
-\begin{table}[hbt!]
-  \begin{tabular}{|p{0.1\textwidth}|p{0.85\textwidth}|}
-    \hline
-    \multicolumn{2}{|l|}{\textbf{Variables}}                                                                                                                                             \\ \hline
-    \(T_{gijl}\)    & Binary variable equal to 1 if RTI \(i\in I\) is directly on top of \(j\in I\) in loading configuration \(l\).                                                      \\[0.5em]
-    \(GL_{gil}\)    & Binary variable indicating if container \(i\) is on the ground level on truck \(k\) during time period \(t\).                                                      \\[0.5em]
-    \(O_{gijuu'l}\) & Binary variable equal to 1 if the bottom corner \((u,u')\) of container \(i\) is immediately supported by container \(j\) on truck \(k\) during time period \(t\). \\ \hline
-  \end{tabular}
-\end{table}
-\FloatBarrier
-
-Constraints~\eqref{eq:ggz} and \eqref{eq:glz} link the \(z\)-coordinate of container \(i\) with the ground–level variable \(GL_{gil}\):
-\begin{align}
-  M\Bigl(1-GL_{gil}\Bigr) & \geq PZ_{gil} \quad \forall i \in I,\; t \in T \label{eq:ggz}    \\[0.5em]
-  1-GL_{gil}              & \leq M\,PZ_{gil} \quad \forall i \in I,\; t \in T \label{eq:glz}
-\end{align}
-
-Constraints~\eqref{eq:zu} and \eqref{eq:zd} imply that for \(O_{gijuu'l}\) to be active, the heights of containers \(i\) and \(j\) must be compatible:
-\begin{gather}
-  \begin{split}
-    PZ_{gil} \leq PZ_{gjl}+\sum_{r \in R}\Bigl(r_{gr}\, HZ_{gjlr}+ q_{gr}\, WZ_{gjlr}+ p_{gr}\, LZ_{gjlr}\Bigr) + (1-O_{gijuu'l})M\\
-    \forall i,j\in I,\; i\neq j,\; k\in K,\; (u,u')\in U\times U,\; t \in T \label{eq:zu}
-  \end{split}\\[0.5em]
-  \begin{split}
-    PZ_{gil}+(1-O_{gijuu'l})M \geq PZ_{gjl}+\sum_{r \in R}\Bigl(r_{gr}\, HZ_{gjlr}+ q_{gr}\, WZ_{gjlr}+ p_{gr}\, LZ_{gjlr}\Bigr)\\
-    \forall i,j\in I,\; i\neq j,\; k\in K,\; (u,u')\in U\times U,\; t \in T \label{eq:zd}
-  \end{split}
-\end{gather}
-
-Furthermore, the coordinates of the corner \((u,u')\) of container \(i\) must lie within the \(XY\) projection of container \(j\). Constraints~\eqref{eq:px1} and \eqref{eq:px2} link the \(x\)-dimensions, and constraints~\eqref{eq:py1} and \eqref{eq:py2} link the \(y\)-dimensions. Parameter \(\epsilon\) assures that the corner \((u,u')\) has at least \(\epsilon\) support.
-\begin{gather}
-  \begin{split}
-    PX_{gil}+u\left(\sum_{r \in R}(p_{gr}\, LX_{gilr}+ q_{gr}\, WX_{gilr}+ r_{gr}\, HX_{gilr})\right) + M(1-O_{gijuu'l})\\
-    \geq PX_{gjl} + \epsilon\, u \quad \forall i,j\in I,\; i\neq j,\; k\in K,\; (u,u')\in U\times U,\; t \in T \label{eq:px1}
-  \end{split}\\[0.5em]
-  \begin{split}
-    PX_{gil}+u\left(\sum_{r \in R}(p_{gr}\, LX_{gilr}+ q_{gr}\, WX_{gilr}+ r_{gr}\, HX_{gilr})\right)
-    \leq PX_{gjl}+\sum_{r \in R}(p_{gr}\, LX_{gjlr}+ q_{gr}\, WX_{gjlr}+ r_{gr}\, HX_{gjlr})\\
-    + M(1-O_{gijuu'l}) - (1-u)\epsilon \quad \forall i,j\in I,\; i\neq j,\; k\in K,\; (u,u')\in U\times U,\; t \in T \label{eq:px2}
-  \end{split}\\[0.5em]
-  \begin{split}
-    PY_{gil}+u'\left(\sum_{r \in R}(q_{gr}\, WY_{gilr}+ p_{gr}\, LY_{gilr}+ r_{gr}\, HY_{gilr})\right) + M(1-O_{gijuu'l})\\
-    \geq PY_{gjl} + \epsilon\, u' \quad \forall i,j\in I,\; i\neq j,\; k\in K,\; (u,u')\in U\times U,\; t \in T \label{eq:py1}
-  \end{split}\\[0.5em]
-  \begin{split}
-    PY_{gil}+u'\left(\sum_{r \in R}(q_{gr}\, WY_{gilr}+ p_{gr}\, LY_{gilr}+ r_{gr}\, HY_{gilr})\right)
-    \leq PY_{gjl}+\sum_{r \in R}(q_{gr}\, WY_{gjlr}+ p_{gr}\, LY_{gjlr}+ r_{gr}\, HY_{gjlr})\\
-    + M(1-O_{gijuu'l}) - (1-u')\epsilon \quad \forall i,j\in I,\; i\neq j,\; k\in K,\; (u,u')\in U\times U,\; t \in T \label{eq:py2}
-  \end{split}
-\end{gather}
-
-Constraint~\eqref{eq:4corners} ensures that either a used container is at the bottom of the truck or all four bottom corners are supported by other boxes:
-\begin{align}
-  \sum_{j\in I,\; (u,u')\in U\times U} O_{gijuu'l} + M\Bigl(GL_{gil}+1-X_{gil}\Bigr) \geq 4 \quad \forall i\in I,\; k\in K,\; t \in T \label{eq:4corners}
-\end{align}
-
-Constraint~\eqref{eq:oe} limits \(O_{gijuu'l}\) to be active only if container \(j\) is used during planning period \(t\):
-\begin{align}
-  O_{gijuu'l} \geq X_{gjl} \quad \forall g \in G,\; i,j\in I,\; (u,u')\in U\times U,\; k\in K,\; t\in T \label{eq:oe}
-\end{align}
-
-Additionally, to allow only 90 degree rotations along the \(z\)-axis the following constraint is added:
-\begin{align}
-  HZ_{gilr}\leq X_{gilr} \quad \forall g\in G,\; r\in R,\; i\in I,\; k\in K,\; t \in T
-\end{align}
-
-Finally, the following equations link the RTI stacking variables:
-\[
-  4\,T_{gijl} = \sum_{(u, u') \in U \times U} O_{gijuu'l} \quad \forall g\in G,\; i,j \in I,\; l \in L,\; i\neq j
-\]
-\[
-  \sum_{j \in I} T_{gijl} \leq 1 \quad \forall g \in G,\; i \in I,\; l \in L
-\]
-
-
-
-\section{Matheuristic Procedure}
-\color{black}
-As previously mentioned, exact methods provided by MILP solvers fall short for tackling real world instances with the current computation technology.
-Therefore, a matheuristic approach is proposed, Math-3D-SCPTOP. It is based on decoupling the two sub-processes involved in the problem: finding 3D loading configurations of RTIs inside the trucks and determining the number of trucks and what to carry in each time period in order to minimize inventory and transport costs.
-
-
-
-This matheuristic is based on two main components.
-First a MILP model is defined to determine which loading configurations from a given set should be used in order to minimise the transport and inventory costs. Second a metaheuristic approach is used to identify these loading configurations.
-
-\subsection{PLC-SCPTOP}
-The following MILP model, dubbed as PLC-SCPTOP, uses predefined loading configurations of container types to determine which loading configurations to use, the products to carry and the number of trucks in order to minimise inventory and transport costs.
-The predefined loading configurations must already obey the spatial constraints defined in 3D-SCPTOP.
-Theoretically, if every conceivable loading configuration were incorporated into the model, the optimal solution of PLC-SCPTOP would align with that of 3D-SCPTOP.
-Enumerating all of the possible loading configurations of a 3D Bin Packing Problems would take an exponential number of memory space and cpu time with respect the number of container types.
-Moreover, solving the PLC-SCPTOP would become even more time-consuming, assuming the MILP program could be fully allocated in memory.
-
-Table \ref{tab:NomenclaturePLC}
-\begin{longtable}[hbt!]{  |p{0.07\textwidth}|p{0.8\textwidth}  |}
-  \caption{Nomenclature of Math-3D-SCTOP}
-  \label{tab:NomenclaturePLC}
-  \\
-  \hline
-  \multicolumn{2}{|l|}{\textbf{Indices}}                                                                                                                                 \\ \hline
-  $R$                & Set of RTI types $(r = 1, \dots, R)$                                                                                                              \\
-  $K$                & Set of trucks $(k =1,2,\dots , K)$
-  \\
-  \textit{N}         & Set of products \textit{(n }=   1,…,\textit{N)}                                                                                                   \\
-  $L$                & Set of loading configurations $(l =1,2,\dots , L)$
-  \\
-  \textit{T}         & Set of planning periods \textit{(t} =1, 2…\textit{T)}                                                                                             \\
-  $G$                & Set corresponding to the supplier and plant nodes $G = \lbrace s, p \rbrace$                                                                      \\
-  \hline
-  \multicolumn{2}{|l|}{\textbf{Set of indices}}                                                                                                                          \\ \hline
-  $M(r)$             & Set of RM or AP that are carried in RTI $r \in R$, $n = 1, \dots, M(r)$                                                                           \\
-  \hline
-  \multicolumn{2}{|l|}{\textbf{Parameters}}                                                                                                                              \\ \hline
-  $cK$               & Cost of using a truck                                                                                                                             \\
-  $lt$               & Lead transport time between the plant and the supplier and viceversa.                                                                             \\
-  \textit{$i_{gn}$}  & Initial inventory level of $n\in N$ in $g \in G$ in terms of full RTIs                                                                            \\
-  \textit{$ie_{gr}$} & Initial inventory level of empty RTIs $r\in R$ in $g \in G$ RTIs                                                                                  \\
-  \textit{$ic_{gn}$} & Inventory cost of $n\in N$ at $g \in G$ in terms of full RTIs                                                                                     \\
-  $d_{gnt}$          & Production plan of $n \in N$ at $g \in G$ during time period $t\in T$                                                                             \\
-  $q_{rt}$           & Initial quantity of empty RTIs $r\in R$ arriving at supplier $s\in G$ in time period $t \in (1,\dots , lt)$                                       \\
-  $q_{nt}$           & Initial quantity of full RTIs of $n \in R$ arriving at $p$ in time period $t \in (1,\dots , lt)$                                                  \\
-  $lc_{lrg}$         & Number of containers of type $c$ used in loading configuration $l$ arriving at $g\in G$                                                           \\
-  $ss_{gnt}$         & Security stock for product $n\in N$  in time period $t \in T$ in $g \in G$ in terms of full RTIs                                                  \\
-  $ss_{gtr}$         & Security stock of empty RTIs $r\in R$  in time period $t \in T$ in $g \in G$                                                                      \\
-  \textit{$w_{n}$}   & Weight of a container carrying product \textit{n}
-  \\
-  $k_t$              & Numbers of trucks available at time period $t$                                                                                                    \\
-  \textit{$pK$}      & Maximum  weight capacity of a truck                                                                                                               \\ [0.15cm]
-  \hline
-  \multicolumn{2}{|l|}{\textbf{Decision Variables}}                                                                                                                      \\ \hline
-  $I_{gnt}$          & Inventory of product $n\in N$ at the end of $t\in T$ time period at $g\in G$ in terms of full RTIs                                                \\
-  $Ie_{gtr}$         & Inventory of empty RTIs $r\in R$ at the end of $t\in T$ time period at $g\in G$                                                                   \\
-  $Y_{gkt}$          & Binary variable, if one then  truck $k \in K$ is used in time period $t\in T$ arriving at $g\in G$ and zero otherwise                             \\
-  $Y_{gklt}$         & Binary variable, if one then truck $k \in K$ is used in time period $t\in T$ departing from $g\in G$ using loading configuration $l$, 0 otherwise \\
-  $Q_{nt}$           & Integer variable indicating the number of RM or AP $n\in N$ in transport during time period $t$ to the manufacturing plant $p$                    \\
-  $Q_{rt}$           & Integer variable the number of empty RTIs $r\in R$ in transport during time period $t$ to the supplier $s$                                        \\
-  $V_{gklrt}$        & Number of RTIs $r\in R$ in truck $k\in K$ using loading configuration $l\in L$ at time period $t\in T$ departing from $g\in G$                    \\
-  $V_{kglnt}$        & Number of full RTIs with RM or AP $n\in N$ in truck $k\in K$ using loading configuration $l\in L$ at time period $t\in T$ departing from $g\in G$ \\
-  \hline
-\end{longtable}
-
-
 {
-We wish to minimise the total cost, which is given by  transportation and inventory costs.}
+% =====================================================================
+% 3D-SCPTOP -- stack-based reformulation (cleaned)
+% Drop-in replacement for Sections 3 and 4 of the original manuscript,
+% plus the C&P comparison row of Table 2 and noted prose edits.
+%
+% Index conventions used below:
+%   g in G = {s, p}         node (supplier s, plant p)
+%   n in N                  product
+%   r in R                  RTI type
+%   h in H                  stack type  (renamed from the earlier draft
+%                           to avoid clashing with supplier node s)
+%   i, j in I               stack-slot indices within an LC
+%   l in L                  loading configuration
+%   k in K                  truck
+%   t in T                  planning period
+%
+% Runtime variables whose direction is fixed by definition drop the
+% direction subscript:
+%   V_{klnt}            -- products on plant-bound truck (implicit g=p)
+%   V^{slot}_{kilnt}    -- products in slot i of plant-bound truck
+%   V^{e}_{klrt}        -- folded RTIs on supplier-bound truck
+% =====================================================================
+
+
+% =====================================================================
+%               S E C T I O N   3   (R E V I S E D)
+% =====================================================================
+
+\section{Problem Description}
+
+The objective is to minimise the transportation and inventory holding
+costs of a manufacturing site by integrating procurement transport,
+RTI management and inventory decisions with full-truckload (FTL)
+loading constraints expressed in a stack-based form. The supply chain
+under study has a single source and a single destination. Products are
+shipped in different RTI types. RTIs are not placed individually in
+three dimensions but are grouped into vertical \emph{stacks} whose
+2D footprints are placed on the truck floor. Each stack type has a
+fixed footprint and is compatible with a subset of RTI types; each
+layer of a stack is homogeneous (all RTIs in a layer share a single
+type), while different layers of the same stack may carry different
+compatible RTI types. The total stack height is bounded by the truck
+height and the weight borne by the bottom of each stack is bounded by
+a crush-limit cap. Trucks carry full RTIs from the supplier to the
+plant and return folded empties from the plant to the supplier;
+folding affects RTI height, and hence the number of layers that fit in
+a stack, but not the stack footprint.
+
+The assembler's demand drives the procurement process because it
+determines the optimal quantity of each product to procure from the
+supplier to the manufacturing site. Raw materials and assembled parts
+are produced at the supplier, packed in their corresponding RTI, and
+transported under FTL. Each RTI carries a single product type at any
+given time, and each product is shipped in a single RTI type. Once
+full RTIs arrive at the plant, the products are consumed and the RTIs
+are emptied, folded and returned to the supplier.
+
+Stacks must not overlap and must be contained within the truck's
+floor; the truck's total weight is bounded; and the per-stack weight
+cap is respected with \emph{period-exact} knowledge of the products
+loaded in each slot, so that crush-limit tests reflect the actual
+period's load rather than a worst-case bound. Stacks may be rotated
+by~90$^\circ$ on the truck floor. Because stacks are self-supporting
+by construction, no additional vertical-stability constraints are
+required. As FTL is the mode of transport, trucks must reach a minimum
+volume utilisation measured on the RTI volumes effectively loaded.
+Minimum coverage stock is enforced on future demand.
+
+\paragraph{Initial data.}
+\begin{itemize}
+    \item \textbf{Product data:} initial inventory, periodic demand
+    (in full RTIs) at the plant and at the supplier, product-to-RTI
+    mapping, weight of each full RTI.
+    \item \textbf{RTI data:} height when full and when folded, weight
+    of a folded RTI, volume.
+    \item \textbf{Stack data:} footprint $(p_h, q_h)$ of each stack
+    type $h\in H$, set of compatible RTI types $R(h)$, and, for each
+    $r\in R(h)$, number of RTIs per layer $n_{hr}$.
+    \item \textbf{Transport data:} number of available trucks, truck
+    length/width/height, truck weight capacity, per-stack weight cap,
+    minimum truck volume utilisation.
+\end{itemize}
+
+\paragraph{To determine.}
+\begin{itemize}
+    \item A set of loading configurations (LCs), each specifying the
+    stack-type assignment, 2D placement and orientation of its slots,
+    and the number of layers of each compatible RTI type in each slot.
+    \item The number of trucks used per day and the LC they employ.
+    \item The number of full RTIs of each product loaded in each slot
+    per period (plant-bound trucks) and the number of folded RTIs of
+    each type loaded per truck (supplier-bound trucks).
+    \item The resulting inventory of full and folded RTIs at both
+    nodes.
+\end{itemize}
+
+\paragraph{Subject to.}
+\begin{itemize}
+    \item 2D non-overlap and containment of stacks on the truck floor,
+    with allowed 90$^\circ$ rotation.
+    \item Per-stack height budget.
+    \item Per-stack crush-limit weight cap, period-exact on plant-bound
+    trucks and deterministic on supplier-bound trucks.
+    \item Per-truck weight capacity.
+    \item Minimum truck volume utilisation.
+    \item Minimum coverage stock.
+\end{itemize}
+
+\paragraph{In order to:}
+\begin{itemize}
+    \item Minimise total transportation cost.
+    \item Minimise total inventory holding cost.
+\end{itemize}
+
+
+% =====================================================================
+%               S E C T I O N   4   (R E V I S E D)
+% =====================================================================
+
+\section{Mathematical Model}
+
+The 3D-SCPTOP formulation integrates stack-based truck-loading
+constraints with procurement transport and inventory decisions. It
+departs from a standard 3D container-loading formulation in two
+related ways. First, the 3D placement of individual RTIs inside the
+truck is replaced by a 2D placement of variable-composition
+\emph{stacks} on the truck floor, with per-stack height and weight
+caps. Second, the per-period decision of which product fills each slot
+is retained, but the crush-limit cap is evaluated slot-by-slot using
+the period's actual product mix. This yields a tighter per-stack
+weight bound than a worst-case-per-RTI-type abstraction, while
+eliminating vertical-stability constraints altogether, since stacks
+are self-supporting by construction.
+
+\paragraph{Notational conventions.}
+Throughout this section, $g\in G=\{s,p\}$ indexes nodes (supplier and
+plant), $n\in N$ products, $r\in R$ RTI types, $h\in H$ stack types,
+$i,j\in I$ stack-slot positions within a loading configuration,
+$l\in L$ loading configurations, $k\in K$ trucks and $t\in T$ planning
+periods. Variables whose direction is determined by definition omit
+the $g$ subscript: $V_{klnt}$ and $V^:w{\mathrm{slot}}_{kilnt}$ denote
+full-RTI loads on plant-bound trucks, and $V^{\mathrm{e}}_{klrt}$
+denotes folded-RTI loads on supplier-bound trucks. Table
+\ref{tab:sb-Nomenclature} collects the complete nomenclature.
+
+% -----------------------------------------------------------
+\begin{longtable}[hbt!]{|p{0.14\textwidth}|p{0.82\textwidth}|}
+    \caption{Nomenclature of 3D-SCPTOP (stack-based reformulation)}
+    \label{tab:sb-Nomenclature}\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Indices and sets}}\\\hline
+    $G$            & Supplier and plant nodes, $G=\{s,p\}$.\\
+    $N$            & Products, $n=1,\dots,N$.\\
+    $R$            & RTI types, $r=1,\dots,R$.\\
+    $H$            & Stack types, $h=1,\dots,H$.\\
+    $I$            & Stack-slot indices within a loading configuration, $i=1,\dots,|I|$ (see eq. \ref{sb:sec:symm}).\\
+    $L$            & Loading configurations, $l=1,\dots,L$.\\
+    $K$            & Trucks, $k=1,\dots,K$.\\
+    $T$            & Planning periods, $t=1,\dots,T$.\\
+    $M(r)$         & Products carried by RTI type $r$, $M(r)\subseteq N$.\\
+    $R(h)$         & RTI types compatible with stack type $h$, $R(h)\subseteq R$.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Parameters}}\\\hline
+    $cK$           & Cost of using a truck.\\
+    $lt$           & Lead transport time between plant and supplier (and vice versa).\\
+    $i_{gn}$       & Initial inventory of $n\in N$ at $g\in G$ (full RTIs).\\
+    $ie_{gr}$      & Initial inventory of folded RTIs $r\in R$ at $g\in G$.\\
+    $ic_{gn}$      & Inventory cost of $n\in N$ at $g\in G$.\\
+    $d_{gnt}$      & Production plan for $n\in N$ at $g\in G$ in $t\in T$.\\
+    $q_{nt}$       & Initial arrivals of full RTIs of product $n$ at $p$ in $t\in\{1,\dots,lt\}$.\\
+    $q_{rt}$       & Initial arrivals of folded RTIs of type $r$ at $s$ in $t\in\{1,\dots,lt\}$.\\
+    $ss_{gnt}$     & Security stock of $n$ at $g$ in $t$ (full RTIs).\\
+    $ss_{gtr}$     & Security stock of folded RTIs $r$ at $g$ in $t$.\\
+    $w_{n}$        & Weight of a full RTI carrying product $n$.\\
+    $w^{\mathrm{f}}_{r}$ & Weight of a folded RTI of type $r$.\\
+    $pK^{w}$       & Maximum truck weight capacity.\\
+    $W^{\max}$     & Per-stack crush-limit weight cap.\\
+    $pK,qK,rK$     & Truck length, width, and height.\\
+    $\Gamma_K$     & Truck volume, $\Gamma_K=pK\cdot qK\cdot rK$.\\
+    $\alpha$       & Minimum truck volume utilisation ($0<\alpha\le 1$).\\
+    $p_{h},q_{h}$  & Footprint length and width of stack type $h$.\\
+    $r_{gr}$       & Height of one RTI of type $r$ at node $g$ (full at $p$, folded at $s$).\\
+    $\gamma_{gr}$  & Volume of one RTI of type $r$ at node $g$.\\
+    $n_{hr}$       & RTIs of type $r\in R(h)$ per layer of stack type $h$.\\
+    $M$            & A sufficiently large constant.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Decision variables -- LC level}}\\\hline
+    $Z_{gl}$         & $\in\{0,1\}$. Equals $1$ iff LC $l$ is active in direction $g$.\\
+    $X_{gihl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ of LC $l$ is of stack type $h$ in direction $g$.\\
+    $L_{gihlr}$      & $\in\mathbb{Z}_{\ge 0}$. Number of layers of RTI type $r\in R(h)$ in slot $i$ of LC $l$ in direction $g$.\\
+    $LX_{gihl}$      & $\in\{0,1\}$. Equals $1$ iff stack $h$'s length is along the $x$-axis in slot $i$.\\
+    $LY_{gihl}$      & $\in\{0,1\}$. Equals $1$ iff stack $h$'s length is along the $y$-axis in slot $i$.\\
+    $PX_{gil},PY_{gil}$ & $\ge 0$. Bottom-left coordinates of slot $i$ in LC $l$ in direction $g$.\\
+    $A_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is to the left of slot $j$ in LC $l$.\\
+    $B_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is to the right of slot $j$ in LC $l$.\\
+    $C_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is behind slot $j$ in LC $l$.\\
+    $D_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is in front of slot $j$ in LC $l$.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Decision variables -- runtime level}}\\\hline
+    $Y_{gkt}$        & $\in\{0,1\}$. Equals $1$ iff truck $k$ is used in direction $g$ in period $t$.\\
+    $Y_{gklt}$       & $\in\{0,1\}$. Equals $1$ iff truck $k$ uses LC $l$ in direction $g$ in period $t$.\\
+    $V_{klnt}$       & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ on plant-bound truck $k$ using LC $l$ in period $t$.\\
+    $V^{\mathrm{slot}}_{kilnt}$ & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ in slot $i$ of plant-bound truck $k$ using LC $l$ in period $t$.\\
+    $V^{\mathrm{e}}_{klrt}$ & $\in\mathbb{Z}_{\ge 0}$. Folded RTIs of type $r$ on supplier-bound truck $k$ using LC $l$ in period $t$.\\
+    $I_{gnt}$        & $\in\mathbb{Z}_{\ge 0}$. End-of-period inventory of $n$ at $g$ in $t$ (full RTIs).\\
+    $Ie_{gtr}$       & $\in\mathbb{Z}_{\ge 0}$. End-of-period inventory of folded RTIs $r$ at $g$ in $t$.\\
+    $Q_{nt}$         & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ in transit to the plant in $t$.\\
+    $Q_{rt}$         & $\in\mathbb{Z}_{\ge 0}$. Folded RTIs of type $r$ in transit to the supplier in $t$.\\
+    \hline
+\end{longtable}
+
+% --------------------------
+% Objective
+% --------------------------
+\subsection*{Objective}
+
 \begin{equation}
-  \text{\textit{Min} } z= \sum_{g \in G}{\sum_{k \in K}{\sum_{t \in T}{Y_{gkt}\cdot cK}}}+ \sum_{g \in G}{\sum_{n \in N}{\sum_{t \in T}{I_{gnt}\cdot ic_{gn}}}}
+\text{Min } z
+= \sum_{g\in G}\sum_{k\in K}\sum_{t\in T} cK\cdot Y_{gkt}
++ \sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn}\cdot I_{gnt}
+\label{sb:eq:obj}
 \end{equation}
 
+% --------------------------
+% Inventory balance (unchanged from the original)
+% --------------------------
+\subsection*{Inventory and flow balance}
 
-\eqref{eq:1PLC} - \eqref{eq:2PLC}  define the inventory level of RM or AP according to the production demand and supply of RM or AP  from the supplier $s$ at the plant  $p$
+The inventory balance block is structurally identical to the original
+formulation. For completeness it is reproduced below.
+
 \begin{align}
-  I_{pnt}  & =I_{pnt^{\prime}}-d_{pnt}+Q_{nt^{\prime}}\quad             & \forall n \in N,t \in T : t\ge    lt +1,t^{\prime}\coloneqq t-lt \label{eq:1PLC} \\
-  I_{pnt}  & =I_{pnt'}-d_{pnt}+q_{nt}\quad                              & \forall n \in N,t \in (2,\dots, lt) : ,t^{\prime}\coloneqq t-lt\label{eq:3PLC}   \\
-  I_{pnt}  & =i_{pn}-d_{pnt}+q_{nt}\quad                                & \forall n \in N: t \coloneqq 1 \label{eq:2PLC}                                   \\
-  Ie_{ptr} & =Ie_{pt^{\prime}r}+\sum_{n \in M(r)}{d_{pnt}}-Q_{rt} \quad & \forall r \in R,t \in T : t\ge 2                                                 \\
-  Ie_{ptr} & =ie_{pr}+\sum_{n \in M(r)}{d_{pnt}}-Q_{rt}\quad            & \forall r \in R , t\coloneqq 1
+I_{pnt}  &=I_{p,n,t-lt}-d_{pnt}+Q_{n,t-lt}
+    &&\forall n\in N,\; t\ge lt+1
+    \label{sb:eq:inv-plant-main}\\
+I_{pnt}  &=I_{p,n,t-1}-d_{pnt}+q_{nt}
+    &&\forall n\in N,\; t\in\{2,\dots,lt\}
+    \label{sb:eq:inv-plant-transient}\\
+I_{pnt}  &=i_{pn}-d_{pnt}+q_{nt}
+    &&\forall n\in N,\; t=1
+    \label{sb:eq:inv-plant-init}\\
+Ie_{ptr} &=Ie_{p,t-1,r}+\sum_{n\in M(r)} d_{pnt}-Q_{rt}
+    &&\forall r\in R,\; t\ge 2
+    \label{sb:eq:inve-plant}\\
+Ie_{ptr} &=ie_{pr}+\sum_{n\in M(r)} d_{pnt}-Q_{rt}
+    &&\forall r\in R,\; t=1
+    \label{sb:eq:inve-plant-init}
 \end{align}
-\eqref{eq:1PLC-s} - \eqref{eq:2PLC-s}  the empty RTIs according to the production demand and supply of RTIs from the plant $p$ at the supplier $s$
+
 \begin{align}
-  I_{snt}  & =I_{snt^{\prime}}+d_{snt}-Q_{nt}\quad                              & \forall n \in N,t \in T,t^{\prime} \in T, : t\ge    2,t^{\prime}\coloneqq t-lt \label{eq:1PLC-s} \\
-  I_{snt}  & =i_{sn}+d_{snt}-Q_{nt}\quad                                        & \forall r \in R : t\coloneqq 1 \label{eq:2PLC-s}                                                 \\
-  Ie_{str} & =Ie_{st^{\prime}r}+Q_{rt^{\prime}}-\sum_{n \in M(r)}{d_{snt}}\quad & \forall r \in R,t \in T : t\ge    lt +1,t^{\prime}\coloneqq t-lt                                 \\
-  Ie_{str} & =Ie_{st^{\prime}r}+q_{rt}-\sum_{n \in M(r)}{d_{snt}}\quad          & \forall r \in R,t \in (2,\dots, lt) : ,t^{\prime}\coloneqq t-lt
-  \\
-  Ie_{str} & =ie_{pr}+q_{rt}-\sum_{n \in M(r)}{d_{snt}}\quad                    & \forall r \in R:t=1
+I_{snt}  &=I_{s,n,t-1}+d_{snt}-Q_{nt}
+    &&\forall n\in N,\; t\ge 2
+    \label{sb:eq:inv-sup-main}\\
+I_{snt}  &=i_{sn}+d_{snt}-Q_{nt}
+    &&\forall n\in N,\; t=1
+    \label{sb:eq:inv-sup-init}\\
+Ie_{str} &=Ie_{s,t-lt,r}+Q_{r,t-lt}-\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t\ge lt+1
+    \label{sb:eq:inve-sup-main}\\
+Ie_{str} &=Ie_{s,t-1,r}+q_{rt}-\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t\in\{2,\dots,lt\}
+    \label{sb:eq:inve-sup-transient}\\
+Ie_{str} &=ie_{sr}+q_{rt}-\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t=1
+    \label{sb:eq:inve-sup-init}
 \end{align}
-Each product must satisfy a minimum security stock $ss_{gnt}$.
 
 \begin{equation}
-  I_{gnt}\ge ss_{gnt}\quad \forall g \in G,n \in N,t \in T
+I_{gnt}\ge ss_{gnt}, \qquad Ie_{gtr}\ge ss_{gtr}
+\qquad \forall g\in G,\; n\in N,\; r\in R,\; t\in T
+\label{sb:eq:safety}
 \end{equation}
-\eqref{eq:onelpertPLC} imposes that a truck $k$ can only use one loading configuration $l$ with direction $g\in G $ in time period $t$.
+
+% --------------------------
+% Stack packing block
+% --------------------------
+\subsection*{Stack packing constraints}
+
+Exactly one stack type can be assigned to a slot, and only if its LC
+is active:
+\begin{equation}
+\sum_{h\in H} X_{gihl}\;\le\;Z_{gl}
+\qquad \forall g\in G,\; i\in I,\; l\in L.
+\label{sb:eq:slot-active}
+\end{equation}
+
+The stack occupying slot $i$ is oriented either with its length along
+the $x$-axis or along the $y$-axis:
+\begin{equation}
+LX_{gihl}+LY_{gihl}\;=\;X_{gihl}
+\qquad \forall g\in G,\; h\in H,\; i\in I,\; l\in L.
+\label{sb:eq:orient}
+\end{equation}
+
+The total stack height cannot exceed the truck height. The following
+constraint also forces $L_{gihlr}=0$ whenever $X_{gihl}=0$, since
+$r_{gr}>0$:
+\begin{equation}
+\sum_{r\in R(h)} r_{gr}\,L_{gihlr}\;\le\;rK\cdot X_{gihl}
+\qquad \forall g\in G,\; h\in H,\; i\in I,\; l\in L.
+\label{sb:eq:height}
+\end{equation}
+
+Slots must not overlap. For each pair $i\ne j$ in LC $l$:
 \begin{align}
-  \sum_{l\in L}Y_{gklt}=Y_{gkt}\quad \forall k \in K,g \in G,t \in T \label{eq:onelpertPLC}
+PX_{gil}+\sum_{h\in H}\bigl(p_{h}LX_{gihl}+q_{h}LY_{gihl}\bigr)
+    &\le PX_{gjl}+M(1-A_{gijl})
+    \label{sb:eq:nonov-x1}\\
+PX_{gjl}+\sum_{h\in H}\bigl(p_{h}LX_{gjhl}+q_{h}LY_{gjhl}\bigr)
+    &\le PX_{gil}+M(1-B_{gijl})
+    \label{sb:eq:nonov-x2}\\
+PY_{gil}+\sum_{h\in H}\bigl(q_{h}LX_{gihl}+p_{h}LY_{gihl}\bigr)
+    &\le PY_{gjl}+M(1-C_{gijl})
+    \label{sb:eq:nonov-y1}\\
+PY_{gjl}+\sum_{h\in H}\bigl(q_{h}LX_{gjhl}+p_{h}LY_{gjhl}\bigr)
+    &\le PY_{gil}+M(1-D_{gijl})
+    \label{sb:eq:nonov-y2}
+\end{align}
+with the cover constraint ensuring that whenever both slots are used
+at least one relative-position variable is active:
+\begin{equation}
+A_{gijl}+B_{gijl}+C_{gijl}+D_{gijl}
+\;\ge\;\sum_{h}X_{gihl}+\sum_{h}X_{gjhl}-1
+\qquad \forall g,\,l,\,i\ne j.
+\label{sb:eq:cover}
+\end{equation}
+
+Containment in the truck floor:
+\begin{align}
+PX_{gil}+\sum_{h\in H}\bigl(p_{h}LX_{gihl}+q_{h}LY_{gihl}\bigr)
+    &\le pK+M\bigl(1-\textstyle\sum_{h} X_{gihl}\bigr)
+    &&\forall g,i,l,
+    \label{sb:eq:cont-x}\\
+PY_{gil}+\sum_{h\in H}\bigl(q_{h}LX_{gihl}+p_{h}LY_{gihl}\bigr)
+    &\le qK+M\bigl(1-\textstyle\sum_{h} X_{gihl}\bigr)
+    &&\forall g,i,l.
+    \label{sb:eq:cont-y}
 \end{align}
 
-\eqref{eq:sameasloading1PLC} - \eqref{eq:sameaslaoding2PLC} impose that  the truck $k$ at time period $t$ using loading configuration $l$ uses the same loading configuration as $l$.
+Minimum truck volume utilisation, measured on the actual RTI volumes
+(kept in RTI-volume form so non-full layers or fillers can be
+introduced in later extensions):
+\begin{equation}
+\sum_{i\in I}\sum_{h\in H}\sum_{r\in R(h)}
+    \gamma_{gr}\,n_{hr}\,L_{gihlr}
+\;\ge\;\alpha\,\Gamma_K\,Z_{gl}
+\qquad \forall g\in G,\; l\in L.
+\label{sb:eq:util}
+\end{equation}
+
+% --------------------------
+% Truck -- LC linking and runtime loading
+% --------------------------
+\subsection*{Truck--LC linking and runtime loading}
+
+A truck uses at most one LC in a period, and can only use an active
+LC:
 \begin{align}
-  V_{gklrt} & +M\cdot (1-Y_{gklt})\ge lc_{lrg}               & \quad \forall k \in K,g \in G,l \in L,t \in T\label{eq:sameasloading1PLC} \\
-  V_{gklrt} & \le Y_{gklt}\cdot lc_{lrg}+M\cdot (1-Y_{gklt}) & \quad \forall k \in K,l \in L,g \in G,t \in T\label{eq:sameaslaoding2PLC}
+\sum_{l\in L} Y_{gklt}&=Y_{gkt}
+    &&\forall g,k,t
+    \label{sb:eq:one-lc}\\
+Y_{gklt}&\le Z_{gl}
+    &&\forall g,k,l,t
+    \label{sb:eq:lc-active}
 \end{align}
 
-Since a product can only be carried by one container type \eqref{eq:numnpercPLC} sets that the number of containers of type $c$ carried at truck $k$ using loading configuration $l$ at time period $c$ is equal to the sum of containers carried of products $n$ which containers of type $c$ can carry. Moreover, \eqref{eq:amountnattPLC} sets the total amount of product $n$ being transported from $s$ to $p$ in time period $t$, and \eqref{eq:amountnattPLC2} sets the total amount of RTIs $r$ being transported from $p$ to $s$ in time period $t$,
+For plant-bound trucks, full RTIs of type $r$ loaded in slot $i$ cannot
+exceed the layer capacity of the stack placed in that slot; products
+sharing the same RTI type partition that slot-capacity:
+\begin{equation}
+\sum_{n\in M(r)} V^{\mathrm{slot}}_{kilnt}
+\;\le\;\sum_{h\,:\,r\in R(h)} n_{hr}\,L_{p,i,h,l,r}
+    + M(1-Y_{pklt})
+\qquad \forall k,i,l,r,t.
+\label{sb:eq:slot-cap}
+\end{equation}
+
+Truck-level aggregation of per-slot loads:
+\begin{equation}
+V_{klnt}=\sum_{i\in I} V^{\mathrm{slot}}_{kilnt}
+\qquad \forall k,l,n,t.
+\label{sb:eq:slot-agg}
+\end{equation}
+
+For supplier-bound trucks, folded RTIs of type $r$ are capped by the
+aggregate layer capacity of the LC in use (no slot-level tracking is
+needed because folded-RTI weight is deterministic in $r$):
+\begin{equation}
+V^{\mathrm{e}}_{klrt}
+\;\le\;\sum_{i\in I}\sum_{h\,:\,r\in R(h)} n_{hr}\,L_{s,i,h,l,r}
+    + M(1-Y_{sklt})
+\qquad \forall k,l,r,t.
+\label{sb:eq:empty-cap}
+\end{equation}
+
+% --------------------------
+% Weight
+% --------------------------
+\subsection*{Weight constraints}
+
+Per-truck weight, plant-bound:
+\begin{equation}
+\sum_{l\in L}\sum_{n\in N} w_{n}\,V_{klnt}\;\le\;pK^{w}\,Y_{pkt}
+\qquad \forall k,t.
+\label{sb:eq:truck-w-plant}
+\end{equation}
+
+Per-truck weight, supplier-bound:
+\begin{equation}
+\sum_{l\in L}\sum_{r\in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{klrt}
+    \;\le\;pK^{w}\,Y_{skt}
+\qquad \forall k,t.
+\label{sb:eq:truck-w-sup}
+\end{equation}
+
+Per-stack crush-limit, period-exact on plant-bound trucks (the cap
+reflects the actual product mix loaded in each slot):
+\begin{equation}
+\sum_{n\in N} w_{n}\,V^{\mathrm{slot}}_{kilnt}\;\le\;W^{\max}
+\qquad \forall k,i,l,t.
+\label{sb:eq:stack-w-plant}
+\end{equation}
+
+Per-stack crush-limit on supplier-bound trucks (deterministic in the
+LC since folded-RTI weight depends only on $r$):
+\begin{equation}
+\sum_{h\in H}\sum_{r\in R(h)}
+    w^{\mathrm{f}}_{r}\,n_{hr}\,L_{s,i,h,l,r}\;\le\;W^{\max}
+\qquad \forall i,l.
+\label{sb:eq:stack-w-sup}
+\end{equation}
+
+% --------------------------
+% Flow aggregation
+% --------------------------
+\subsection*{Flow aggregation}
+
 \begin{align}
-  V_{pklrt} & =\sum_{n \in M(r)}{V_{pklnt}}\quad              & \forall k \in K,l \in L,t \in T,r \in R \label{eq:numnpercPLC} \\
-  Q_{nt}    & =\sum_{l \in L}{\sum_{k \in K}{V_{kslnt}}}\quad & \forall n \in N,t \in T\label{eq:amountnattPLC}                \\
-  Q_{rt}    & =\sum_{l \in L}{\sum_{k \in K}{V_{pklrt}}}\quad & \forall r \in R,t \in T\label{eq:amountnattPLC2}
+Q_{nt}&=\sum_{k\in K}\sum_{l\in L} V_{klnt}
+    &&\forall n,t
+    \label{sb:eq:flow-n}\\
+Q_{rt}&=\sum_{k\in K}\sum_{l\in L} V^{\mathrm{e}}_{klrt}
+    &&\forall r,t
+    \label{sb:eq:flow-r}
 \end{align}
 
+% --------------------------
+% Symmetry breaking and slot-set sizing
+% --------------------------
+\subsection{Symmetry breaking and slot-set sizing}
+\label{sb:sec:symm}
 
-\eqref{eq11PLC} guarantees that the maximum weight allowed for truck \textit{k} is not surpassed.
+The slots $i\in I$ of a given LC are interchangeable, so any solution
+admits $|I|!$ permutations of the slot index. We break this symmetry
+by enforcing that slot $i+1$ is used only if slot $i$ is used:
+\begin{equation}
+\sum_{h\in H} X_{g,i+1,h,l}\;\le\;\sum_{h\in H} X_{g,i,h,l}
+\qquad \forall g\in G,\; l\in L,\; i\in\{1,\dots,|I|-1\}.
+\label{sb:eq:sym}
+\end{equation}
 
-\begin{align}
-   & \sum_{l,n} w_{n}V_{kglnt} \leq pK & \forall k\in K,t\in T, g \in G \label{eq11PLC}
-\end{align}
+The cardinality of $I$ is a modelling parameter. An upper bound that
+eliminates provably unused slot variables without cutting any feasible
+layout is
+\begin{equation}
+|I|\;\le\;\left\lfloor
+    \frac{pK\cdot qK}{\min_{h\in H} p_{h}\cdot q_{h}}
+\right\rfloor,
+\label{sb:eq:Ibound}
+\end{equation}
+corresponding to tiling the truck floor with the smallest-footprint
+stack type; it serves as a tight preprocessing limit on $|I|$.
+
+% --------------------------
+% Domains
+% --------------------------
+\subsection*{Domains}
 
 \begin{align*}
-  I_{gnt}   & \in \mathbb{Z}_{\geq 0} \quad &  & \forall g \in G,\; n \in N,\; t \in T,                       \\
-  Ie_{gtr}  & \in \mathbb{Z}_{\geq 0} \quad &  & \forall g \in G,\; t \in T,\; r \in R,                       \\
-  Y_{gkt}   & \in \{0,1\} \quad             &  & \forall k \in K,\; g \in G,\; t \in T,                       \\
-  Y_{gklt}  & \in \{0,1\} \quad             &  & \forall k \in K,\; g \in G,\; l \in L,\; t \in T,            \\
-  Q_{nt}    & \in \mathbb{Z}_{\geq 0} \quad &  & \forall n \in N,\; t \in T,                                  \\
-  Q_{rt}    & \in \mathbb{Z}_{\geq 0} \quad &  & \forall r \in R,\; t \in T,                                  \\
-  V_{gklrt} & \in \mathbb{Z}_{\geq 0} \quad &  & \forall g \in G,\; k \in K,\; l \in L,\; r \in R,\; t \in T, \\
-  V_{kglnt} & \in \mathbb{Z}_{\geq 0} \quad &  & \forall k \in K,\; g \in G,\; l \in L,\; n \in N,\; t \in T.
+&Z_{gl},\,X_{gihl},\,LX_{gihl},\,LY_{gihl},\,
+  A_{gijl},\,B_{gijl},\,C_{gijl},\,D_{gijl},\,
+  Y_{gkt},\,Y_{gklt}\in\{0,1\},\\
+&L_{gihlr},\,V_{klnt},\,V^{\mathrm{slot}}_{kilnt},\,
+  V^{\mathrm{e}}_{klrt},\,I_{gnt},\,Ie_{gtr},\,Q_{nt},\,Q_{rt}
+  \in\mathbb{Z}_{\ge 0},\\
+&PX_{gil},\,PY_{gil}\ge 0.
 \end{align*}
 
 
-\subsection{Meta-Heuristic Procedure}
-The objective of the metaheuristic is to obtain good loading configurations so the PLC-SCPTOP model can optimise transport and inventory costs while managing RTI flow. Therefore, the metaheuristic should consider the temporal nature of the problem. That is, the loading problem must consider the future demand of products and the current state of inventories.
+% =====================================================================
+%           S E C T I O N   4 . X   (M A T H E U R I S T I C)
+% =====================================================================
 
-To simulate the production and transportation, we define two separate processes. On the one hand, we have the plant processes and on the other we have the supplier processes. In each node, we first receive the RTIs, then we produce, and after that we make the transport decisions. \ref{fig:Procceses} illustrates the both processes and the connections between them.
+\section{Matheuristic Procedure}
 
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=0.75\linewidth]{figures/image.png}
-  \caption{Procceses of plant and supplier}
-  \label{fig:Procceses}
-\end{figure}
+Because the slot-placement subproblem is a constrained 2D
+cutting-and-packing problem and the per-slot layer-composition
+subproblem is a small integer knapsack, an exact solve of the full
+model is intractable for industrial instances. We retain the
+decomposition structure of the original matheuristic -- enumerate or
+construct a pool of loading configurations, then let a reduced MILP
+pick configurations, assign trucks and products, and manage inventory
+-- but replace the 3D packing subroutine by a two-step stack-based
+scheme.
 
-In both cases, we need to determine transport decisions. That is, the loading configurations and what is going to be transported. We can only transport what we already have in stock. Furhtermore, RTIs are loaded into the truck as stacks. Each RTI has a set of compatible RTIs which can be stacked with. We use a column generation technique to find the RTIs stacks that can be loaded. Then, we find a loading configuration through a 2D-SLOPP formulation, where the stacks that contain RTIs needed in the other supply chain node for the next products are prioritized through the objective function. Once the RTI loading configuration is determined, we decide RM or AP procurement for the manufacturing site, prioritizing RMs or APs which have less stock at the manufacturing site.
+% --------------------------
+% PLC-SCPTOP
+% --------------------------
+\subsection{PLC-SCPTOP}
+
+PLC-SCPTOP operates on a precomputed pool of LCs. Each LC $l$ in
+direction $g$ exposes its aggregate RTI-type capacity through the
+parameter
+\begin{equation}
+U_{glr}\;=\;\sum_{i\in I}\sum_{h\,:\,r\in R(h)}
+    n_{hr}\,L^{\star}_{gihlr},
+\qquad \forall g\in G,\; l\in L,\; r\in R,
+\label{sb:eq:U}
+\end{equation}
+where $L^{\star}_{gihlr}$ are the fixed layer counts of the generated
+LC. This parameter takes the place of the former $lc_{lrg}$ (``number
+of containers of type $c$ in configuration $l$''). Apart from this
+substitution, the structure of PLC-SCPTOP is unchanged: the
+inventory-balance, safety-stock, one-LC-per-truck, and
+flow-aggregation constraints carry over verbatim, with the
+capacity-linking constraints rewritten to use $U_{glr}$.
+
+Because PLC-SCPTOP does not carry slot-level information, it enforces
+the per-stack crush cap only in a conservative form using the
+worst-case product weight per RTI type,
+$\bar w_{r}=\max_{n\in M(r)} w_{n}$. The period-exact per-stack cap
+\eqref{sb:eq:stack-w-plant} is enforced at the LC-generation stage,
+where the pool is restricted to layer compositions feasible for every
+product mix the plant might load.
+
+% --------------------------
+% LC generation
+% --------------------------
+\subsection{Stack-column generation and 2D placement}
+\label{sb:sec:gen}
+
+The LC generator decomposes the packing subroutine into two cleanly
+separated steps.
+
+\paragraph{Step 1: stack-column generation.}
+For each stack type $h\in H$ and each direction $g\in G$, enumerate
+or column-generate all layer vectors
+$\boldsymbol{\lambda}_{h}=(\lambda_{r})_{r\in R(h)}\in
+\mathbb{Z}_{\ge 0}^{|R(h)|}$ satisfying
+\begin{align*}
+&\sum_{r\in R(h)} r_{gr}\,\lambda_{r}\;\le\;rK,\\
+&\sum_{r\in R(h)} \bar w_{r}\,n_{hr}\,\lambda_{r}\;\le\;W^{\max}
+    && \text{(plant direction, conservative bound),}\\
+&\sum_{r\in R(h)} w^{\mathrm{f}}_{r}\,n_{hr}\,\lambda_{r}\;\le\;W^{\max}
+    && \text{(supplier direction, deterministic).}
+\end{align*}
+Each feasible $\boldsymbol{\lambda}_{h}$ is a \emph{stack column}: a
+candidate internal composition of a slot of type $h$.
+
+\paragraph{Step 2: 2D slot placement.}
+Given a target mix of stack columns (quantities per stack type,
+weighted by current inventory deficits as in Algorithms
+\ref{sb:alg:init}--\ref{sb:alg:refine}), place the selected columns on
+the truck floor by solving a 2D-SLOPP with 90$^\circ$ rotation over
+the footprints $(p_{h},q_{h})$. Any standard 2D packing heuristic
+(constructive, GRASP, BRKGA) or MILP formulation may be used as the
+inner solver.
+
+\paragraph{Algorithm structure.}
+The outer matheuristic is unchanged but calls the two-step generator
+above in place of the former 3D packing routine.
 
 \begin{algorithm}[h!]
-  \caption{Loading Configurations}\label{alg:MITP}
-  \begin{algorithmic}
-    \Procedure{LoadingConfigurations}{}
-    \State $T$ \# List of time periods
-    \State LC=[] \# List of loading configurations
-    \For{ $t\in T$}
-    \For{ $\delta \in  \Delta$ }
-    \State IncomingTransport(t)
-
-    \State Produce(t)
-    \While {TransportResourceAvailable}
-    \State C = ContainersToLoad(t, $\delta$, LC)
-    \State
-    \State
-    \State LC.append(PackContainers(C,t))
-    \EndWhile
-    \EndFor
-    \EndFor
-    \State LC=EliminateDuplicateOrDominatedLoadingConfigurations(LC)
-    \State \textbf{return} LC
-    \EndProcedure
-  \end{algorithmic}
+    \caption{Initial Loading Configurations (stack-based)}
+    \label{sb:alg:init}
+    \begin{algorithmic}
+        \State $T$ \Comment{list of time periods}
+        \State $\Delta$ \Comment{list of look-ahead horizons}
+        \State $\mathrm{LC}\gets\emptyset$
+        \For{$t\in T$}
+            \For{$\delta\in\Delta$}
+                \State IncomingTransport($t$)
+                \State Produce($t$)
+                \While{TransportResourceAvailable}
+                    \State $\mathcal{C}\gets$ StackColumnsNeeded($t,\delta,\mathrm{LC}$)
+                    \Comment{Step 1: required per-type layer vectors}
+                    \State $P\gets$ Place2D($\mathcal{C}$)
+                    \Comment{Step 2: 2D-SLOPP with rotation}
+                    \State $\mathrm{LC}.\mathrm{append}(P)$
+                \EndWhile
+            \EndFor
+        \EndFor
+        \State $\mathrm{LC}\gets$ EliminateDuplicatesAndDominated($\mathrm{LC}$)
+        \State \textbf{return} $\mathrm{LC}$
+    \end{algorithmic}
 \end{algorithm}
-
-We will use the previously found loading configurations to consider the time dependency of the loading problem at hand. For each period $t\in T$, we will solve the PLC-SCPTOP problem from day 1 to $t$ with the current loading configurations obtained to find the inventory levels of the products at day $t$. Then, we find the necessary containers for the following $\delta \in \Delta$ days, where $\Delta$ is a user-defined list of parameters.
-
 
 \begin{algorithm}[h!]
-  \caption{Final Loading Configurations}\label{alg:MITP2}
-  \begin{algorithmic}
-    \Procedure{Final Loading Configurations(LC)}{}
-    \State TimePeriods \# List of time spans to calculate the number of needed products
-    \State TimeSpan \# List of time spans to calculate the number of needed products
-    \For{ t $in$ TimePeriods}
-    \For{ $\delta$ in TimeSpan}
-    \State I=SolvePLC-SCPTOP(LC,t)
-    \State C= ContainersToLoad(I,t, $\delta$, LC)
-    \State LC.append(PackContainers(C,t))
-    \EndFor
-    \EndFor
-    \State LC=EliminateDuplicateOrDominatedLoadingConfigurations(LC)
-    \State \textbf{return} LC
-    \EndProcedure
-  \end{algorithmic}
+    \caption{Refinement Loading Configurations (stack-based)}
+    \label{sb:alg:refine}
+    \begin{algorithmic}
+        \State TimePeriods, TimeSpan \Comment{user-defined}
+        \For{$t\in$ TimePeriods}
+            \For{$\delta\in$ TimeSpan}
+                \State $\mathbf{I}\gets$ SolvePLCSCPTOP($\mathrm{LC},t$)
+                \State $\mathcal{C}\gets$ StackColumnsNeeded($\mathbf{I},t,\delta,\mathrm{LC}$)
+                \State $P\gets$ Place2D($\mathcal{C}$)
+                \State $\mathrm{LC}.\mathrm{append}(P)$
+            \EndFor
+        \EndFor
+        \State $\mathrm{LC}\gets$ EliminateDuplicatesAndDominated($\mathrm{LC}$)
+        \State \textbf{return} $\mathrm{LC}$
+    \end{algorithmic}
 \end{algorithm}
-
-
-
-
-Finally, we feed the loading configurations found by Algorithms \ref{alg:MITP} and \ref{alg:MITP2} to the PLC-SCPTOP mathematical modelling as parameters to find reasonable quality solutions to 3D-SCPTOP problem.
 
 \begin{algorithm}
-  \caption{MathH-3D-SCPTOP}
-  \begin{algorithmic}[1]
-    \State $\Delta_1, \Delta_2$ \# List of time spans to calculate the number of needed products
-    \State LC = InitialLoadingConfiguration($\Delta_1$)
-    \State LC = FinalLoadingConfiguration(LC, $\Delta_2$)
-    \State SolvePLCSCPTOP(LC,$|$T$|$))
-  \end{algorithmic}
+    \caption{MATH-3D-SCPTOP (stack-based)}
+    \begin{algorithmic}[1]
+        \State $\Delta_{1},\Delta_{2}$ \Comment{look-ahead horizons}
+        \State $\mathrm{LC}\gets$ InitialLoadingConfigurations($\Delta_{1}$)
+        \State $\mathrm{LC}\gets$ RefinementLoadingConfigurations($\mathrm{LC},\Delta_{2}$)
+        \State $\mathrm{Build}\;U_{glr}\;\text{from}\;\mathrm{LC}\;\text{via}\;\eqref{sb:eq:U}$
+        \State SolvePLCSCPTOP$(\mathrm{LC},|T|)$
+    \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Loading Procedure}
+% =====================================================================
+%           T A B L E   2   (R E V I S E D   R O W)
+% =====================================================================
 
-To address the loading problem, will divide the problem in two parts. First, we will find through a column generation technique for the cutting stock problem to find different stacks that will be loaded. Once these stacks are found, we will
+% ---------- Drop-in replacement for the 3D-SCPTOP row of Table 2 -----
+% Columns (as in the original manuscript):
+%   | Article | Problem type | Resolution | Orientation | Weight
+%   | Load Balance | Stability | Time-Dependent |
+% For the stack-based reformulation, stability is no longer needed
+% (stacks are self-supporting by construction). The problem type
+% becomes a 2D placement (SSSCSP-like) coupled with a per-slot
+% integer layering sub-problem.
 
-\section{Computational and comparative analysis}
+% Replace the current "3D-SCPTOP" row with:
+% 3D-SCPTOP (stack) & 2D-SSSCSP + layering & MH & X & X & X & -- & X \\
+
+% Footnote to add to the table:
+%   "--" in Stability indicates the constraint is not required:
+%   stacks are self-supporting by construction.
+
+% =====================================================================
+%           N O T E S   O N   O T H E R   S E C T I O N S
+% =====================================================================
+
+%% Section 1 (Introduction).
+%%   - Replace "three-dimensional full-truck loading constraints" /
+%%     "3D loading constraints" with "stack-based full-truck loading
+%%     constraints" or "2D stack placement with vertical layering" as
+%%     appropriate.
+%%   - Second contribution bullet: "the MH-3D-SCPTOP matheuristic
+%%     combines a stack-column generator with a 2D slot-placement
+%%     routine".
+%%
+%% Section 2 (Literature Review).
+%%   - Section 2.3 overview needs no edit; final "Research Gaps &
+%%     Methodology" paragraph should state that the loading subproblem
+%%     of 3D-SCPTOP is now a 2D stack-placement problem with per-slot
+%%     layer composition, rather than a 3D bin-packing problem. The
+%%     integration-novelty claim is unchanged.
+%%   - Table 2 update is provided above.
+%%
+%% Section 5 (Computational and comparative analysis).
+%%   - Tweak "the 3D loading problem is NP-hard" to "the 2D
+%%     stack-placement subproblem is NP-hard".
+%%
+%% Section 6 (Conclusions).
+%%   - Remove the sentence on extending with dynamic stability
+%%     constraints (no longer a natural extension). Replace with:
+%%     "Future work may relax the layer-homogeneity assumption to
+%%     allow intra-layer mixing of RTI types, or extend the 2D
+%%     placement block with axle load-balance constraints."
+%%
+%% Appendix A (SCPTOP benchmark).
+%%   - Unchanged; the benchmark retains its volumetric capacity form.º
+
+
+}
+
+% =====================================================================
+%           T A B L E   2   (R E V I S E D   R O W)
+% =====================================================================
+
+% ---------- Drop-in replacement for the 3D-SCPTOP row of Table 2 -----
+% Column order (as in the original manuscript):
+%   | Article | Problem type | Resolution | Orientation | Weight
+%   | Load Balance | Stability | Time-Dependent |
+% For the new model, the stability column is no longer applicable
+% because stacks are self-supporting by construction. The problem
+% type becomes a 2D placement (SSSCSP-like) coupled with a per-stack
+% integer layering sub-problem.
+
+% Replace the current "3D-SCPTOP" row with the following:
+% 3D-SCPTOP (stack) & 2D-SSSCSP + layering & MH & X & X & X & -- & X \\
+
+% -- Accompanying footnote addition (table notes) --
+% "--" in the Stability column indicates the constraint is no longer
+% required: stacks are self-supporting by construction.
+
+% =====================================================================
+%           N O T E S   O N   O T H E R   S E C T I O N S
+% =====================================================================
+
+%% Section 1 (Introduction).
+%%   - Replace every instance of "three-dimensional full-truck loading
+%%     constraints" / "3D loading constraints" with "stack-based
+%%     full-truck loading constraints" or "2D stack placement with
+%%     vertical layering", as appropriate.
+%%   - The third contribution bullet still holds, but the 3D-loading
+%%     claim in the second bullet should read "the MH-3D-SCPTOP
+%%     matheuristic combines a stack-column generator with a 2D
+%%     slot-placement routine".
+%%
+%% Section 2 (Literature Review).
+%%   - Section 2.3 (Container loading): no edits needed in the
+%%     overview, but the final "Research Gaps & Methodology" paragraph
+%%     should be updated to say that 3D-SCPTOP now treats the loading
+%%     subproblem as a 2D stack-placement problem with per-slot layer
+%%     composition, rather than a 3D bin-packing problem. The novelty
+%%     claim (integration of procurement, RTI, inventory and loading
+%%     constraints) is unchanged.
+%%   - Table 2 update is provided above.
+%%
+%% Section 5 (Computational and comparative analysis).
+%%   - The instance-generation description still applies; the
+%%     reference to "the 3D loading problem is NP-hard" remains valid
+%%     in a weaker form, since the 2D placement subproblem is already
+%%     NP-hard. Recommend tweaking one sentence to:
+%%     "the 2D stack-placement subproblem is NP-hard, so MATH-3D-SCPTOP
+%%     is applied to the large real-world instances."
+%%
+%% Section 6 (Conclusions).
+%%   - Remove the sentence about "the inclusion of dynamic stability
+%%     into loading constraints may also yield more practical, robust
+%%     solutions": this is no longer a natural extension. Replace by:
+%%     "future work may relax the layer-homogeneity assumption to allow
+%%     intra-layer mixing of RTI types, or extend the 2D placement
+%%     block with axle load-balance constraints."
+%%
+%% Appendix A (SCPTOP benchmark).
+%%   - Unchanged; the benchmark model retains its volumetric capacity
+%%     formulation.\section{Computational and comparative analysis}
 Here the 3D-SCPTOP model is validated and compared to the work by \autocite{Diaz-Madronero2014APlanning}.  This fuzzy optimisation model integrates procurement transport and inventory holding decisions by contemplating transport capacity restrictions by a maximum number of containers per truck, which we refer to as SCPTOP from this point onwards. To compare the SCPTOP model, we make three key modifications: fuzzy parameters are not considered; transport capacity restriction takes into account the volume of individual containers and the truck’s capacity; products can be loaded in more than one container type. The SCPTOP model is extended and defined in Appendix \ref{appendix:A}.
 We evaluate and compare both the 3D-SCPTOP and SCPTOP models, in terms of solution quality, transport costs, inventory costs and computational times. The 3D-SCPTOP and SCPTOP mathematical formulations are solved for all the instance sets with CP-SAT from OR-Tools and Gurobi using their default settings. Additionally, as $(C\& P)$ problems are NP-hard, the Meta-3D-SCPTOP algorithm has been developed to find igh-quality solutions for large real-world instances, based on a case study. So the performance of the 3D-SCPTOP, the Meta-3D-SCPTOP and the SCPTOP models is compared and evaluated as follows.
 

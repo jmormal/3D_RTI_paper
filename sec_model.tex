@@ -1,0 +1,375 @@
+\section{Mathematical Model}
+\label{sec:model}
+
+The 3D-SCPTOP formulation integrates stack-based truck-loading
+constraints with procurement transport and inventory decisions. It
+departs from a standard 3D container-loading formulation in two
+related ways. First, the 3D placement of individual RTIs inside the
+truck is replaced by a 2D placement of variable-composition
+\emph{stacks} on the truck floor, with per-stack height and weight
+caps. Second, the per-period decision of which product fills each slot
+is retained, but the crush-limit cap is evaluated slot-by-slot using
+the period's actual product mix. This yields a tighter per-stack
+weight bound than a worst-case-per-RTI-type abstraction, while
+eliminating vertical-stability constraints altogether, since stacks
+are self-supporting by construction.
+
+\paragraph{Notational conventions.}
+Throughout this section, $g\in G=\{s,p\}$ indexes nodes (supplier and
+plant), $n\in N$ products, $r\in R$ RTI types, $h\in H$ stack types,
+$i,j\in I$ stack-slot positions within a loading configuration,
+$l\in L$ loading configurations, $k\in K$ trucks and $t\in T$ planning
+periods. Variables whose direction is determined by definition omit
+the $g$ subscript: $V_{klnt}$ and $V^:w{\mathrm{slot}}_{kilnt}$ denote
+full-RTI loads on plant-bound trucks, and $V^{\mathrm{e}}_{klrt}$
+denotes folded-RTI loads on supplier-bound trucks. Table
+\ref{tab:sb-Nomenclature} collects the complete nomenclature.
+
+% -----------------------------------------------------------
+\begin{longtable}[hbt!]{|p{0.14\textwidth}|p{0.82\textwidth}|}
+    \caption{Nomenclature of 3D-SCPTOP (stack-based reformulation)}
+    \label{tab:sb-Nomenclature}\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Indices and sets}}\\\hline
+    $G$            & Supplier and plant nodes, $G=\{s,p\}$.\\
+    $N$            & Products, $n=1,\dots,N$.\\
+    $R$            & RTI types, $r=1,\dots,R$.\\
+    $H$            & Stack types, $h=1,\dots,H$.\\
+    $I$            & Stack-slot indices within a loading configuration, $i=1,\dots,|I|$ (see eq. \ref{sb:sec:symm}).\\
+    $L$            & Loading configurations, $l=1,\dots,L$.\\
+    $K$            & Trucks, $k=1,\dots,K$.\\
+    $T$            & Planning periods, $t=1,\dots,T$.\\
+    $M(r)$         & Products carried by RTI type $r$, $M(r)\subseteq N$.\\
+    $R(h)$         & RTI types compatible with stack type $h$, $R(h)\subseteq R$.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Parameters}}\\\hline
+    $cK$           & Cost of using a truck.\\
+    $lt$           & Lead transport time between plant and supplier (and vice versa).\\
+    $i_{gn}$       & Initial inventory of $n\in N$ at $g\in G$ (full RTIs).\\
+    $ie_{gr}$      & Initial inventory of folded RTIs $r\in R$ at $g\in G$.\\
+    $ic_{gn}$      & Inventory cost of $n\in N$ at $g\in G$.\\
+    $d_{gnt}$      & Production plan for $n\in N$ at $g\in G$ in $t\in T$.\\
+    $q_{nt}$       & Initial arrivals of full RTIs of product $n$ at $p$ in $t\in\{1,\dots,lt\}$.\\
+    $q_{rt}$       & Initial arrivals of folded RTIs of type $r$ at $s$ in $t\in\{1,\dots,lt\}$.\\
+    $ss_{gnt}$     & Security stock of $n$ at $g$ in $t$ (full RTIs).\\
+    $ss_{gtr}$     & Security stock of folded RTIs $r$ at $g$ in $t$.\\
+    $w_{n}$        & Weight of a full RTI carrying product $n$.\\
+    $w^{\mathrm{f}}_{r}$ & Weight of a folded RTI of type $r$.\\
+    $pK^{w}$       & Maximum truck weight capacity.\\
+    $W^{\max}$     & Per-stack crush-limit weight cap.\\
+    $pK,qK,rK$     & Truck length, width, and height.\\
+    $\Gamma_K$     & Truck volume, $\Gamma_K=pK\cdot qK\cdot rK$.\\
+    $\alpha$       & Minimum truck volume utilisation ($0<\alpha\le 1$).\\
+    $p_{h},q_{h}$  & Footprint length and width of stack type $h$.\\
+    $r_{gr}$       & Height of one RTI of type $r$ at node $g$ (full at $p$, folded at $s$).\\
+    $\gamma_{gr}$  & Volume of one RTI of type $r$ at node $g$.\\
+    $n_{hr}$       & RTIs of type $r\in R(h)$ per layer of stack type $h$.\\
+    $M$            & A sufficiently large constant.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Decision variables -- LC level}}\\\hline
+    $Z_{gl}$         & $\in\{0,1\}$. Equals $1$ iff LC $l$ is active in direction $g$.\\
+    $X_{gihl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ of LC $l$ is of stack type $h$ in direction $g$.\\
+    $L_{gihlr}$      & $\in\mathbb{Z}_{\ge 0}$. Number of layers of RTI type $r\in R(h)$ in slot $i$ of LC $l$ in direction $g$.\\
+    $LX_{gihl}$      & $\in\{0,1\}$. Equals $1$ iff stack $h$'s length is along the $x$-axis in slot $i$.\\
+    $LY_{gihl}$      & $\in\{0,1\}$. Equals $1$ iff stack $h$'s length is along the $y$-axis in slot $i$.\\
+    $PX_{gil},PY_{gil}$ & $\ge 0$. Bottom-left coordinates of slot $i$ in LC $l$ in direction $g$.\\
+    $A_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is to the left of slot $j$ in LC $l$.\\
+    $B_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is to the right of slot $j$ in LC $l$.\\
+    $C_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is behind slot $j$ in LC $l$.\\
+    $D_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is in front of slot $j$ in LC $l$.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Decision variables -- runtime level}}\\\hline
+    $Y_{gkt}$        & $\in\{0,1\}$. Equals $1$ iff truck $k$ is used in direction $g$ in period $t$.\\
+    $Y_{gklt}$       & $\in\{0,1\}$. Equals $1$ iff truck $k$ uses LC $l$ in direction $g$ in period $t$.\\
+    $V_{klnt}$       & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ on plant-bound truck $k$ using LC $l$ in period $t$.\\
+    $V^{\mathrm{slot}}_{kilnt}$ & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ in slot $i$ of plant-bound truck $k$ using LC $l$ in period $t$.\\
+    $V^{\mathrm{e}}_{klrt}$ & $\in\mathbb{Z}_{\ge 0}$. Folded RTIs of type $r$ on supplier-bound truck $k$ using LC $l$ in period $t$.\\
+    $I_{gnt}$        & $\in\mathbb{Z}_{\ge 0}$. End-of-period inventory of $n$ at $g$ in $t$ (full RTIs).\\
+    $Ie_{gtr}$       & $\in\mathbb{Z}_{\ge 0}$. End-of-period inventory of folded RTIs $r$ at $g$ in $t$.\\
+    $Q_{nt}$         & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ in transit to the plant in $t$.\\
+    $Q_{rt}$         & $\in\mathbb{Z}_{\ge 0}$. Folded RTIs of type $r$ in transit to the supplier in $t$.\\
+    \hline
+\end{longtable}
+
+% --------------------------
+% Objective
+% --------------------------
+\subsection*{Objective}
+
+\begin{equation}
+\text{Min } z
+= \sum_{g\in G}\sum_{k\in K}\sum_{t\in T} cK\cdot Y_{gkt}
++ \sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn}\cdot I_{gnt}
+\label{sb:eq:obj}
+\end{equation}
+
+% --------------------------
+% Inventory balance (unchanged from the original)
+% --------------------------
+\subsection*{Inventory and flow balance}
+
+The inventory balance block is structurally identical to the original
+formulation. For completeness it is reproduced below.
+
+\begin{align}
+I_{pnt}  &=I_{p,n,t-lt}-d_{pnt}+Q_{n,t-lt}
+    &&\forall n\in N,\; t\ge lt+1
+    \label{sb:eq:inv-plant-main}\\
+I_{pnt}  &=I_{p,n,t-1}-d_{pnt}+q_{nt}
+    &&\forall n\in N,\; t\in\{2,\dots,lt\}
+    \label{sb:eq:inv-plant-transient}\\
+I_{pnt}  &=i_{pn}-d_{pnt}+q_{nt}
+    &&\forall n\in N,\; t=1
+    \label{sb:eq:inv-plant-init}\\
+Ie_{ptr} &=Ie_{p,t-1,r}+\sum_{n\in M(r)} d_{pnt}-Q_{rt}
+    &&\forall r\in R,\; t\ge 2
+    \label{sb:eq:inve-plant}\\
+Ie_{ptr} &=ie_{pr}+\sum_{n\in M(r)} d_{pnt}-Q_{rt}
+    &&\forall r\in R,\; t=1
+    \label{sb:eq:inve-plant-init}
+\end{align}
+
+\begin{align}
+I_{snt}  &=I_{s,n,t-1}+d_{snt}-Q_{nt}
+    &&\forall n\in N,\; t\ge 2
+    \label{sb:eq:inv-sup-main}\\
+I_{snt}  &=i_{sn}+d_{snt}-Q_{nt}
+    &&\forall n\in N,\; t=1
+    \label{sb:eq:inv-sup-init}\\
+Ie_{str} &=Ie_{s,t-lt,r}+Q_{r,t-lt}-\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t\ge lt+1
+    \label{sb:eq:inve-sup-main}\\
+Ie_{str} &=Ie_{s,t-1,r}+q_{rt}-\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t\in\{2,\dots,lt\}
+    \label{sb:eq:inve-sup-transient}\\
+Ie_{str} &=ie_{sr}+q_{rt}-\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t=1
+    \label{sb:eq:inve-sup-init}
+\end{align}
+
+\begin{equation}
+I_{gnt}\ge ss_{gnt}, \qquad Ie_{gtr}\ge ss_{gtr}
+\qquad \forall g\in G,\; n\in N,\; r\in R,\; t\in T
+\label{sb:eq:safety}
+\end{equation}
+
+% --------------------------
+% Stack packing block
+% --------------------------
+\subsection*{Stack packing constraints}
+
+Exactly one stack type can be assigned to a slot, and only if its LC
+is active:
+\begin{equation}
+\sum_{h\in H} X_{gihl}\;\le\;Z_{gl}
+\qquad \forall g\in G,\; i\in I,\; l\in L.
+\label{sb:eq:slot-active}
+\end{equation}
+
+The stack occupying slot $i$ is oriented either with its length along
+the $x$-axis or along the $y$-axis:
+\begin{equation}
+LX_{gihl}+LY_{gihl}\;=\;X_{gihl}
+\qquad \forall g\in G,\; h\in H,\; i\in I,\; l\in L.
+\label{sb:eq:orient}
+\end{equation}
+
+The total stack height cannot exceed the truck height. The following
+constraint also forces $L_{gihlr}=0$ whenever $X_{gihl}=0$, since
+$r_{gr}>0$:
+\begin{equation}
+\sum_{r\in R(h)} r_{gr}\,L_{gihlr}\;\le\;rK\cdot X_{gihl}
+\qquad \forall g\in G,\; h\in H,\; i\in I,\; l\in L.
+\label{sb:eq:height}
+\end{equation}
+
+Slots must not overlap. For each pair $i\ne j$ in LC $l$:
+\begin{align}
+PX_{gil}+\sum_{h\in H}\bigl(p_{h}LX_{gihl}+q_{h}LY_{gihl}\bigr)
+    &\le PX_{gjl}+M(1-A_{gijl})
+    \label{sb:eq:nonov-x1}\\
+PX_{gjl}+\sum_{h\in H}\bigl(p_{h}LX_{gjhl}+q_{h}LY_{gjhl}\bigr)
+    &\le PX_{gil}+M(1-B_{gijl})
+    \label{sb:eq:nonov-x2}\\
+PY_{gil}+\sum_{h\in H}\bigl(q_{h}LX_{gihl}+p_{h}LY_{gihl}\bigr)
+    &\le PY_{gjl}+M(1-C_{gijl})
+    \label{sb:eq:nonov-y1}\\
+PY_{gjl}+\sum_{h\in H}\bigl(q_{h}LX_{gjhl}+p_{h}LY_{gjhl}\bigr)
+    &\le PY_{gil}+M(1-D_{gijl})
+    \label{sb:eq:nonov-y2}
+\end{align}
+with the cover constraint ensuring that whenever both slots are used
+at least one relative-position variable is active:
+\begin{equation}
+A_{gijl}+B_{gijl}+C_{gijl}+D_{gijl}
+\;\ge\;\sum_{h}X_{gihl}+\sum_{h}X_{gjhl}-1
+\qquad \forall g,\,l,\,i\ne j.
+\label{sb:eq:cover}
+\end{equation}
+
+Containment in the truck floor:
+\begin{align}
+PX_{gil}+\sum_{h\in H}\bigl(p_{h}LX_{gihl}+q_{h}LY_{gihl}\bigr)
+    &\le pK+M\bigl(1-\textstyle\sum_{h} X_{gihl}\bigr)
+    &&\forall g,i,l,
+    \label{sb:eq:cont-x}\\
+PY_{gil}+\sum_{h\in H}\bigl(q_{h}LX_{gihl}+p_{h}LY_{gihl}\bigr)
+    &\le qK+M\bigl(1-\textstyle\sum_{h} X_{gihl}\bigr)
+    &&\forall g,i,l.
+    \label{sb:eq:cont-y}
+\end{align}
+
+Minimum truck volume utilisation, measured on the actual RTI volumes
+(kept in RTI-volume form so non-full layers or fillers can be
+introduced in later extensions):
+\begin{equation}
+\sum_{i\in I}\sum_{h\in H}\sum_{r\in R(h)}
+    \gamma_{gr}\,n_{hr}\,L_{gihlr}
+\;\ge\;\alpha\,\Gamma_K\,Z_{gl}
+\qquad \forall g\in G,\; l\in L.
+\label{sb:eq:util}
+\end{equation}
+
+% --------------------------
+% Truck -- LC linking and runtime loading
+% --------------------------
+\subsection*{Truck--LC linking and runtime loading}
+
+A truck uses at most one LC in a period, and can only use an active
+LC:
+\begin{align}
+\sum_{l\in L} Y_{gklt}&=Y_{gkt}
+    &&\forall g,k,t
+    \label{sb:eq:one-lc}\\
+Y_{gklt}&\le Z_{gl}
+    &&\forall g,k,l,t
+    \label{sb:eq:lc-active}
+\end{align}
+
+For plant-bound trucks, full RTIs of type $r$ loaded in slot $i$ cannot
+exceed the layer capacity of the stack placed in that slot; products
+sharing the same RTI type partition that slot-capacity:
+\begin{equation}
+\sum_{n\in M(r)} V^{\mathrm{slot}}_{kilnt}
+\;\le\;\sum_{h\,:\,r\in R(h)} n_{hr}\,L_{p,i,h,l,r}
+    + M(1-Y_{pklt})
+\qquad \forall k,i,l,r,t.
+\label{sb:eq:slot-cap}
+\end{equation}
+
+Truck-level aggregation of per-slot loads:
+\begin{equation}
+V_{klnt}=\sum_{i\in I} V^{\mathrm{slot}}_{kilnt}
+\qquad \forall k,l,n,t.
+\label{sb:eq:slot-agg}
+\end{equation}
+
+For supplier-bound trucks, folded RTIs of type $r$ are capped by the
+aggregate layer capacity of the LC in use (no slot-level tracking is
+needed because folded-RTI weight is deterministic in $r$):
+\begin{equation}
+V^{\mathrm{e}}_{klrt}
+\;\le\;\sum_{i\in I}\sum_{h\,:\,r\in R(h)} n_{hr}\,L_{s,i,h,l,r}
+    + M(1-Y_{sklt})
+\qquad \forall k,l,r,t.
+\label{sb:eq:empty-cap}
+\end{equation}
+
+% --------------------------
+% Weight
+% --------------------------
+\subsection*{Weight constraints}
+
+Per-truck weight, plant-bound:
+\begin{equation}
+\sum_{l\in L}\sum_{n\in N} w_{n}\,V_{klnt}\;\le\;pK^{w}\,Y_{pkt}
+\qquad \forall k,t.
+\label{sb:eq:truck-w-plant}
+\end{equation}
+
+Per-truck weight, supplier-bound:
+\begin{equation}
+\sum_{l\in L}\sum_{r\in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{klrt}
+    \;\le\;pK^{w}\,Y_{skt}
+\qquad \forall k,t.
+\label{sb:eq:truck-w-sup}
+\end{equation}
+
+Per-stack crush-limit, period-exact on plant-bound trucks (the cap
+reflects the actual product mix loaded in each slot):
+\begin{equation}
+\sum_{n\in N} w_{n}\,V^{\mathrm{slot}}_{kilnt}\;\le\;W^{\max}
+\qquad \forall k,i,l,t.
+\label{sb:eq:stack-w-plant}
+\end{equation}
+
+Per-stack crush-limit on supplier-bound trucks (deterministic in the
+LC since folded-RTI weight depends only on $r$):
+\begin{equation}
+\sum_{h\in H}\sum_{r\in R(h)}
+    w^{\mathrm{f}}_{r}\,n_{hr}\,L_{s,i,h,l,r}\;\le\;W^{\max}
+\qquad \forall i,l.
+\label{sb:eq:stack-w-sup}
+\end{equation}
+
+% --------------------------
+% Flow aggregation
+% --------------------------
+\subsection*{Flow aggregation}
+
+\begin{align}
+Q_{nt}&=\sum_{k\in K}\sum_{l\in L} V_{klnt}
+    &&\forall n,t
+    \label{sb:eq:flow-n}\\
+Q_{rt}&=\sum_{k\in K}\sum_{l\in L} V^{\mathrm{e}}_{klrt}
+    &&\forall r,t
+    \label{sb:eq:flow-r}
+\end{align}
+
+% --------------------------
+% Symmetry breaking and slot-set sizing
+% --------------------------
+\subsection{Symmetry breaking and slot-set sizing}
+\label{sb:sec:symm}
+
+The slots $i\in I$ of a given LC are interchangeable, so any solution
+admits $|I|!$ permutations of the slot index. We break this symmetry
+by enforcing that slot $i+1$ is used only if slot $i$ is used:
+\begin{equation}
+\sum_{h\in H} X_{g,i+1,h,l}\;\le\;\sum_{h\in H} X_{g,i,h,l}
+\qquad \forall g\in G,\; l\in L,\; i\in\{1,\dots,|I|-1\}.
+\label{sb:eq:sym}
+\end{equation}
+
+The cardinality of $I$ is a modelling parameter. An upper bound that
+eliminates provably unused slot variables without cutting any feasible
+layout is
+\begin{equation}
+|I|\;\le\;\left\lfloor
+    \frac{pK\cdot qK}{\min_{h\in H} p_{h}\cdot q_{h}}
+\right\rfloor,
+\label{sb:eq:Ibound}
+\end{equation}
+corresponding to tiling the truck floor with the smallest-footprint
+stack type; it serves as a tight preprocessing limit on $|I|$.
+
+% --------------------------
+% Domains
+% --------------------------
+\subsection*{Domains}
+
+\begin{align*}
+&Z_{gl},\,X_{gihl},\,LX_{gihl},\,LY_{gihl},\,
+  A_{gijl},\,B_{gijl},\,C_{gijl},\,D_{gijl},\,
+  Y_{gkt},\,Y_{gklt}\in\{0,1\},\\
+&L_{gihlr},\,V_{klnt},\,V^{\mathrm{slot}}_{kilnt},\,
+  V^{\mathrm{e}}_{klrt},\,I_{gnt},\,Ie_{gtr},\,Q_{nt},\,Q_{rt}
+  \in\mathbb{Z}_{\ge 0},\\
+&PX_{gil},\,PY_{gil}\ge 0.
+\end{align*}
+
+
+% =====================================================================
+%           S E C T I O N   4 . X   (M A T H E U R I S T I C)
+% =====================================================================
+

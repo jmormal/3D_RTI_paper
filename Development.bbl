@@ -1,0 +1,67 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global/global}
+    \entry{Moreno2024Clustering}{inproceedings}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=a73ae6d943fcb99337d2bf37821492b3}{%
+           family={Moreno},
+           familyi={M\bibinitperiod},
+           given={Juan},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1438c5eb19095d385a8c0871304f4ef8}{%
+           family={Mula},
+           familyi={M\bibinitperiod},
+           given={Josefa},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f9ec5d810d4b67b9286d240a3ced6a58}{%
+           family={Poler},
+           familyi={P\bibinitperiod},
+           given={Raul},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{158cd94e5f7cec6c54e1a75e9cb8f4c6}
+      \strng{fullhash}{158cd94e5f7cec6c54e1a75e9cb8f4c6}
+      \strng{fullhashraw}{158cd94e5f7cec6c54e1a75e9cb8f4c6}
+      \strng{bibnamehash}{158cd94e5f7cec6c54e1a75e9cb8f4c6}
+      \strng{authorbibnamehash}{158cd94e5f7cec6c54e1a75e9cb8f4c6}
+      \strng{authornamehash}{158cd94e5f7cec6c54e1a75e9cb8f4c6}
+      \strng{authorfullhash}{158cd94e5f7cec6c54e1a75e9cb8f4c6}
+      \strng{authorfullhashraw}{158cd94e5f7cec6c54e1a75e9cb8f4c6}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Data Science and Applications}
+      \field{title}{Route Clustering Algorithms for Procurement Transport}
+      \field{year}{2024}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

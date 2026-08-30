@@ -1,0 +1,35 @@
+\begin{figure}[h!]
+    \centering
+    \resizebox{0.8\columnwidth}{!}{%
+\begin{tikzpicture}[node distance=2cm, auto, thick]
+    \tikzstyle{block} = [rectangle, draw=white, fill=white, minimum height=2em,
+                         text width=17em, text centered]
+    \tikzstyle{line} = [draw, -Latex]
+
+    \node [block] (MP) {\textbf{Master Problem}\\[2pt]
+        \footnotesize all feasible truck loads $P^{p}\cup P^{s}$};
+    \node[block, below=0.9cm of MP] (RMP) {\textbf{Restricted Master Problem}\\[2pt]
+        \footnotesize loads generated so far, $\lambda\ge 0$};
+    \node[block, below=0.9cm of RMP] (PP) {\textbf{Pricing Problem}\\[2pt]
+        \footnotesize design one truck: 2D placement,\\
+        \footnotesize layering and product assignment};
+
+  \draw[bend right,left,->,align=left] (MP.west) to
+        node {A reduced number \\ of columns} (RMP.west);
+  \draw[bend right,left,->,align=left] (RMP.west) to
+        node {Dual prices $\pi_{ct}$, $\nu_{gt}$} (PP.west);
+  \draw[bend left,right,<-,align=left] (RMP.east) to
+        node {If reduced cost is negative \\ add the truck load as a column; \\
+              if not, branch} (PP.east);
+  \draw[bend right,below,->,align=center] (PP.west) to
+        node {Maximise $\sum_{c}\pi_{ct}a_{c}$ \\ subject to
+              \eqref{eq:PPtype}--\eqref{eq:PPsymm}} (PP.east);
+  \draw[bend left,below,<-,align=center] (RMP.west) to node {} (RMP.east);
+\end{tikzpicture}
+}
+\caption{Branch and price scheme for 3D-SCPTOP. Every geometric,
+height, crush-limit, payload and full-truckload constraint is enforced
+inside the pricing problem, so each column is a physically loadable
+truck.}
+\label{fig:B&P3D}
+\end{figure}

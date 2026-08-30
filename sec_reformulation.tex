@@ -1,0 +1,429 @@
+% =====================================================================
+%  Branch and Price Solution Approach for 3D-SCPTOP
+% =====================================================================
+\section{Branch and Price Solution Approach}
+\label{sec:math}
+
+There are three structural difficulties with the 3D-SCPTOP model of
+Section \ref{sec:model}. The first is that a priori we do not know how
+many loading configurations are needed, so $|L|$ must be
+overestimated; every configuration that turns out to be unnecessary
+still carries its full block of placement variables. The second is
+that the model replicates a complete two-dimensional packing problem
+$|G|\cdot|L|$ times, and each replica contributes
+$4\binom{|I|}{2}$ big-$M$ disjunctions
+\eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2} whose linear
+relaxation is weak. The third is that the configurations are mutually
+interchangeable, so the search tree is massively symmetric.
+
+It would overstate the case to call the resulting model intractable in
+general, and Section \ref{sec:results} shows why: with a good
+incumbent supplied, instances spanning five periods are solved to
+proven optimality in seconds, even at sixty thousand variables. What
+defeats it is the planning horizon. The placement block is replicated
+per configuration rather than per period, but the truck-assignment and
+inventory blocks grow with $|T|$, and it is their interaction with the
+symmetric configuration design that explodes: at ten periods the model
+returns no feasible solution within half an hour. Operational
+procurement planning lives at horizons of weeks, so that is the regime
+the method has to serve, and it is the regime in which a decomposition
+earns its place. A column generation scheme based on branch and price
+is therefore developed.
+
+The key components of the branch and price algorithm are the master
+problem (MP), the restricted master problem (RMP), the pricing
+problem (PP) and the branching policy. The MP is a reformulation of
+the model that exploits its decomposable structure. Inspecting
+Section \ref{sec:model}, every geometric constraint
+\eqref{sb:eq:slot-active}--\eqref{sb:eq:util} carries a single
+configuration index $l$, and every loading constraint
+\eqref{sb:eq:slot-cap}--\eqref{sb:eq:stack-w-sup} carries a single
+truck index $k$ and a single period $t$; the transport and inventory
+block sees them \emph{only} through the aggregate flows $Q_{nt}$ and
+$Q_{rt}$ of \eqref{sb:eq:flow-n}--\eqref{sb:eq:flow-r}. The model is
+therefore block-angular, with one independent block per dispatched
+truck. This suggests taking as the unit of decision neither the
+individual RTI nor the loading configuration, but the
+\emph{complete loaded truck}.
+
+The MP is typically too large to be solved directly because it
+involves a huge number of columns representing all possible truck
+loads. To manage this complexity we consider only a smaller subset of
+columns, which leads to the RMP. Solving the RMP provides an optimum
+for the included subset, but not necessarily for the entire column
+set. RMP integrality constraints are therefore relaxed to obtain dual
+variables, and the PP uses those duals to identify columns of
+negative reduced cost that should be added to the RMP. If no such
+column exists, the integrality-relaxed MP has been solved to
+optimality. If all the variables associated with the solution are
+integers, an integer solution to the current branch has been found.
+If not, the branch must be divided by adding further constraints.
+Figure \ref{fig:B&P3D} exemplifies the algorithm.
+
+\input{TikzBranchFigure3D}
+
+\subsection{Formulation of the Master Problem and the Restricted
+Master Problem}
+\label{sec:mp}
+
+The key idea of the set-partitioning formulation for 3D-SCPTOP is to
+enumerate all the feasible \emph{truck loads} with their associated
+costs. A plant-bound truck load is a vector
+$\mathbf{a}=(a_{n})_{n\in N}$ of full RTIs for which there exist a
+slot count $m\le|I|$, stack types $h_{1},\dots,h_{m}\in H$,
+orientations, bottom-left coordinates $(x_{i},y_{i})$, layer counts
+$\lambda_{ir}$ and per-slot product loads $v_{in}$ such that
+\begin{align}
+&\text{the $m$ footprints, rotated as chosen, do not overlap and lie
+   inside } pK\times qK,
+   \label{eq:col-geom}\\
+&\textstyle\sum_{r\in R(h_{i})} r_{pr}\lambda_{ir}\;\le\;rK
+   &&\forall i\le m,
+   \label{eq:col-height}\\
+&\textstyle\sum_{n\in M(r)} v_{in}\;=\;n_{h_{i}r}\lambda_{ir}
+   &&\forall i\le m,\;r\in R(h_{i}),
+   \label{eq:col-assign}\\
+&\textstyle\sum_{n\in N} w_{n}v_{in}\;\le\;W^{\max}
+   &&\forall i\le m,
+   \label{eq:col-crush}\\
+&\textstyle\sum_{n\in N} w_{n}a_{n}\;\le\;pK^{w},
+   \qquad
+   \frac{\sum_{n}\gamma_{p\rho(n)}a_{n}}{\Gamma_{K}}
+   +\frac{\sum_{n}w_{n}a_{n}}{pK^{w}}\;\ge\;\alpha,
+   \label{eq:col-truck}\\
+&a_{n}=\textstyle\sum_{i\le m} v_{in}
+   &&\forall n\in N.
+   \label{eq:col-agg}
+\end{align}
+Let $P^{p}$ be the set of all such loads, and $P^{s}$ the analogous
+set of supplier-bound loads $\mathbf{b}=(b_{r})_{r\in R}$, built with
+folded heights $r_{sr}$, folded weights $w^{\mathrm{f}}_{r}$ and
+folded volumes $\gamma_{sr}$; there no product assignment is needed,
+because the weight of a folded RTI depends only on its type.
+
+Two features of this definition matter. First, a column carries the
+\emph{per-slot} product assignment $v_{in}$, so the crush limit
+\eqref{eq:col-crush} is evaluated on the product mix actually riding
+in that slot. The column therefore reproduces the period-exact cap
+\eqref{sb:eq:stack-w-plant} of the compact model, and not the
+conservative surrogate $\bar w_{r}=\max_{n\in M(r)}w_{n}$ that a pool
+of capacity-only configurations is forced to use. Second, a column is
+a feasibility certificate: the placement
+$(h_{i},x_{i},y_{i},\text{rotation})$ witnessing
+$\mathbf{a}\in P^{p}$ is retained, so any solution can be handed to a
+loading crew as a drawing and re-verified independently of the solver
+that produced it.
+
+Constraint \eqref{eq:col-truck} deserves a comment. The
+full-truckload requirement is imposed on the \emph{binding} resource:
+a truck counts as full once it reaches a fraction $\alpha$ of either
+the trailer volume or the payload. Imposing it on volume alone, as
+\eqref{sb:eq:util} does, makes dense freight structurally infeasible
+--- filling $\alpha$ of the volume with heavy RTIs can exceed
+$pK^{w}$, so no truck is dispatchable at all and the instance is
+empty. Section \ref{sec:results} shows that both regimes occur across
+the benchmark.
+
+Let $\lambda^{g}_{pt}\in\mathbb{Z}_{\ge0}$ count the trucks
+dispatched in direction $g$ and period $t$ carrying load $p$, and let
+$a^{p}_{n}$ and $a^{p}_{r}$ be the RTIs of product $n$, respectively
+of type $r$, that load $p$ contains. Every truck costs $cK$. The MP
+of our problem is
+\begin{align}
+    \min\;\; cK \sum_{g\in G}\sum_{t\in T}\sum_{p\in P^{g}}\lambda^{g}_{pt}
+    \;+\;\sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn} I_{gnt}
+    \label{eq:MPObjective}
+\end{align}
+subject to
+\begin{align}
+    \sum_{p\in P^{p}} a^{p}_{n}\lambda^{p}_{pt} = Q_{nt}
+      \quad & \forall n\in N,\;t\in T \label{eq:MPlinkp}\\
+    \sum_{p\in P^{s}} a^{p}_{r}\lambda^{s}_{pt} = Q_{rt}
+      \quad & \forall r\in R,\;t\in T \label{eq:MPlinks}\\
+    \sum_{p\in P^{g}} \lambda^{g}_{pt} \le |K|
+      \quad & \forall g\in G,\;t\in T \label{eq:MPfleet}\\
+    \text{\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety}}
+      \quad & \text{(inventory balances and coverage stock)}
+      \nonumber\\
+    \lambda^{g}_{pt}\in\mathbb{Z}_{\ge0}
+      \quad & \forall g\in G,\;p\in P^{g},\;t\in T. \nonumber
+\end{align}
+Objective \eqref{eq:MPObjective} minimises transport plus inventory
+holding cost. Constraints
+\eqref{eq:MPlinkp}--\eqref{eq:MPlinks} state that the flow of full
+and folded RTIs is exactly what the dispatched trucks carry, and
+\eqref{eq:MPfleet} caps the fleet available per direction and period.
+
+MP and 3D-SCPTOP have the same optimal value whenever $|L|$ is not
+restricted a priori. Given a 3D-SCPTOP solution, each used truck
+$(k,t)$ induces a load vector satisfying
+\eqref{eq:col-geom}--\eqref{eq:col-agg}, obtained by reading the slot
+data off its configuration and setting
+$v_{in}=V^{\mathrm{slot}}_{kilnt}$; counting trucks by load vector
+gives a MP solution of equal cost. Conversely, introducing one
+configuration per distinct load used by a MP solution and assigning
+trucks accordingly reconstructs a 3D-SCPTOP solution of the same
+cost. This equivalence is what distinguishes the present approach
+from a pool-based method such as PLC-SCPTOP: a predefined pool is a
+\emph{restriction} and can only yield upper bounds of unknown
+quality, whereas MP is the same problem written differently, so any
+bound derived from it is a bound on the original.
+
+The RMP replaces $P^{g}$ by a subset $\bar P^{g}$ and relaxes
+integrality,
+\begin{align}
+    \min\;\; cK \sum_{g\in G}\sum_{t\in T}\sum_{p\in \bar P^{g}}\lambda^{g}_{pt}
+    \;+\;\sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn} I_{gnt}
+    \label{eq:RMPObjective}
+\end{align}
+subject to \eqref{eq:MPlinkp}--\eqref{eq:MPfleet} restricted to
+$\bar P^{g}$, with $\lambda^{g}_{pt}\ge0$. Dual values are obtained
+by solving the RMP. Let $\pi_{nt}$ and $\pi_{rt}$ be the duals of
+\eqref{eq:MPlinkp}--\eqref{eq:MPlinks} and $\nu_{gt}\le0$ those of
+\eqref{eq:MPfleet}. The reduced cost associated with a plant-bound
+load $p\in P^{p}$ dispatched in period $t$ is
+\begin{equation}
+\bar c(p,t)\;=\;cK-\sum_{n\in N}\pi_{nt}a^{p}_{n}-\nu_{pt},
+\label{eq:redcost}
+\end{equation}
+and analogously in the supplier direction. A load with negative
+reduced cost can improve the current RMP solution. For each iteration
+we solve the subproblem of finding the load of minimum reduced cost;
+loads with negative reduced cost are added as new columns, the RMP is
+re-solved to generate new duals, and the process repeats until no
+further improving column is discovered.
+
+\subsection{Lower bounds}
+\label{sec:bounds}
+
+Care is needed here, because the natural candidate is not a bound at
+all. The RMP is a \emph{restriction} of the MP: it optimises over
+$\bar P^{g}\subseteq P^{g}$, so
+$z_{\mathrm{RMP}}\ge z_{\mathrm{MP}}$. Reporting the RMP value as a
+lower bound is therefore valid only once column generation has
+converged, and wrong before then. We use two bounds accordingly.
+
+\paragraph{Certified bound.}
+When the PP has \emph{proven} that
+$\zeta_{gt}:=\max_{p\in P^{g}}\sum_{c}\pi_{ct}a^{p}_{c}\le cK-\nu_{gt}$
+for every $g$ and $t$, no column outside $\bar P^{g}$ has negative
+reduced cost, so the current duals are feasible for the dual of the
+full MP. Weak duality then gives
+$z_{\mathrm{RMP}}=z_{\mathrm{MP}}\le z^{\star}_{\text{3D-SCPTOP}}$.
+We report such bounds as \emph{certified}; the gap against the final
+integer solution is then a genuine optimality gap, and not a gap with
+respect to a pool.
+
+\paragraph{Lagrangian bound.}
+Certification requires the two-dimensional packing subproblem to be
+closed to proven optimality, which is not always possible inside a
+sensible time limit. Dualising
+\eqref{eq:MPlinkp}--\eqref{eq:MPlinks} with the current $\pi$ leaves a
+subproblem in which each column enters with reduced cost
+\eqref{eq:redcost}; since the number of trucks an optimal solution can
+dispatch in total is bounded by $\bar X$, the correction
+\begin{equation}
+z_{\mathrm{MP}}\;\ge\;z_{\mathrm{RMP}}
+   \;+\;\bar X\cdot\min_{g\in G,\,t\in T}\;
+   \min\bigl\{0,\;cK-\zeta_{gt}-\nu_{gt}\bigr\}
+\label{eq:lagbound}
+\end{equation}
+holds at every iteration, converged or not. Two choices make
+\eqref{eq:lagbound} usable rather than vacuous. The value substituted
+for $\zeta_{gt}$ is the solver's own dual bound on the PP, never its
+incumbent, so a subproblem stopped early still yields a valid
+verdict. And $\bar X$ must be a genuine bound on the fleet actually
+used: the textbook form charges $|K|$ separately for every direction
+and period, which here is roughly an order of magnitude too
+pessimistic and drove the reported gaps above $80\%$. Because
+transport cost alone cannot exceed the objective, any incumbent
+$\bar z$ gives $\bar X=\bar z/cK$, which is both valid and tight
+enough to be informative.
+
+\paragraph{Rounding the duals.}
+The prices $\pi$ are irrational in general and must be rounded before
+entering an integer-coefficient subproblem. We round them
+\emph{upwards}, so the rounded objective dominates the true one and
+the returned bound remains an over-estimate of $\zeta_{gt}$, as both
+bounds above require. Rounding to nearest --- the obvious choice ---
+makes the bound a slight under-estimate and silently invalidates the
+certificate; in our first implementation it returned $1000.1$ against
+a threshold of $1000.0$ on instances where the reduced cost was
+exactly zero, and convergence was never declared.
+
+\subsection{Pricing Subproblem}
+\label{sec:pp}
+
+We solve the pricing problem with a constraint programming approach.
+The indices and parameters are the same as in the model proposed
+before, but the decision variables do not depend on the configuration
+index. Let $c$ range over products when $g=p$ and over RTI types when
+$g=s$, let $\rho(c)$ be the RTI type carrying $c$, and let $S$ be the
+slot bound \eqref{sb:eq:Ibound}. Table
+\ref{tab:NomenclaturePricing3D} describes the new decision variables.
+
+\begin{longtable}[hbt!]{|p{0.10\textwidth}|p{0.84\textwidth}|}
+\caption{Nomenclature of the pricing subproblem}
+\label{tab:NomenclaturePricing3D}\\
+\hline
+\multicolumn{2}{|l|}{\textbf{Decision variables}}\\ \hline
+$u_{i}$        & Binary variable indicating whether slot $i$ is used in the new load\\
+$\chi_{ih}$    & Binary variable indicating whether slot $i$ holds a stack of type $h$\\
+$\varrho_{ih}$ & Binary variable indicating whether that stack is rotated by $90^{\circ}$\\
+$\delta^{x}_{i},\delta^{y}_{i}$ & Footprint of slot $i$ along the $x$ and $y$ axes\\
+$x_{i},y_{i}$  & Bottom-left coordinates of slot $i$ on the truck floor\\
+$\ell_{ir}$    & Number of layers of RTI type $r$ in slot $i$\\
+$v_{ic}$       & Number of RTIs of commodity $c$ loaded in slot $i$\\
+$a_{c}$        & Number of RTIs of commodity $c$ in the new load\\
+$\theta$       & Binary variable indicating whether the full-truckload requirement is met on volume rather than on weight\\
+\hline
+\end{longtable}
+
+The objective is to find new truck loads with negative reduced cost.
+Dropping the constant $cK-\nu_{gt}$ of \eqref{eq:redcost}, that is
+\begin{align}
+    \max z = \sum_{c}\pi_{ct}\,a_{c}
+    \label{eq:PPObjective}
+\end{align}
+subject to
+\begin{align}
+ \sum_{h\in H}\chi_{ih}=u_{i},\qquad \varrho_{ih}\le\chi_{ih}
+   \quad & \forall i\le S,\;h\in H \label{eq:PPtype}\\
+ \delta^{x}_{i}=\sum_{h}\bigl(p_{h}\chi_{ih}+(q_{h}-p_{h})\varrho_{ih}\bigr)
+   \quad & \forall i\le S \label{eq:PPdimx}\\
+ \delta^{y}_{i}=\sum_{h}\bigl(q_{h}\chi_{ih}+(p_{h}-q_{h})\varrho_{ih}\bigr)
+   \quad & \forall i\le S \label{eq:PPdimy}\\
+ \textsc{NoOverlap2D}\Bigl(\bigl\{[x_{i},x_{i}+\delta^{x}_{i})\times
+   [y_{i},y_{i}+\delta^{y}_{i})\bigr\}_{i\,:\,u_{i}=1}\Bigr)
+   \quad & \label{eq:PPnooverlap}\\
+ x_{i}+\delta^{x}_{i}\le pK,\qquad y_{i}+\delta^{y}_{i}\le qK
+   \quad & \forall i\le S \label{eq:PPcontain}\\
+ \sum_{i\le S}\sum_{h} p_{h}q_{h}\chi_{ih}\;\le\;pK\cdot qK
+   \quad & \label{eq:PParea}\\
+ \ell_{ir}\;\le\;\bigl\lfloor rK/r_{gr}\bigr\rfloor
+   \sum_{h:r\in R(h)}\chi_{ih}
+   \quad & \forall i\le S,\;r\in R \label{eq:PPlayercompat}\\
+ \sum_{r\in R} r_{gr}\,\ell_{ir}\;\le\;rK
+   \quad & \forall i\le S \label{eq:PPheight}\\
+ \sum_{c\,:\,\rho(c)=r} v_{ic}=n_{hr}\ell_{ir}
+   \quad & \forall i\le S,\;r\in R \label{eq:PPassign}\\
+ \sum_{c} w_{c}\,v_{ic}\;\le\;W^{\max}
+   \quad & \forall i\le S \label{eq:PPcrush}\\
+ a_{c}=\sum_{i\le S} v_{ic}
+   \quad & \forall c \label{eq:PPagg}\\
+ \sum_{c} w_{c}\,a_{c}\;\le\;pK^{w}
+   \quad & \label{eq:PPpayload}\\
+ \sum_{c}\gamma_{g\rho(c)}a_{c}\;\ge\;\alpha\,\Gamma_{K}
+   \quad & \text{if }\theta=1 \label{eq:PPftlvol}\\
+ \sum_{c} w_{c}\,a_{c}\;\ge\;\alpha\,pK^{w}
+   \quad & \text{if }\theta=0 \label{eq:PPftlwgt}\\
+ \sum_{i\le S}\sum_{h} p_{h}q_{h}\chi_{ih}\;\ge\;\alpha\,pK\cdot qK
+   \quad & \text{if }\theta=1 \label{eq:PPareacut}\\
+ \sum_{h}h\,\chi_{ih}\;\ge\;\sum_{h}h\,\chi_{i+1,h}
+   \quad & \forall i<S. \label{eq:PPsymm}
+\end{align}
+Constraints \eqref{eq:PPtype}--\eqref{eq:PPagg} restrict the loads
+used in the pricing problem to feasible ones, reproducing
+\eqref{eq:col-geom}--\eqref{eq:col-agg}.
+Equation \eqref{eq:PParea} is a redundant area cut, and
+\eqref{eq:PPareacut} its counterpart under the volume regime: a slot
+contributes at most (footprint area)$\times rK$ of RTI volume, so the
+utilisation floor implies a floor on the occupied floor area. The
+latter is what allows the solver to find a \emph{first} feasible
+layout quickly, which for tight instances is harder than optimising
+once one is known. Constraint \eqref{eq:PPsymm} breaks the symmetry
+among interchangeable slots by ordering them on the stack-type index.
+
+The subproblem is stated as a constraint program because its hard
+core is the disjunctive non-overlap relation
+\eqref{eq:PPnooverlap}, which a CP solver propagates natively through
+a global constraint, whereas a MILP must encode it with the four
+big-$M$ disjunctions
+\eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2} and accept the weak
+relaxation they entail. Section \ref{sec:results} reports the
+resulting difference.
+
+\subsection{Initial Columns}
+\label{sec:initcols}
+
+Column generation converges from any starting set, but a good one
+shortens it and leaves the integer master more freedom to combine
+loads. We initialise $\bar P^{g}$ by solving
+\eqref{eq:PPObjective}--\eqref{eq:PPsymm} under a family of
+demand-derived price vectors rather than duals: the unit vector,
+which maximises the RTI count; every single-commodity vector
+$\mathbf{e}_{c}$, which yields pure loads and keeps the master
+flexible; the aggregate demand mix and each per-period demand mix;
+and a set of random draws from the simplex for diversification.
+
+Two devices make this robust. A constructive \emph{grid layout} ---
+tile the floor with a single stack type in its better orientation and
+fill each slot to its height, weight and crush limit --- is supplied
+to the CP solver as a hint and retained as a fallback column. For the
+near-tiling footprints of a real RTI catalogue it is already close to
+the best attainable utilisation, and it guarantees that no direction
+is ever left without columns. And any pricing call that returns
+nothing is retried with a longer limit before being believed, since
+an empty answer usually means the solver was starved of time rather
+than that no load exists.
+
+Before the integer master is solved, the pool is enriched with
+\emph{reduced} loads obtained by unloading RTIs from existing
+columns. Removing RTIs from a valid layout cannot break the geometry,
+the height budget, a crush limit or the payload, so every reduced
+load that still clears the full-truckload floor is itself feasible.
+This matters because columns priced at the LP optimum are close to
+full trucks, and integer combinations of full trucks are too coarse
+to land inside the narrow delivery band left open by the supplier's
+coverage stock. The LP hides this, because it can interpolate between
+columns; the integer master cannot.
+
+\subsection{Branching}
+\label{sec:branching}
+
+Here we use the depth-first branching rule: once no new promising
+column can be found through the pricing problem, we take the
+$\lambda^{g}_{pt}$ with the largest fractional part and fix it to its
+ceiling, that is, we fix a truck load that must be dispatched. If
+rounding up renders the node infeasible, we round the same variable
+down instead. After fixing the variable, more columns are generated
+by the pricing algorithm, so new truck loads keep being created
+\emph{after} the branching decisions --- which a price-and-branch
+scheme over a frozen pool cannot do. Repeating this strategy leads to
+an integer solution of the RMP. As in \cite{Moreno2024Clustering},
+this method of branching does not guarantee an optimal solution, but
+it does guarantee a feasible one; the certified bound of Section
+\ref{sec:mp} is what quantifies the remaining loss.
+
+\input{BranchAlgorithm3D}
+
+\subsection{Two corrections to the compact model}
+\label{sec:corrections}
+
+Implementing 3D-SCPTOP surfaced two defects worth recording, both
+invisible at $lt=1$.
+
+\paragraph{Inventory recursion under a lead time.}
+Constraints \eqref{sb:eq:inv-plant-main} and
+\eqref{sb:eq:inve-sup-main} carry inventory forward from period
+$t-lt$, whereas inventory accumulates one period at a time and only
+the \emph{arrival} is delayed. They must read
+\begin{align}
+I_{pnt}  &=I_{p,n,t-1}-d_{pnt}+Q_{n,t-lt}
+    &&\forall n\in N,\; t\ge lt+1,
+    \label{eq:fix-plant}\\
+Ie_{str} &=Ie_{s,t-1,r}+Q_{r,t-lt}-\textstyle\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t\ge lt+1.
+    \label{eq:fix-sup}
+\end{align}
+With $lt=1$ the two versions coincide, which is why the defect
+survived; with $lt\ge2$ the original silently discards $lt-1$ periods
+of stock.
+
+\paragraph{Coverage stock on folded RTIs.}
+Requiring $Ie_{gtr}\ge ss_{gtr}$ at \emph{both} nodes, as
+\eqref{sb:eq:safety} does, forces the plant to hoard empties it has
+no use for and can render an otherwise feasible instance infeasible
+when the RTI fleet is tight. The operationally meaningful requirement
+is that the \emph{supplier} hold enough folded RTIs to cover its
+production, so we impose the bound at $g=s$ only.

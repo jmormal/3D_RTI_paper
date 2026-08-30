@@ -1,0 +1,22 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper, total={6.2in, 9.2in}]{geometry}
+\input{necessarypackages}
+\usepackage[style=authoryear, backend=biber]{biblatex}
+\addbibresource{references.bib}
+\usepackage{amsthm}
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+\title{3D-SCPTOP: model, reformulation and solution method\\
+\large Working document -- formulation, algorithms and computational study}
+\date{\today}
+\begin{document}
+\maketitle
+\tableofcontents
+\bigskip
+\hrule
+\bigskip
+\input{sec_model}
+\input{sec_reformulation}
+\input{sec_experiments}
+\printbibliography
+\end{document}

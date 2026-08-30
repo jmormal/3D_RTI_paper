@@ -1,0 +1,35 @@
+\begin{algorithm}[!h]
+\caption{Branch and price for 3D-SCPTOP}\label{alg:bp3d}
+\begin{algorithmic}[1]
+\State $\bar P \gets \textsc{InitialColumns}()$
+       \Comment{Section \ref{sec:initcols}}
+\State $sol_{int} \gets False$
+\While{$sol_{int} == False$}
+   \State $rc \gets -1$
+   \While{$rc < 0$}
+      \State $\pi,\nu,\lambda \gets \textsc{SolveRMP}(\bar P)$
+      \State $rc, p \gets \textsc{Price}(\pi,\nu,\tau_{\mathrm{fast}})$
+      \If{$rc \ge 0$}
+         \State $rc, p \gets \textsc{Price}(\pi,\nu,\tau_{\mathrm{exact}})$
+         \Comment{a fast pass may simply have missed a load}
+      \EndIf
+      \If{$rc < 0$}
+         \State Append $p$ to $\bar P$
+      \ElsIf{the pricing bound proves $rc \ge 0$}
+         \State $\mathrm{LB} \gets$ RMP value \Comment{certified, Section \ref{sec:mp}}
+      \EndIf
+   \EndWhile
+   \If{$\lambda$ is integral}
+      \State $sol_{int} \gets True$; \textbf{break}
+   \EndIf
+   \State $(p,t) \gets \arg\max$ fractional part of $\lambda^{g}_{pt}$
+   \State fix $\lambda^{g}_{pt} \ge \lceil \lambda^{g}_{pt}\rceil$,
+          or $\le \lfloor \lambda^{g}_{pt}\rfloor$ if that node is infeasible
+\EndWhile
+\State $\bar P \gets \bar P \cup \textsc{ReducedLoads}(\bar P)$
+\State $\mathrm{UB} \gets \textsc{SolveRMP}(\bar P)$ as an integer program
+\State verify every dispatched column against
+       \eqref{eq:col-geom}--\eqref{eq:col-agg}
+\State \Return $(\mathrm{UB}, \mathrm{LB})$
+\end{algorithmic}
+\end{algorithm}

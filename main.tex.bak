@@ -1,6 +1,6 @@
 
 
-This paper proposes a new mixed integer linear mathematical programming (MILP) model, dubbed 3D-SCPTOP, for procurement transport planning in manufacturing supply chains. The model effectively integrates procurement and transport decisions while accounting for three-dimensional full-truck loading constraints and managing returnable transport items (RTIs). Thus, we optimise the material to procure for an assembly manufacturing site, RTIs closed-loop management,  and the involved transport decisions, including the truck loading configuration. Procurement transport decisions are based on the demand of assemblers, the supplier's inventory levels, and the dimensions of the truck / RTIs. The optimisation model aims to minimise transportation and inventory costs. Because the loading subproblem is NP-hard and is replicated once per loading configuration, the compact model is intractable at industrial sizes. We therefore reformulate it by Dantzig--Wolfe decomposition, taking the complete loaded truck as the unit of decision: a column is a fully specified, geometrically realisable truck load, so every placement, height, crush-limit, payload and full-truckload constraint holds inside it by construction, and the per-stack crush cap is evaluated on the actual product mix rather than on a worst-case bound. Columns are priced on demand by a constraint programming oracle and integrality is reached by depth-first branch and price, yielding MATH-3D-SCPTOP. Every plan the method returns is re-verified truck by truck, independently of the solver that produced it. The approach was validated with a case study in an automotive seating first-tier supplier, where it improves on the company's spreadsheet-based procedure in both transport and inventory terms. A comparison against a benchmark model that represents truck capacity volumetrically shows why the loading geometry cannot be abstracted away: the volumetric model returns cheaper plans whose truck loads cannot physically be loaded.
+This paper proposes a new mixed integer linear mathematical programming (MILP) model, dubbed 3D-SCPTOP, for procurement transport planning in manufacturing supply chains. The model effectively integrates procurement and transport decisions while accounting for three-dimensional full-truck loading constraints and managing returnable transport items (RTIs). Thus, we optimise the material to procure for an assembly manufacturing site, RTIs closed-loop management,  and the involved transport decisions, including the truck loading configuration. Procurement transport decisions are based on the demand of assemblers, the supplier's inventory levels, and the dimensions of the truck / RTIs. The optimisation model aims to minimise transportation and inventory costs. As the 3D loading problem is NP-hard, a matheuristic (Math-3D-SCPTOP) approach is developed to obtain good quality solutions for large instances in an efficient computational time. The 3D-SCPTOP model was validated with a case study in an automotive seating first-tier supplier. Regarding inventory and transport efficiency, the results of the 3D-SCPTOP model are superior to the company procedures.
 
 \keywords{ Procurement, inventory, transport planning,  full-truckload, 3D container loading }
 \section{Introduction}
@@ -15,12 +15,12 @@ Furthermore, the capacity constraints used in the scientific literature on procu
 
 
 
-In this paper, we present four main contributions: (i) formulating a novel MILP model, 3D-SCPTOP, that integrates procurement transport, RTI management and inventory decisions with stack-based full-truck loading constraints; (ii) reformulating it by Dantzig--Wolfe decomposition over geometrically realisable truck loads, and solving it by branch and price with a constraint programming pricing oracle, giving MATH-3D-SCPTOP; (iii) showing that a volumetric representation of truck capacity, as used in the procurement transport literature, yields plans that are cheaper on paper but cannot be loaded in practice; (iv) validating and testing the proposal with a case study at a first-tier supplier of the automotive sector.
+In this paper, we present three main contributions: (i) formulating a novel MILP model, 3D-SCPTOP, that integrates procurement transport, RTI management and inventory decisions with 3D full-truck loading constraints; (ii)  developing a matheuristic, Math-3D-SCPTOP,  to solve the 3D-SCPTOP model in a reasonable time, which is to be used for real-world instances; (iii) validating and testing the 3D-SCPTOP model with a case study at a first-tier supplier of the automotive sector.
 
 
 Readers are referred to the typology by  \autocite{Wascher2007AnProblems} for a global view of container loading problems, where the different dimensions of the loading problem are described. Furthermore, \autocite{Silva2019ExactProblems} summarise the exact methods used in the literature to solve container loading problems, and \autocite{Zhao2016INTERNATIONALAlgorithms} explore other solution approaches in the literature. Readers are also referred to the literature reviews of \autocite{Mosca2019IntegratedReview} and \autocite{Diaz-Madronero2015ADecisions}, which focus more on integrating inventory decisions and transport. Here, we jointly address container loading, procurement transport and inventory decisions. {\color{blue} Furthermore, we refer readers () for insights about the packaging methods used in supply chains.}
 
-The paper is organised as follows. Section 2 provides a literature review related to the problem under study. Section 3 presents the problem description. Section 4 describes the 3D-SCPTOP MILP formulation. Section 5 develops the branch and price solution approach, MATH-3D-SCPTOP, together with its pricing subproblem and bounding arguments. Section 6 reports the computational experiments and Section 7 the case study. Finally, Section 8 concludes and puts forward further research lines.
+The paper is organised as follows. Section 2 provides a literature review related to the problem under study. Section 3 presents the problem description. Section 4 describes the 3D-SCPTOP MILP formulation and the developed matheuristic solution approach, MATH-3D-SCPTOP. Section 5 validates and experiments with the proposal in a real case study. Finally, Section 6 concludes and puts forward further research lines.
 
 \section{Literature Review}
 
@@ -74,7 +74,24 @@ Container loading problems encompass a subset of geometric assignment problems k
 Dyckhoff introduced in \autocite{Dyckhoff1990AProblems} a typology that unifies $C\&P$ problems using four different criteria: dimensionality of space, the objective of assignment, containers types and box type. Consequently, \autocite{Wascher2007AnProblems} develop a new typology that has become the standard in the $C\&P$ literature. We   briefly  describe  the  typology  used  in  \autocite{Wascher2007AnProblems}  based  on  five different criteria: (i) dimensionality of space; (ii) kind of assignment (input minimisation of containers for all small items and loading patterns; output maximisation to pack a subset of small items with limited container availability;) (iii) assortment of small item by distinguishing if they are either a weakly (or strongly) heterogeneous assortment or identical small items ; (iv) assortment of large objects (if it is either several large objects or one large object); (v) shape of small items (circular or of another shape). Table 1 links the standard $C\&P$ nomenclature and the criteria of the typology according to \autocite{Wascher2007AnProblems}.
 
 
-
+\begin{table}[h!]
+  \caption{$C\&P$ nomenclature and criteria}%
+  \label{fig:output_maximization}%
+  \includegraphics[width=\textwidth]{figures/fig_tab.png}
+  % \begin{adjustbox}{width=\textwidth}
+  % \begin{tabular}{|cc|c|cc|cc|}
+  % \hline
+  % \multicolumn{2}{|c|}{Assortment of small items}                                                                                                                          & Identical                                                                             & \multicolumn{2}{c|}{Weakly hetereogenous}                                                                                                                                                                                                                          & \multicolumn{2}{c|}{Strongly heterogenous}                                                                                                                                                                                                              \\ \hline
+  % \multicolumn{2}{|c|}{Objective}                                                                                                                                          & \begin{tabular}[c]{@{}c@{}}Output \\ maximization\end{tabular}                        & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Input \\ minimization\end{tabular}}                                       & \begin{tabular}[c]{@{}c@{}}Output\\  maximization\end{tabular}                                                                          & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Input \\ minimization\end{tabular}}                                     & \begin{tabular}[c]{@{}c@{}}Output \\ maximization\end{tabular}                                                                 \\ \hline
+  % \multicolumn{2}{|c|}{\begin{tabular}[c]{@{}c@{}}Assortment   \\ of large items\end{tabular}}                                                                             &                                                                                       & \multicolumn{1}{c|}{}                                                                                                    &                                                                                                                                         & \multicolumn{1}{c|}{}                                                                                                  &                                                                                                                                \\ \hline
+  % \multicolumn{1}{|c|}{\multirow{4}{*}{\begin{tabular}[c]{@{}c@{}}Fixed\\  Dimensions\end{tabular}}} & Identical                                                           & \multirow{3}{*}{X}                                                                    & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Single Stock \\ Size Cutting \\ Stock Problem \\ (SSSCSP)\end{tabular}}   & \begin{tabular}[c]{@{}c@{}}Multiple Identical \\ Large Object  \\  Placement Problem \\ \\ (MILOPP)\end{tabular}                        & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Single Bin \\ Size Bin Packing \\   Problem\\  (SBSBPP)\end{tabular}}   & \begin{tabular}[c]{@{}c@{}}Multiple Identical \\ Knapsack   Problem \\ \\ (MIKP)\end{tabular}                                  \\ \cline{2-2} \cline{4-7} 
+  % \multicolumn{1}{|c|}{}                                                                             & \begin{tabular}[c]{@{}c@{}}Strongly  \\  heterogeneous\end{tabular} &                                                                                       & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Residual Cutting \\ StockProblem \\ (RCSP)\end{tabular}}                  & \multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Multiple Heterogenous  \\  Large Object\\  Placement Problem \\ \\ \\ (MHLOPP)\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Residual \\ Bin Packing \\ Problem   \\ (RBPP)\end{tabular}}            & \multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Multiple Heterogeneous \\   Knapsack Problem \\ \\ \\ \\ (MHKP)\end{tabular}} \\ \cline{2-2} \cline{4-4} \cline{6-6}
+  % \multicolumn{1}{|c|}{}                                                                             & \begin{tabular}[c]{@{}c@{}}Weakly \\   hetereogenous\end{tabular}   &                                                                                       & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Multiple Stock\\  Size Cutting\\  Stock Problem \\ (MSSCSP)\end{tabular}} &                                                                                                                                         & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Multiple Bin Size \\ Bin Packing  \\  Problem \\ (MBSBPP)\end{tabular}} &                                                                                                                                \\ \cline{2-7} 
+  % \multicolumn{1}{|c|}{}                                                                             & \begin{tabular}[c]{@{}c@{}}One large  \\  object\end{tabular}       & \begin{tabular}[c]{@{}c@{}}Identical Item\\  Packing Problem   \\ (IIPP)\end{tabular} & \multicolumn{1}{c|}{X}                                                                                                   & \begin{tabular}[c]{@{}c@{}}Single Large \\ Object Placement \\ Problem \\   (SLOPP)\end{tabular}                                        & \multicolumn{1}{c|}{X}                                                                                                 & \begin{tabular}[c]{@{}c@{}}Single Knapsack \\ Problem\\  (SKP)\end{tabular}                                                    \\ \hline
+  % \multicolumn{1}{|c|}{\begin{tabular}[c]{@{}c@{}}Variable   \\ dimension\end{tabular}}              & \begin{tabular}[c]{@{}c@{}}One large \\ object\end{tabular}         & X                                                                                     & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Open Dimension\\ Problem \\ (ODP)\end{tabular}}                           & X                                                                                                                                       & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Open Dimension \\ Problem \\ (ODP)\end{tabular}}                        & X                                                                                                                              \\ \hline
+  % \end{tabular}
+  % \end{adjustbox}
+\end{table}
 
 
 The first mathematical programming model in a scientific journal to describe the container-loading problem was developed in \autocite{Chen1995EUROPEANProblem}, where the authors introduced an MILP model to address the 3D  input minimisation problem by considering rotations and containers of varying dimensions. However, it does not specify the use of weakly or strongly heterogeneous boxes or containers. Additionally, real-world constraints are modelled like, for example, weight distribution.
@@ -554,7 +571,6 @@ Minimum coverage stock is enforced on future demand.
 % =====================================================================
 
 \section{Mathematical Model}
-\label{sec:model}
 
 The 3D-SCPTOP formulation integrates stack-based truck-loading
 constraints with procurement transport and inventory decisions. It
@@ -928,80 +944,325 @@ stack type; it serves as a tight preprocessing limit on $|I|$.
 %           S E C T I O N   4 . X   (M A T H E U R I S T I C)
 % =====================================================================
 
-\input{sec_reformulation}
+\section{Matheuristic Procedure}
 
-\input{sec_experiments}
+Because the slot-placement subproblem is a constrained 2D
+cutting-and-packing problem and the per-slot layer-composition
+subproblem is a small integer knapsack, an exact solve of the full
+model is intractable for industrial instances. We retain the
+decomposition structure of the original matheuristic -- enumerate or
+construct a pool of loading configurations, then let a reduced MILP
+pick configurations, assign trucks and products, and manage inventory
+-- but replace the 3D packing subroutine by a two-step stack-based
+scheme.
+
+% --------------------------
+% PLC-SCPTOP
+% --------------------------
+\subsection{PLC-SCPTOP}
+
+PLC-SCPTOP operates on a precomputed pool of LCs. Each LC $l$ in
+direction $g$ exposes its aggregate RTI-type capacity through the
+parameter
+\begin{equation}
+U_{glr}\;=\;\sum_{i\in I}\sum_{h\,:\,r\in R(h)}
+    n_{hr}\,L^{\star}_{gihlr},
+\qquad \forall g\in G,\; l\in L,\; r\in R,
+\label{sb:eq:U}
+\end{equation}
+where $L^{\star}_{gihlr}$ are the fixed layer counts of the generated
+LC. This parameter takes the place of the former $lc_{lrg}$ (``number
+of containers of type $c$ in configuration $l$''). Apart from this
+substitution, the structure of PLC-SCPTOP is unchanged: the
+inventory-balance, safety-stock, one-LC-per-truck, and
+flow-aggregation constraints carry over verbatim, with the
+capacity-linking constraints rewritten to use $U_{glr}$.
+
+Because PLC-SCPTOP does not carry slot-level information, it enforces
+the per-stack crush cap only in a conservative form using the
+worst-case product weight per RTI type,
+$\bar w_{r}=\max_{n\in M(r)} w_{n}$. The period-exact per-stack cap
+\eqref{sb:eq:stack-w-plant} is enforced at the LC-generation stage,
+where the pool is restricted to layer compositions feasible for every
+product mix the plant might load.
+
+% --------------------------
+% LC generation
+% --------------------------
+\subsection{Stack-column generation and 2D placement}
+\label{sb:sec:gen}
+
+The LC generator decomposes the packing subroutine into two cleanly
+separated steps.
+
+\paragraph{Step 1: stack-column generation.}
+For each stack type $h\in H$ and each direction $g\in G$, enumerate
+or column-generate all layer vectors
+$\boldsymbol{\lambda}_{h}=(\lambda_{r})_{r\in R(h)}\in
+\mathbb{Z}_{\ge 0}^{|R(h)|}$ satisfying
+\begin{align*}
+&\sum_{r\in R(h)} r_{gr}\,\lambda_{r}\;\le\;rK,\\
+&\sum_{r\in R(h)} \bar w_{r}\,n_{hr}\,\lambda_{r}\;\le\;W^{\max}
+    && \text{(plant direction, conservative bound),}\\
+&\sum_{r\in R(h)} w^{\mathrm{f}}_{r}\,n_{hr}\,\lambda_{r}\;\le\;W^{\max}
+    && \text{(supplier direction, deterministic).}
+\end{align*}
+Each feasible $\boldsymbol{\lambda}_{h}$ is a \emph{stack column}: a
+candidate internal composition of a slot of type $h$.
+
+\paragraph{Step 2: 2D slot placement.}
+Given a target mix of stack columns (quantities per stack type,
+weighted by current inventory deficits as in Algorithms
+\ref{sb:alg:init}--\ref{sb:alg:refine}), place the selected columns on
+the truck floor by solving a 2D-SLOPP with 90$^\circ$ rotation over
+the footprints $(p_{h},q_{h})$. Any standard 2D packing heuristic
+(constructive, GRASP, BRKGA) or MILP formulation may be used as the
+inner solver.
+
+\paragraph{Algorithm structure.}
+The outer matheuristic is unchanged but calls the two-step generator
+above in place of the former 3D packing routine.
+
+\begin{algorithm}[h!]
+    \caption{Initial Loading Configurations (stack-based)}
+    \label{sb:alg:init}
+    \begin{algorithmic}
+        \State $T$ \Comment{list of time periods}
+        \State $\Delta$ \Comment{list of look-ahead horizons}
+        \State $\mathrm{LC}\gets\emptyset$
+        \For{$t\in T$}
+            \For{$\delta\in\Delta$}
+                \State IncomingTransport($t$)
+                \State Produce($t$)
+                \While{TransportResourceAvailable}
+                    \State $\mathcal{C}\gets$ StackColumnsNeeded($t,\delta,\mathrm{LC}$)
+                    \Comment{Step 1: required per-type layer vectors}
+                    \State $P\gets$ Place2D($\mathcal{C}$)
+                    \Comment{Step 2: 2D-SLOPP with rotation}
+                    \State $\mathrm{LC}.\mathrm{append}(P)$
+                \EndWhile
+            \EndFor
+        \EndFor
+        \State $\mathrm{LC}\gets$ EliminateDuplicatesAndDominated($\mathrm{LC}$)
+        \State \textbf{return} $\mathrm{LC}$
+    \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[h!]
+    \caption{Refinement Loading Configurations (stack-based)}
+    \label{sb:alg:refine}
+    \begin{algorithmic}
+        \State TimePeriods, TimeSpan \Comment{user-defined}
+        \For{$t\in$ TimePeriods}
+            \For{$\delta\in$ TimeSpan}
+                \State $\mathbf{I}\gets$ SolvePLCSCPTOP($\mathrm{LC},t$)
+                \State $\mathcal{C}\gets$ StackColumnsNeeded($\mathbf{I},t,\delta,\mathrm{LC}$)
+                \State $P\gets$ Place2D($\mathcal{C}$)
+                \State $\mathrm{LC}.\mathrm{append}(P)$
+            \EndFor
+        \EndFor
+        \State $\mathrm{LC}\gets$ EliminateDuplicatesAndDominated($\mathrm{LC}$)
+        \State \textbf{return} $\mathrm{LC}$
+    \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+    \caption{MATH-3D-SCPTOP (stack-based)}
+    \begin{algorithmic}[1]
+        \State $\Delta_{1},\Delta_{2}$ \Comment{look-ahead horizons}
+        \State $\mathrm{LC}\gets$ InitialLoadingConfigurations($\Delta_{1}$)
+        \State $\mathrm{LC}\gets$ RefinementLoadingConfigurations($\mathrm{LC},\Delta_{2}$)
+        \State $\mathrm{Build}\;U_{glr}\;\text{from}\;\mathrm{LC}\;\text{via}\;\eqref{sb:eq:U}$
+        \State SolvePLCSCPTOP$(\mathrm{LC},|T|)$
+    \end{algorithmic}
+\end{algorithm}
+
+% =====================================================================
+%           T A B L E   2   (R E V I S E D   R O W)
+% =====================================================================
+
+% ---------- Drop-in replacement for the 3D-SCPTOP row of Table 2 -----
+% Columns (as in the original manuscript):
+%   | Article | Problem type | Resolution | Orientation | Weight
+%   | Load Balance | Stability | Time-Dependent |
+% For the stack-based reformulation, stability is no longer needed
+% (stacks are self-supporting by construction). The problem type
+% becomes a 2D placement (SSSCSP-like) coupled with a per-slot
+% integer layering sub-problem.
+
+% Replace the current "3D-SCPTOP" row with:
+% 3D-SCPTOP (stack) & 2D-SSSCSP + layering & MH & X & X & X & -- & X \\
+
+% Footnote to add to the table:
+%   "--" in Stability indicates the constraint is not required:
+%   stacks are self-supporting by construction.
+
+% =====================================================================
+%           N O T E S   O N   O T H E R   S E C T I O N S
+% =====================================================================
+
+%% Section 1 (Introduction).
+%%   - Replace "three-dimensional full-truck loading constraints" /
+%%     "3D loading constraints" with "stack-based full-truck loading
+%%     constraints" or "2D stack placement with vertical layering" as
+%%     appropriate.
+%%   - Second contribution bullet: "the MH-3D-SCPTOP matheuristic
+%%     combines a stack-column generator with a 2D slot-placement
+%%     routine".
+%%
+%% Section 2 (Literature Review).
+%%   - Section 2.3 overview needs no edit; final "Research Gaps &
+%%     Methodology" paragraph should state that the loading subproblem
+%%     of 3D-SCPTOP is now a 2D stack-placement problem with per-slot
+%%     layer composition, rather than a 3D bin-packing problem. The
+%%     integration-novelty claim is unchanged.
+%%   - Table 2 update is provided above.
+%%
+%% Section 5 (Computational and comparative analysis).
+%%   - Tweak "the 3D loading problem is NP-hard" to "the 2D
+%%     stack-placement subproblem is NP-hard".
+%%
+%% Section 6 (Conclusions).
+%%   - Remove the sentence on extending with dynamic stability
+%%     constraints (no longer a natural extension). Replace with:
+%%     "Future work may relax the layer-homogeneity assumption to
+%%     allow intra-layer mixing of RTI types, or extend the 2D
+%%     placement block with axle load-balance constraints."
+%%
+%% Appendix A (SCPTOP benchmark).
+%%   - Unchanged; the benchmark retains its volumetric capacity form.º
+
+
+}
+
+% =====================================================================
+%           T A B L E   2   (R E V I S E D   R O W)
+% =====================================================================
+
+% ---------- Drop-in replacement for the 3D-SCPTOP row of Table 2 -----
+% Column order (as in the original manuscript):
+%   | Article | Problem type | Resolution | Orientation | Weight
+%   | Load Balance | Stability | Time-Dependent |
+% For the new model, the stability column is no longer applicable
+% because stacks are self-supporting by construction. The problem
+% type becomes a 2D placement (SSSCSP-like) coupled with a per-stack
+% integer layering sub-problem.
+
+% Replace the current "3D-SCPTOP" row with the following:
+% 3D-SCPTOP (stack) & 2D-SSSCSP + layering & MH & X & X & X & -- & X \\
+
+% -- Accompanying footnote addition (table notes) --
+% "--" in the Stability column indicates the constraint is no longer
+% required: stacks are self-supporting by construction.
+
+% =====================================================================
+%           N O T E S   O N   O T H E R   S E C T I O N S
+% =====================================================================
+
+%% Section 1 (Introduction).
+%%   - Replace every instance of "three-dimensional full-truck loading
+%%     constraints" / "3D loading constraints" with "stack-based
+%%     full-truck loading constraints" or "2D stack placement with
+%%     vertical layering", as appropriate.
+%%   - The third contribution bullet still holds, but the 3D-loading
+%%     claim in the second bullet should read "the MH-3D-SCPTOP
+%%     matheuristic combines a stack-column generator with a 2D
+%%     slot-placement routine".
+%%
+%% Section 2 (Literature Review).
+%%   - Section 2.3 (Container loading): no edits needed in the
+%%     overview, but the final "Research Gaps & Methodology" paragraph
+%%     should be updated to say that 3D-SCPTOP now treats the loading
+%%     subproblem as a 2D stack-placement problem with per-slot layer
+%%     composition, rather than a 3D bin-packing problem. The novelty
+%%     claim (integration of procurement, RTI, inventory and loading
+%%     constraints) is unchanged.
+%%   - Table 2 update is provided above.
+%%
+%% Section 5 (Computational and comparative analysis).
+%%   - The instance-generation description still applies; the
+%%     reference to "the 3D loading problem is NP-hard" remains valid
+%%     in a weaker form, since the 2D placement subproblem is already
+%%     NP-hard. Recommend tweaking one sentence to:
+%%     "the 2D stack-placement subproblem is NP-hard, so MATH-3D-SCPTOP
+%%     is applied to the large real-world instances."
+%%
+%% Section 6 (Conclusions).
+%%   - Remove the sentence about "the inclusion of dynamic stability
+%%     into loading constraints may also yield more practical, robust
+%%     solutions": this is no longer a natural extension. Replace by:
+%%     "future work may relax the layer-homogeneity assumption to allow
+%%     intra-layer mixing of RTI types, or extend the 2D placement
+%%     block with axle load-balance constraints."
+%%
+%% Appendix A (SCPTOP benchmark).
+%%   - Unchanged; the benchmark model retains its volumetric capacity
+%%     formulation.\section{Computational and comparative analysis}
+Here the 3D-SCPTOP model is validated and compared to the work by \autocite{Diaz-Madronero2014APlanning}.  This fuzzy optimisation model integrates procurement transport and inventory holding decisions by contemplating transport capacity restrictions by a maximum number of containers per truck, which we refer to as SCPTOP from this point onwards. To compare the SCPTOP model, we make three key modifications: fuzzy parameters are not considered; transport capacity restriction takes into account the volume of individual containers and the truck’s capacity; products can be loaded in more than one container type. The SCPTOP model is extended and defined in Appendix \ref{appendix:A}.
+We evaluate and compare both the 3D-SCPTOP and SCPTOP models, in terms of solution quality, transport costs, inventory costs and computational times. The 3D-SCPTOP and SCPTOP mathematical formulations are solved for all the instance sets with CP-SAT from OR-Tools and Gurobi using their default settings. Additionally, as $(C\& P)$ problems are NP-hard, the Meta-3D-SCPTOP algorithm has been developed to find igh-quality solutions for large real-world instances, based on a case study. So the performance of the 3D-SCPTOP, the Meta-3D-SCPTOP and the SCPTOP models is compared and evaluated as follows.
+
+
+Twenty-four instances are artificially generated by a stochastic process, whose key characteristics are given as follows:
+
+\begin{itemize}
+  \item \textbf{Demand Generation}: the demand for each product is randomly generated by deviating from a given mean by plus or minus ten percent. This introduces variability into the demand values for different products
+
+  \item \textbf{Time Periods}: Half of the instances have a total of five time periods, while the other half have a total of ten time periods. This allows evaluating the model's performance over different time horizons.
+
+  \item \textbf{Container Types}: Each instance includes a varying number container types, specifically two, three or four. The distribution of container types is the same among instances, which implies that an equal number of instances has the same number of containers
+
+  \item \textbf{Container Dimensions}: The dimensions of each container type are randomly generated. The width, length and height of boxes are fractions of the width, length, or height of trucks. This randomness ensures diversity in the sizes of containers across the generated instances. An additional constraint is applied to the generation of containers. The volume of each container must be at least 1/n of the truck’s volume, where n can take the values of four, six or eight. This ensures that containers are appropriately sized in relation to trucks
+
+\end{itemize}
+By incorporating these stochastic elements into the generation process, the 24 instances provide a diverse set of scenarios for evaluating the model’s performance. Variability in demand, time periods, box types and box dimensions introduces realistic and challenging conditions that the model needs to address. Furthermore, we use the number of time periods, the number of box types, the number of products and the maximum amount of containers needed to load a truck (in volume terms) as explanatory variables of various metrics from the models, such as total cost, transport cost, inventory cost, solution gap and solution time. The instance name is in the form of \textit{I\_n\_t\_c\_v}, where n is product type, t is the number of time periods, c is the number of container types and v is the minimum volume of containers.
+
+Each test is limited to 4 hours (14,400 seconds) of run-time per instance. Tests are performed on a Microsoft Windows Server 2022 Standard n with an AMD EPYC 7402 24-Core Processor running at 2,800 MHz, with 256 GB of RAM using Python as the programming language.
+
+
 
 \section{Practical application}
-\label{sec:case}
 
 This section presents a practical procurement transport application. The proposed resolution framework was evaluated using real data from an automotive industry supply chain. We validate and compare the 3D-SCPTOP solution procedures to the company’s procedure, which employs predefined loading configurations that indicate the number of each container type to be carried. Finding these loading configurations is a very tedious and time-consuming manual task that is based on a spreadsheet procedure. A mathematical programming model, dubbed as PLC-SCPTOP, which replicates the current’s company procedure, is then utilised to minimise the total cost, with a summation of procurement transport and inventory holding costs, and one based on these predetermined configurations.
 
 
 
 
-The real-world data derived from the company's operations act as the
-empirical foundation for the comparison. To broaden its scope we scale and
-perturb these data under a stochastic process, giving three scenarios that
-differ only in demand variability: low ($\pm5\%$), normal ($\pm15\%$) and
-high ($\pm35\%$) around the same mean. Three procedures are compared on the
-same instances.
+The real-world data derived from the company’s operations act as the empirical foundation for examining both the PLC-SCPTOP and the Meta-3D-SCPTOP. To broaden the scope of this analysis, we scale and manipulate these data, guided by a stochastic process, to simulate several potential operational scenarios. Setting our analysis to mirror the dynamic and unpredictable realities of supply chain operations thus enhances the validity of our evaluation and the practical relevance of the suggested metaheuristic. For this purpose, we propose three different scenarios for the created instances: normal demand, low variability demand, high variability demand. Table \ref{tab:ResultsFromCaseStudy}, found in the Appendix \ref{appendix:A}outlines the models’ performance across these instances. Table \ref{tab:CaseStudySumary} summarises models’ performance and resolution times.
 
-\begin{itemize}
-  \item \textbf{Company procedure.} PLC-SCPTOP over the configurations the
-  planner derives today: a truck laid out to follow the \emph{average}
-  container mix across plants and periods, recomputed as the programme is
-  revised, together with one standard single-container-type pattern per RTI
-  type and the partial loads a planner will dispatch rather than miss a
-  delivery.
-  \item \textbf{Hand-drawn benchmark.} PLC-SCPTOP over a richer predefined
-  set: a regular grid per container type plus two-zone layouts in which the
-  floor is cut once and each zone tiled with a single footprint. This is more
-  than the planner actually maintains, and is therefore the harder baseline.
-  \item \textbf{MATH-3D-SCPTOP} of Section \ref{sec:math}, which generates
-  its configurations and augments the planner's existing ones rather than
-  replacing them.
-\end{itemize}
+\begin{table}[h!]
+  \centering
+  \caption{Summary of performance for the practical application}
+  \label{tab:CaseStudySumary}
+  \begin{adjustbox}{angle=0}
+    \centering
+    \begin{tabular}{lrrr}
+      \toprule
+      Model          & Objective Value & Best Bound    & Duration (seconds) \\
+      \midrule
+      MathH-3D-SCTOP & 252235.198934   & 247307.820849 & 740.000000         \\
+      Meta-3D-SCTOP  & 256715.145777   & NaN           & 677.555556         \\
+      PLC-SCTOP      & 275226.680415   & 271798.477640 & 44.670370          \\
+      \bottomrule
+    \end{tabular}
+  \end{adjustbox}
+\end{table}
 
-Table \ref{tab:case} reports the outcome. MATH-3D-SCPTOP reduces total cost by
-$11.4$--$12.8\%$ and the number of truck dispatches by $17$--$18\%$ relative to
-the company procedure, and by $10.5$--$11.9\%$ relative to the hand-drawn
-benchmark. Two features of the result matter more than the percentages.
+Figures \ref{fig:a1} - \ref{fig:a2} describe the performance of both the models and solution procedures in the different scenarios. The x-axis shows the scenario, while the y-axis depicts the objective value, inventory costs, or transport costs. Each colour represents a different model applied to obtain the solution.
 
-First, the advantage does not erode as demand variability grows; if anything it
-widens slightly, from $11.4\%$ under low variability to $12.8\%$ under high.
-This is the expected behaviour of a fixed configuration set: an average mix
-tracks a varying programme progressively worse, and the gap it leaves is
-exactly what generated configurations recover. It also answers the concern
-that such a method should help only when configurations and demand are
-misaligned --- the misalignment is not an occasional pathology but the normal
-state of a programme that varies at all.
 
-Second, and less comfortably for the incumbent procedure, on three of the nine
-scenarios the average-mix configurations \emph{cannot serve the demand
-programme at all}: no assignment of trucks to those configurations meets the
-plant's requirements while respecting the supplier's coverage stock.
-MATH-3D-SCPTOP finds a plan in every case. A procedure that occasionally has
-no feasible answer is a different kind of problem from one that is merely
-expensive, and it is invisible until the loading configurations are represented
-explicitly --- which is precisely what a volumetric capacity model cannot do.
+The results reveal that an effective systematic method is proposed for solving procurement transport operational planning with 3D full-truck loading constraints. This solution is both automated and executed within a reasonable computational timeframe. Our methodology proves particularly beneficial when there is significant discrepancy between the company’s proposed loading configurations and the actual demand concerning container types. In such instances, the company is usually left with two choices: either use the fixed loading configurations and, thus, incur higher inventory and transport costs, or manually resolve the loading configuration via a spreadsheet procedure, which might lead to errors. However, one potential disadvantage of the proposed Meta-3D-SCPTOP is its performance under normal demand conditions because the demand for different container types is consistent with the loading configurations, but the metaheuristic may result in fewer optimal inventory holding costs compared to the company’s current procedure. This is because the Meta-3D-SCPTOP obtains decisions locally, while exact methods are guaranteed, given enough time, to find the optimal solution.
 
-The managerial reading is that the benefit is not a better spreadsheet. It is
-that the loading configuration stops being an input fixed months in advance and
-becomes a decision taken with the transport plan, so that when the container
-mix moves the configurations move with it.
+This issue is, however, solved when utilising MathH-3D-SCPTOP because it effectively combines both heuristic and exact methods. While the heuristic provides a fast and reasonably good solution for the initial loading configurations, the exact method improves it by further lowering inventory and transport costs.
 
 Therefore, this method shows promising results for reducing inventory and transport costs, particularly under variable demand and misalignment between loading configurations and container types.
 \section{Conclusions}
-We herein propose a MILP model, 3D-SCPTOP, to tackle procurement transportation planning at an operational level by incorporating stack-based full-truck loading constraints into its considerations. Given the NP-hard nature of the placement subproblem and the fact that the compact model replicates it once per loading configuration, we reformulate the problem by Dantzig--Wolfe decomposition, taking the complete loaded truck as the unit of decision, and solve it by branch and price with a constraint programming pricing oracle, giving MATH-3D-SCPTOP. Because every column is a fully specified truck layout, the plans the method returns are executable by construction and can be handed to a loading crew as a drawing; we verify each dispatched truck independently of the solver that produced it.
+We herein propose a MILP model, 3D-SCPTOP, to tackle procurement transportation planning at an operational level by incorporating 3D loading constraints into its considerations. Given the NP-hard nature of 3D bin packing, we have also developed a metaheuristic approach, Meta-3D-SCPTOP, which is later refined and enhanced by employing a mathheuristic technique, MatH-3D-SCPTOP.
 
 A case study has also been conducted within an automotive SC that comprises a car assembler, a first-tier supplier and a second-tier supplier. The objective of the 3D-SCPTOP model is twofold: (i) to minimise the total number of trucks used; (ii) to minimise inventory holding costs. This approach takes into account the complexities of supply chain logistics in the automotive industry by demonstrating a successful integration of procurement transport planning and 3D loading constraints.
 
 Managerial implications in a SC context are oriented to the proposed solution methodology, improving the solutions found by the company’s procedure. It is also able to adapt to demand changes while finding high-quality solutions in reasonable computational times.
 
-A second managerial finding concerns the representation of transport capacity. Procurement transport models in the literature typically express it volumetrically. Our comparison shows that doing so is not a harmless simplification: the volumetric model returns plans that are cheaper on paper precisely because most of the truck loads it prescribes cannot be placed in a trailer at all. A planner acting on such a plan discovers the shortfall on the loading dock, not in the model.
-
-Nevertheless, several challenges remain for further research lines to deal with; for instance, the inclusion of multiple suppliers to better represent complex supply chains. A more comprehensive transport operation model could be achieved by incorporating routing aspects, such as vehicle routing with 3D loading constraints. Future work may also relax the layer-homogeneity assumption to allow intra-layer mixing of RTI types, or extend the placement block with axle load-balance constraints. On the algorithmic side, embedding the column generation inside a full branch-and-bound tree, rather than the depth-first dive used here, would turn the matheuristic into an exact method. Integrating sourcing and delivery transport decisions could improve supply chain efficiency. Finally, the incorporation of production scheduling into the model has the potential of offering a cohesive approach to supply chain planning optimisation by aligning production timelines with transportation and inventory strategies.
+Nevertheless, several challenges remain for further research lines to deal with; for instance, the inclusion of multiple suppliers to better represent complex supply chains. A more comprehensive transport operation model could be achieved by incorporating routing aspects, such as vehicle routing with 3D loading constraints. Furthermore, the introduction of dynamic stability into loading constraints may also yield more practical, robust solutions. Integrating sourcing and delivery transport decisions could improve supply chain efficiency. Finally, the incorporation of production scheduling into the model has the potential of offering a cohesive approach to supply chain planning optimisation by aligning production timelines with transportation and inventory strategies.
 
 
 % \input{vistex/MF2}

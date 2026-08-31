@@ -1,0 +1,231 @@
+\begingroup\color{blue}
+\section{Computational Experiments}
+\label{sec:results}
+
+The purpose of the experiments is not to establish optimality. For
+procurement transport planning at an operational level, what matters
+is whether a procedure returns, in a usable amount of time, a plan
+that a loading crew can actually execute and that improves on what
+the company does today. The experiments are organised around those
+two questions, and a third that turns out to dominate both: whether a
+model that abstracts the loading geometry away produces plans that
+can be executed at all.
+
+All calculations use Python. The master and restricted master
+problems, the volumetric benchmark and the compact model are solved
+with Gurobi 12; the pricing subproblem
+\eqref{eq:PPObjective}--\eqref{eq:PPsymm} with CP-SAT from OR-Tools
+9.12. Tests run on a 16-core machine with 30 GB of RAM. A relative
+gap of $2\%$ is set on every integer program.
+
+\subsection{Instance generation}
+
+Thirty-six instances are artificially generated as a full factorial
+over the four explanatory variables of the study: the number of
+products $|N|\in\{4,8\}$, the horizon $|T|\in\{5,10\}$, the number of
+RTI types $|R|\in\{2,3,4\}$ and the volumetric granularity
+$v\in\{60,90,120\}$. Instances are named $I\_|N|\_|T|\_|R|\_v$.
+
+\begin{itemize}
+  \item \textbf{Container dimensions}: footprints are drawn from the
+  industrial catalogue $\{1200\times800,\;1200\times1000,\;
+  1200\times1600,\;2400\times1200\}$ mm. Heights are quantised to
+  $50$ mm and confined to $[400,1500]$ mm so that at least two layers
+  fit under the trailer roof. Whenever $|R|\ge3$ several RTI types
+  share a footprint, reproducing a real catalogue in which container
+  families sit on a common pallet base; this is what allows a stack to
+  mix types across layers.
+
+  \item \textbf{Container volume}: $v$ is the number of erected RTIs
+  that fill one truck by volume, and every RTI type is generated with
+  volume at least $\Gamma_{K}/v$. Larger $v$ means smaller RTIs and a
+  harder placement subproblem.
+
+  \item \textbf{Demand}: generated per product and period by deviating
+  $\pm10\%$ from a mean calibrated so that roughly $2.5$ truckloads
+  are consumed per period. Calibrating the mean keeps difficulty
+  comparable across the factorial instead of letting it drift with the
+  RTI size.
+
+  \item \textbf{Weights}: the content weight of a full RTI scales with
+  its volume and varies by $\pm25\%$ between products sharing an RTI
+  type, which is what makes the per-stack crush limit depend on the
+  period's product mix rather than on the RTI type alone.
+\end{itemize}
+
+The truck is a standard semi-trailer,
+$pK\times qK\times rK=13600\times2400\times3000$ mm, payload
+$pK^{w}=24$ t, per-stack crush limit $W^{\max}=1200$ kg, minimum
+utilisation $\alpha=0.55$ and cost $cK=1000$ per dispatch. Lead time
+is $lt=1$ and coverage stock one period of demand.
+
+\paragraph{Sizing the RTI fleet.}
+One generation parameter deserves comment because it is easy to get
+wrong and the symptom is misleading. Empties return by the truckload,
+and a return truck leaves only once the plant has accumulated enough
+folded RTIs to clear the full-truckload floor. Since folded RTIs pack
+very densely --- two to three hundred to a trailer against an
+accumulation rate of a few dozen per period --- that takes several
+periods, during which the supplier must live off its own folded
+stock. If the fleet is sized only for the lead time, the linear
+relaxation remains feasible by dispatching fractional trucks while the
+integer problem has no solution at all. We therefore size the
+supplier's folded stock to cover $lt+SC+\lceil
+\alpha\Gamma_{K}/(\gamma_{sr}\cdot\text{empties per period})\rceil$
+periods, which is the standard closed-loop argument that an RTI fleet
+must cover the cycle time.
+
+\subsection{Methods compared}
+
+\begin{itemize}
+\item \textbf{MATH-3D-SCPTOP} --- Algorithm \ref{alg:bp3d}.
+\item \textbf{Company procedure (PLC-SCPTOP)} --- the master problem
+      over a fixed pool of manually derived loading configurations,
+      one regular grid per container type, as produced today by a
+      spreadsheet.
+\item \textbf{SCPTOP} --- the volumetric benchmark of Appendix
+      \ref{appendix:A}, identical to the master in every respect
+      \emph{except} that truck capacity is volumetric. The comparison
+      therefore isolates the effect of the loading representation.
+\item \textbf{Compact 3D-SCPTOP} --- solved directly, on the
+      instances where that is still possible, to measure the
+      matheuristic's true optimality gap without a bounding argument.
+\end{itemize}
+
+Every truck that MATH-3D-SCPTOP dispatches is re-verified from
+scratch against \eqref{eq:col-geom}--\eqref{eq:col-agg} by a routine
+that shares no code with the solver that produced it. Every truck
+that SCPTOP dispatches is submitted to an independent constraint
+programme asking whether that exact set of RTIs can be stacked and
+placed in a trailer at all.
+
+\subsection{Results}
+
+\input{tab_results}
+
+\subsection{Discussion}
+
+\paragraph{A volumetric capacity is not a conservative approximation.}
+Across the 36 instances SCPTOP dispatches 723 truck loads. A constraint
+programme proves that 503 of them --- $70\%$ --- cannot be placed in a
+trailer at all: there is no assignment of their containers to stacks
+that respects the height budget and the crush limit and whose
+footprints fit on the floor without overlap. Only 17 loads are
+demonstrably loadable; the rest are undecided within the time limit.
+SCPTOP's plans are on average $17\%$ cheaper than
+MATH-3D-SCPTOP's, and that entire margin is bought by loading trucks
+beyond what geometry allows. A planner handed such a plan discovers
+the shortfall on the loading dock.
+
+The effect is strongly modulated by container size. At $v=60$, where
+each RTI occupies about a sixtieth of the trailer, $93\%$ of the
+volumetric loads are impossible and the apparent saving rises to
+$33\%$; at $v=90$ it falls to $54\%$ and $7.8\%$. Coarse containers
+leave large unusable remainders once footprints and layer heights are
+respected, and it is exactly that remainder a volumetric model spends.
+The direction of the error is worth stating plainly: a volumetric
+capacity is not a safe approximation that merely loses a little
+precision --- it is systematically optimistic, and most so when the
+containers are large, which is the regime of interest in automotive
+procurement.
+
+\paragraph{Feasibility by construction.}
+Every one of the 36 plans MATH-3D-SCPTOP returns passes an independent
+truck-by-truck verification against
+\eqref{eq:col-geom}--\eqref{eq:col-agg}, performed by code that shares
+nothing with the solver that produced it. That is not a coincidence of
+the search but a property of the formulation: a column is a witnessed
+layout, so a plan assembled from columns is executable by
+construction, and can be handed to a loading crew as a drawing. The
+realised utilisation confirms the loads are not merely legal but full:
+the least-filled truck in a plan reaches $68\%$ of the binding
+resource on average, never below the $\alpha=0.55$ floor.
+
+\paragraph{Against the procedure in use.}
+On the case study built from the industrial catalogue,
+MATH-3D-SCPTOP reduces total cost by $11.4$--$12.8\%$ and the number
+of truck dispatches by $17$--$18\%$ relative to the company's
+average-mix procedure, consistently across the low-, normal- and
+high-variability scenarios. Against the stronger hand-drawn baseline
+--- regular grids plus two-zone layouts, which is more than the
+planner actually maintains --- the reduction is $10.5$--$11.9\%$.
+Two further observations matter more than the percentages. First, the
+advantage does not erode as demand variability grows; if anything it
+widens slightly, because a fixed set of average-mix configurations
+tracks a varying programme less and less well. Second, on three of the
+nine scenarios the average-mix procedure cannot serve the demand
+programme at all with its configurations, whereas the matheuristic
+finds a plan in every case. A procedure that occasionally has no
+feasible answer is a different kind of problem from one that is merely
+expensive, and it is invisible until the loading configurations are
+modelled explicitly.
+
+\paragraph{Pricing technology.}
+The subproblem was solved both as a constraint programme and as a MILP
+with the big-$M$ non-overlap encoding
+\eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2}, under identical
+budgets (Table \ref{tab:oracle}). The two agree on value wherever both
+close the subproblem, which is a useful cross-check on the two
+formulations. Over the small and medium instances the constraint
+programme returns plans $0.4\%$ better on average at comparable cost,
+and on individual pricing calls it is typically three to four times
+faster to prove optimality. We therefore use CP-SAT for the large
+instances. The margin is small enough that the choice is one of
+convenience rather than necessity --- but it does confirm that the
+disjunctive structure of non-overlap is better served by a global
+constraint than by four big-$M$ inequalities per pair of slots.
+
+\paragraph{On bounds, and what the method does not deliver.}
+The lower bounds are the weak point of these results and we report
+them as such. Certification requires the packing subproblem to be
+closed to proven optimality at the final pricing sweep, which succeeds
+on only 3 of the 36 instances; elsewhere the Lagrangian bound
+\eqref{eq:lagbound} applies, and it is loose --- a mean gap of
+$28.6\%$, which reflects the bound rather than the plans. Where the
+compact model can be solved, the true gaps are far smaller (Table
+\ref{tab:exact}) --- a median of about $2\%$, with two outliers on the
+two-product instances where the plan uses only a couple of trucks and
+the objective is dominated by inventory cost, so that a single
+over-delivered truckload moves it appreciably. That is the honest way
+to read the large-instance gaps: as an artefact of the bounding
+argument rather than a measure of the cost being left on the table.
+The runs behind Table \ref{tab:exact} allocated four solver threads
+per instance, which starves the pricing sweeps; the outliers shrink
+substantially with more threads, and are reported as they stand. Closing them would require
+embedding the column generation in a branch-and-bound tree rather than
+the depth-first dive used here, which is the natural next step and is
+beyond the scope of this paper.
+
+\paragraph{Where each method belongs.}
+Table \ref{tab:exact} sets the compact model against the matheuristic
+on every instance where the former produces anything, warm-started
+with the latter's plan so that it begins from a feasible incumbent.
+The result is not the one the decomposition literature usually
+reports. Given that warm start, the compact model proves optimality on
+five-period instances in seconds --- five seconds at $26\,490$
+variables, seventeen at $67\,674$ --- and on those instances it is not
+merely competitive with the matheuristic but better, by up to $15\%$.
+At ten periods it returns nothing at all within half an hour.
+
+The honest reading is that the crossover is the planning horizon
+rather than the raw size of the formulation, and that for short
+horizons the compact model should simply be used. The case for the
+decomposition rests on the regime beyond it, where the compact model
+produces no plan and the matheuristic returns a verified one in twenty
+minutes; the industrial instances of Section \ref{sec:case} sit there.
+
+The $11$--$15\%$ deficits at five periods are worth naming precisely,
+because they are not a bounding artefact and not noise: four
+independent seeds agree to within $0.3\%$. In every case the
+matheuristic dispatches exactly one truck more than the optimum, and
+on a plan of two or three trucks that is a third of the objective. The
+cause is granularity. The master can only ship integer combinations of
+the loads that have been generated, and when no such combination
+reaches the delivery target with the smaller fleet it must add a
+truck, whereas the compact model chooses each truck's contents freely.
+Enriching the pool with reduced loads narrows this but does not close
+it. Generating loads against the residual requirement of a fractional
+master solution, rather than against dual prices alone, is the obvious
+remedy and is left for future work.
+
+\endgroup

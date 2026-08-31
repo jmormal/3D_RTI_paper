@@ -1,0 +1,69 @@
+\section{The SCPTOP benchmark}
+\label{appendix:A}
+
+The benchmark against which 3D-SCPTOP is compared is an extension of the
+procurement transport model of \autocite{Diaz-Madronero2014APlanning} to the
+closed-loop, two-node setting studied here. Three modifications are made to
+that model, as stated in Section \ref{sec:results}: fuzzy parameters are
+dropped; the transport capacity restriction is expressed through the volume of
+the individual RTIs against the truck volume rather than a maximum container
+count; and a product may travel in more than one RTI type.
+
+The point of the comparison is to isolate the effect of the loading
+representation, so SCPTOP is made \emph{identical to the transport and
+inventory block of 3D-SCPTOP in every other respect}: the same two nodes, the
+same closed loop of full and folded RTIs, the same lead time, the same coverage
+stock, the same payload cap, the same full-truckload floor and the same
+objective. It differs in exactly one place --- where 3D-SCPTOP asks whether the
+RTIs can be stacked and placed on the trailer floor, SCPTOP asks only whether
+their volumes sum to less than the trailer's.
+
+Let $Y_{gkt}\in\{0,1\}$ indicate that truck $k$ is used in direction $g$ in
+period $t$, and let $Q^{k}_{nt}$ and $Q^{k}_{rt}$ be the full RTIs of product
+$n$, respectively the folded RTIs of type $r$, that it carries. All remaining
+notation is that of Table \ref{tab:sb-Nomenclature}.
+
+\begin{align}
+\text{Min } z
+&= \sum_{g\in G}\sum_{k\in K}\sum_{t\in T} cK\,Y_{gkt}
+ + \sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn}I_{gnt}
+ \label{eq:A-obj}
+\end{align}
+subject to, for all $k\in K$ and $t\in T$,
+\begin{align}
+\sum_{n\in N}\gamma_{p\rho(n)}Q^{k}_{nt} &\le \Gamma_{K}\,Y_{pkt},
+ & \sum_{r\in R}\gamma_{sr}Q^{k}_{rt} &\le \Gamma_{K}\,Y_{skt}
+ \label{eq:A-vol}\\
+\sum_{n\in N}w_{n}Q^{k}_{nt} &\le pK^{w}Y_{pkt},
+ & \sum_{r\in R}w^{\mathrm{f}}_{r}Q^{k}_{rt} &\le pK^{w}Y_{skt}
+ \label{eq:A-weight}
+\end{align}
+together with the full-truckload floor on the binding resource, imposed exactly
+as in \eqref{eq:col-truck}: a dispatched truck must reach a fraction $\alpha$
+of \emph{either} the trailer volume or the payload,
+\begin{align}
+\sum_{n}\gamma_{p\rho(n)}Q^{k}_{nt} \;\ge\; \alpha\Gamma_{K}\bigl(Y_{pkt}-1+\theta_{kt}\bigr),
+\qquad
+\sum_{n}w_{n}Q^{k}_{nt} \;\ge\; \alpha\,pK^{w}\bigl(Y_{pkt}-\theta_{kt}\bigr),
+\label{eq:A-ftl}
+\end{align}
+with $\theta_{kt}\in\{0,1\}$ and the supplier direction analogous. The flows
+aggregate as $Q_{nt}=\sum_{k}Q^{k}_{nt}$ and $Q_{rt}=\sum_{k}Q^{k}_{rt}$, and
+the inventory balances, coverage stock and domains are those of
+\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety}, unchanged.
+
+Constraint \eqref{eq:A-vol} is the whole of the benchmark's loading model: a
+truck is deemed able to carry any set of RTIs whose volumes fit inside the
+trailer's. No footprint, stack height, layer count or crush limit appears.
+Section \ref{sec:results} reports what that omission costs --- not in solution
+quality, where SCPTOP appears cheaper, but in whether the plans it prescribes
+can be loaded at all.
+
+\paragraph{Why the floor is imposed on the binding resource.}
+Writing \eqref{eq:A-ftl} on volume alone, as the original formulation does,
+makes dense freight structurally infeasible: filling $\alpha$ of a $97.9$~m$^3$
+trailer with RTIs at $590$~kg/m$^3$ weighs $27.4$~t against a $24$~t cap, so no
+truck is dispatchable and the instance is empty. Summing the two ratios
+instead is strictly weaker --- it accepts a truck $35\%$ full by volume and
+$20\%$ by weight. The disjunctive form above is used identically in every model
+compared here, so no method is held to an easier standard than another.

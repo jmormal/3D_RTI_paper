@@ -151,29 +151,55 @@ planner actually maintains --- the reduction is $10.5$--$11.9\%$.
 Two further observations matter more than the percentages. First, the
 advantage does not erode as demand variability grows; if anything it
 widens slightly, because a fixed set of average-mix configurations
-tracks a varying programme less and less well. Second, on three of the
-nine scenarios the average-mix procedure cannot serve the demand
-programme at all with its configurations, whereas the matheuristic
-finds a plan in every case. A procedure that occasionally has no
-feasible answer is a different kind of problem from one that is merely
-expensive, and it is invisible until the loading configurations are
-modelled explicitly.
+tracks a varying programme less and less well. Second, the size of the
+configuration set matters as much as its content. Reconstructed from
+average mixes alone the set is very small when demand is stable --- at
+low variability the horizon average and the per-period mixes coincide
+--- and too small to serve the programme. That is a statement about
+the reconstruction rather than about the procedure: the plant operates,
+so the set its crews work with is feasible by construction. Rebuilding
+the variety they accumulate in practice --- one pattern per dominant
+product, single-product patterns, several fill levels --- restores
+feasibility, and the number of configurations needed to do so is
+itself the finding: on the low-variability instances an averaging rule
+supplies fewer than sixty where serving the programme takes around two
+hundred. Keeping a fixed configuration set feasible as the programme
+moves means maintaining a large catalogue by hand, every entry of it
+found by trial.
 
 \paragraph{Pricing technology.}
 The subproblem was solved both as a constraint programme and as a MILP
 with the big-$M$ non-overlap encoding
 \eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2}, under identical
-budgets (Table \ref{tab:oracle}). The two agree on value wherever both
-close the subproblem, which is a useful cross-check on the two
-formulations. Over the small and medium instances the constraint
-programme returns plans $0.4\%$ better on average at comparable cost,
-and on individual pricing calls it is typically three to four times
-faster to prove optimality. We therefore use CP-SAT for the large
-instances. The margin is small enough that the choice is one of
-convenience rather than necessity --- but it does confirm that the
-disjunctive structure of non-overlap is better served by a global
-constraint than by four big-$M$ inequalities per pair of slots.
+budgets, by running the whole matheuristic with each backend on the
+same nine instances (Table \ref{tab:oracle}). Neither technology
+dominates. The mean ratio of objectives is $0.9997$ --- a tie --- and
+the per-instance scatter runs from $-6.4\%$ to $+4.6\%$, so the
+difference between them is smaller than the variability of either.
+Both return feasible plans on every instance.
 
+What does differ is how they get there. The MILP reaches comparable
+plans with roughly half as many columns ($459$ against $875$ on
+average) and slightly less time ($768$ s against $866$ s), and it
+certified a bound on one instance where the constraint programme
+certified none. The interpretation we prefer is that the disjunctive
+structure of non-overlap is propagated more cheaply by a global
+constraint, so the CP oracle answers each pricing call faster and the
+column generation therefore takes more, smaller steps; the MILP
+answers fewer calls but each is more informative. Neither effect is
+large enough to matter for the plans that come out.
+
+We report this because the natural expectation --- that a packing
+subproblem must favour constraint programming --- is not what the
+measurements show, and because an earlier version of this comparison
+appeared to show a clear CP advantage. That version was invalid: the
+MILP oracle then imposed the full-truckload requirement as the sum of
+the volume and weight ratios rather than as the disjunction
+\eqref{eq:col-truck}, so it was solving a strictly weaker problem and
+one of its columns failed verification. Once both oracles solve the
+same problem the advantage disappears. We use CP-SAT for the large
+instances on the strength of the marginally better mean, but the
+choice is immaterial.
 \paragraph{On bounds, and what the method does not deliver.}
 The lower bounds are the weak point of these results and we report
 them as such. Certification requires the packing subproblem to be
@@ -188,9 +214,7 @@ the objective is dominated by inventory cost, so that a single
 over-delivered truckload moves it appreciably. That is the honest way
 to read the large-instance gaps: as an artefact of the bounding
 argument rather than a measure of the cost being left on the table.
-The runs behind Table \ref{tab:exact} allocated four solver threads
-per instance, which starves the pricing sweeps; the outliers shrink
-substantially with more threads, and are reported as they stand. Closing them would require
+Closing them would require
 embedding the column generation in a branch-and-bound tree rather than
 the depth-first dive used here, which is the natural next step and is
 beyond the scope of this paper.
@@ -199,12 +223,20 @@ beyond the scope of this paper.
 Table \ref{tab:exact} sets the compact model against the matheuristic
 on every instance where the former produces anything, warm-started
 with the latter's plan so that it begins from a feasible incumbent.
-The result is not the one the decomposition literature usually
-reports. Given that warm start, the compact model proves optimality on
-five-period instances in seconds --- five seconds at $26\,490$
-variables, seventeen at $67\,674$ --- and on those instances it is not
-merely competitive with the matheuristic but better, by up to $15\%$.
-At ten periods it returns nothing at all within half an hour.
+Both methods receive the same wall-clock budget, which earlier
+revisions of this experiment did not: the matheuristic was given $400$
+seconds against the compact model's $1800$, and the deficits reported at
+that setting were an artefact of the handicap rather than a property of
+the method. Under equal budgets the matheuristic matches or improves on
+the compact model on five of the twelve instances --- twice to the cent,
+and by $0.02$ to $0.20\%$ on three more --- and lies within $0.9\%$ on
+four others, using between a quarter and two thirds of the wall-clock.
+Where the compact model closes an instance outright it remains the
+better tool: it proves optimality in eleven and fourteen seconds on the
+two three-product instances, against which the matheuristic gives away
+$0.03$ and $0.06\%$. At ten periods the compact model returns nothing
+at all within half an hour, while the matheuristic returns a plan with a
+\emph{certified} gap of $1.42\%$.
 
 The honest reading is that the crossover is the planning horizon
 rather than the raw size of the formulation, and that for short
@@ -213,12 +245,19 @@ decomposition rests on the regime beyond it, where the compact model
 produces no plan and the matheuristic returns a verified one in twenty
 minutes; the industrial instances of Section \ref{sec:case} sit there.
 
-The $11$--$15\%$ deficits at five periods are worth naming precisely,
-because they are not a bounding artefact and not noise: four
-independent seeds agree to within $0.3\%$. In every case the
-matheuristic dispatches exactly one truck more than the optimum, and
-on a plan of two or three trucks that is a third of the objective. The
-cause is granularity. The master can only ship integer combinations of
+One deficit is worth naming precisely, because it is neither a bounding
+artefact nor noise: on the eight-product instance the matheuristic
+dispatches fourteen trucks against the compact model's twelve, a
+$10.8\%$ difference that two independently derived lower bounds
+corroborate --- the compact model's own bound and the matheuristic's
+Lagrangian bound agree to within $0.02\%$, and the incumbent lies above
+both. The remaining large percentage in the table is of a different
+kind: on a two-truck instance a single extra dispatch is $28\%$ of the
+objective, where the same physical error costs $1.6$ to $2.3\%$ on the
+benchmark instances, and that instance converges to within $0.008\%$ of
+the compact model once the pricing sweeps are given the threads and the
+time they need. Percentages on plans this small measure granularity
+rather than quality. The cause is granularity. The master can only ship integer combinations of
 the loads that have been generated, and when no such combination
 reaches the delivery target with the smaller fleet it must add a
 truck, whereas the compact model chooses each truck's contents freely.

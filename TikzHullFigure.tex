@@ -1,0 +1,55 @@
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[x=0.028cm, y=0.030cm, >=Latex,
+  lab/.style={font=\scriptsize, align=left},
+  lead/.style={black!55, thin, shorten >=2pt}]
+  % axes
+  \draw[->, thick] (-8,0) -- (262,0) node[below] {\footnotesize $a_{R_1}$};
+  \draw[->, thick] (0,-8) -- (0,208) node[left] {\footnotesize $a_{R_2}$};
+  \foreach \x in {50,100,150,200} \draw (\x,0) -- (\x,-5) node[below] {\tiny \x};
+  \foreach \y in {50,100,150} \draw (0,\y) -- (-5,\y) node[left] {\tiny \y};
+
+  % loads produced by the demand-derived price sweep (the seed pool)
+  \foreach \p in {(0,127),(0,145),(0,163),(0,168),(0,182),(7,168),(14,168),
+                  (16,100),(19,117),(21,168),(22,134),(25,151),(28,126),
+                  (28,168),(142,0),(166,0),(190,0),(214,0),(238,0)}
+      \fill[black!55] \p circle[radius=2.6];
+
+  % upper-right frontier of the convex hull
+  \draw[black!75, dashed, thick] (0,182) -- (28,168) -- (238,0);
+  \node[lab, black!75, rotate=-31] at (168,64) {frontier of $\operatorname{conv}(P^{s})$};
+
+  % dominating blend, and the load an integer plan needs
+  \fill[blue!70!black] (74,131.2) circle[radius=3];
+  \node[star, star points=5, star point ratio=2.2, fill=red!75!black,
+        inner sep=1.7pt] at (74,126) {};
+  \draw[blue!70!black, <->, thin] (74,129) -- (74,128.2);
+
+  \node[lab, blue!70!black, anchor=west, text width=44mm] (bl) at (98,180)
+      {$0.78\,(28,168)+0.22\,(238,0)=(74,131.2)$:\\ the blend the relaxation buys};
+  \draw[lead, blue!70!black] (bl.south west) -- (78,133);
+
+  \node[lab, red!75!black, anchor=west, text width=38mm] (tg) at (100,108)
+      {$(74,126)$: the load a twelve-truck plan needs};
+  \draw[lead, red!75!black] (tg.west) -- (79,125);
+
+  % a dual vector, drawn inside the hull where there is room
+  \draw[->, thick] (150,52) -- ++(26,20);
+  \node[lab, anchor=north east] at (150,52) {$\pi$};
+  \node[lab, anchor=west, text width=50mm] at (28,18)
+      {for \emph{every} $\pi$, the maximum of $\pi^{\!\top}\!a$ is attained
+       at a vertex of the frontier};
+\end{tikzpicture}
+\caption{Why the load a cheaper plan needs is never priced. Dots are
+the supplier-bound loads obtained from a sweep of demand-derived price
+vectors; the dashed line is the upper-right frontier of their convex
+hull. The pricing objective is linear, so for \emph{any} dual vector
+$\pi$ its optimum is attained at a vertex of that frontier. The load
+$(74,126)$ lies strictly below it --- it is dominated componentwise by
+the blend $0.78\,(28,168)+0.22\,(238,0)=(74,131.2)$ --- so no choice of
+duals returns it. The relaxation buys that blend for one truck, while
+an integer plan must pay for both of the trucks it mixes. Branching
+down withdraws a dominating vertex, which moves the duals and makes
+the interior reachable.}
+\label{fig:hull}
+\end{figure}

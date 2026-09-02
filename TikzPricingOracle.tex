@@ -1,0 +1,49 @@
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[>=Latex, thick, node distance=7mm,
+  box/.style={rectangle, rounded corners, draw=black!65, fill=black!4,
+              text width=52mm, align=left, inner sep=5pt, font=\footnotesize},
+  io/.style={rectangle, rounded corners, draw=black!45, fill=white,
+             text width=28mm, align=center, inner sep=4pt, font=\scriptsize},
+  side/.style={rectangle, draw=black!35, dashed, fill=white,
+               text width=44mm, align=left, inner sep=4pt, font=\scriptsize}]
+
+  \node[io] (in) {duals $\pi_{ct}$, $\nu_{gt}$\\[2pt] \emph{or} a target mix $\hat a$};
+  \node[box, right=9mm of in] (oracle)
+    {\textbf{CP oracle: design one truck}\\[3pt]
+     \textbullet\; \emph{stack types} --- one per distinct footprint;
+        layers, heights, per-stack crush cap\\[2pt]
+     \textbullet\; \emph{2D placement} --- slots on the floor, no
+        overlap, orientation\\[2pt]
+     \textbullet\; \emph{truck rules} --- payload, height, and the
+        full-truckload floor};
+  \node[io, right=9mm of oracle] (out)
+    {a column: a fully specified, loadable truck};
+  \draw[->] (in) -- (oracle);
+  \draw[->] (oracle) -- (out);
+
+  \node[side, below=8mm of oracle.south west, anchor=north west] (modes)
+    {\textbf{dual mode}\quad $\max\sum_{c}\pi_{ct}a_{c}$\\
+     returns a \emph{vertex} of $\operatorname{conv}(P^{g})$\\[4pt]
+     \textbf{target mode}\quad
+     $\min\sum_{c}u_{c}(\kappa\,\mathrm{under}_{c}+\mathrm{over}_{c})$\\
+     reaches the \emph{interior} of that hull};
+  \node[side, right=6mm of modes] (fast)
+    {\textbf{making it affordable}\\
+     price only where the relaxation is fractional;\\
+     skip a target already priced on this branch;\\
+     a quarter of the budget first, all of it only on failure};
+  \draw[->, dashed, black!55] (modes.north) -- ++(0,6mm);
+\end{tikzpicture}
+\caption{The pricing subproblem. Geometry, height, crush limits,
+payload and the full-truckload rule are enforced \emph{inside} the
+oracle, so any column it returns is a physically loadable truck. In
+dual mode it maximises the dual-weighted load and therefore returns a
+vertex of $\operatorname{conv}(P^{g})$; in target mode it minimises a
+volume-weighted asymmetric deviation from a wanted composition, which
+is how loads in the interior of that hull are obtained
+(Figure~\ref{fig:hull}). Pricing accounted for $1451$ of $1453$
+seconds of one search, so the measures on the right are what make a
+node affordable.}
+\label{fig:pricing}
+\end{figure}

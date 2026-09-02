@@ -2,32 +2,48 @@
 \caption{Branch and price for 3D-SCPTOP}\label{alg:bp3d}
 \begin{algorithmic}[1]
 \State $\bar P \gets \textsc{InitialColumns}()$
-       \Comment{Section \ref{sec:initcols}}
-\State $sol_{int} \gets False$
-\While{$sol_{int} == False$}
-   \State $rc \gets -1$
-   \While{$rc < 0$}
-      \State $\pi,\nu,\lambda \gets \textsc{SolveRMP}(\bar P)$
-      \State $rc, p \gets \textsc{Price}(\pi,\nu,\tau_{\mathrm{fast}})$
-      \If{$rc \ge 0$}
-         \State $rc, p \gets \textsc{Price}(\pi,\nu,\tau_{\mathrm{exact}})$
-         \Comment{a fast pass may simply have missed a load}
-      \EndIf
-      \If{$rc < 0$}
-         \State Append $p$ to $\bar P$
-      \ElsIf{the pricing bound proves $rc \ge 0$}
-         \State $\mathrm{LB} \gets$ RMP value \Comment{certified, Section \ref{sec:mp}}
-      \EndIf
-   \EndWhile
-   \If{$\lambda$ is integral}
-      \State $sol_{int} \gets True$; \textbf{break}
+       \Comment{price vectors \emph{and} composition targets, Section \ref{sec:initcols}}
+\State $\bar P \gets \textsc{ColumnGeneration}(\bar P,\ \text{stop when } rc > -\varepsilon)$
+       \Comment{the tail buys almost nothing, Section \ref{sec:bounds}}
+\State $\mathcal{O} \gets \{\text{root}\}$;\quad
+       $\mathrm{UB} \gets \infty$;\quad $\mathrm{LB} \gets 0$
+\While{$\mathcal{O} \ne \emptyset$ and time remains}
+   \State $n \gets$ node of $\mathcal{O}$ with the cheapest relaxation;
+          remove it from $\mathcal{O}$
+   \State $\pi,\nu,\lambda \gets \textsc{SolveRMP}(\bar P \mid n)$
+   \If{infeasible or its value $\ge \mathrm{UB}$} \State \textbf{continue}
+          \Comment{pruned} \EndIf
+   \ForAll{$(g,t)$ whose dispatch or delivery total is fractional}
+      \State $\hat a \gets$ residual of $(g,t)$;\quad
+             \textbf{skip} if $\hat a$ was already priced on this branch
+      \State $p \gets \textsc{Price}(\hat a,\ \tau_{\mathrm{short}})$,
+             retried at $\tau_{\mathrm{full}}$ only if empty
+      \State append $p$ to $\bar P$ if new
+      \Comment{columns are created \emph{after} the branching decisions}
+   \EndFor
+   \If{$n$ is a multiple of the heuristic period}
+      \State $\mathrm{UB} \gets \min\{\mathrm{UB},\ \textsc{SolveRMP}(\bar P)$
+             as an integer program$\}$
+             \Comment{supplies the incumbent that makes pruning possible}
    \EndIf
-   \State $(p,t) \gets \arg\max$ fractional part of $\lambda^{g}_{pt}$
-   \State fix $\lambda^{g}_{pt} \ge \lceil \lambda^{g}_{pt}\rceil$,
-          or $\le \lfloor \lambda^{g}_{pt}\rfloor$ if that node is infeasible
+   \State $\lambda \gets$ re-solve the relaxation, columns having been added
+   \If{$\lambda$ and all aggregates are integral}
+      \State $\mathrm{UB} \gets \min\{\mathrm{UB}, \text{value of } \lambda\}$;
+             \textbf{continue}
+   \EndIf
+   \State choose the shallowest fractional level: dispatch total,
+          else delivery total, else $\lambda^{g}_{pt}$
+          \Comment{Section \ref{sec:branching}}
+   \State push \emph{both} children $\le\lfloor v\rfloor$ and
+          $\ge\lceil v\rceil$ onto $\mathcal{O}$
 \EndWhile
 \State $\bar P \gets \bar P \cup \textsc{ReducedLoads}(\bar P)$
-\State $\mathrm{UB} \gets \textsc{SolveRMP}(\bar P)$ as an integer program
+\State $\mathrm{UB} \gets \min\{\mathrm{UB},\ \textsc{SolveRMP}(\bar P)$
+       as an integer program$\}$
+\If{one exact sweep proves $rc \ge 0$ for \emph{every} $(g,t)$}
+   \State $\mathrm{LB} \gets$ LP value over the final $\bar P$
+          \Comment{certified; otherwise no bound is reported}
+\EndIf
 \State verify every dispatched column against
        \eqref{eq:col-geom}--\eqref{eq:col-agg}
 \State \Return $(\mathrm{UB}, \mathrm{LB})$

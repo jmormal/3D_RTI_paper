@@ -237,6 +237,53 @@ transport cost alone cannot exceed the objective, any incumbent
 $\bar z$ gives $\bar X=\bar z/cK$, which is both valid and tight
 enough to be informative.
 
+\paragraph{What we report.}
+We report the certified bound, and when certification fails we report
+no bound at all. The Lagrangian correction \eqref{eq:lagbound} is
+computed and recorded, but not published. In our implementation it
+repeatedly returned values above solutions we could exhibit: on one
+instance it gave $21552.23$ while the pool of that same run admits a
+slack-free plan, verified truck by truck, costing $21502.80$. What
+makes this dangerous rather than merely loose is that no check inside
+the run detects it --- the run's own restricted master lies above the
+true optimum too, so the estimate looks consistent from the inside,
+and only an externally exhibited plan exposes it. A quantity that
+cannot be falsified from within the method is not one we are willing
+to print as a bound.
+
+\paragraph{Two ways a certificate can be void.}
+A certificate is only as good as the exhaustiveness of the check
+behind it, and two implementation details silently broke ours. First,
+the sweep skipped any $(g,t)$ whose commodity duals were all
+non-positive, on the argument that nothing there can pay for a
+truck. The reduced cost is
+$cK-\nu_{gt}-\sum_{c}\pi_{ct}a_{c}$: non-positive duals bound the sum
+by zero, so the argument establishes only $rc\ge cK-\nu_{gt}$ and holds
+just when $cK-\nu_{gt}\ge 0$. The test never looked at $\nu$. A pair
+skipped this way contributes neither a proof nor an objection, so the
+certificate was claimed over pairs nobody had examined --- and it is
+the only path by which that can happen, since a subproblem stopped on
+time already reports itself unproven. Second, when the pricing model
+is infeasible under a threshold constraint, the oracle returned a
+bound of zero. Infeasibility there proves only that no column beats
+the threshold, so the \emph{threshold} bounds $\zeta_{gt}$; reporting
+zero understates $\zeta_{gt}$ and inflates \eqref{eq:lagbound}. Both
+defects push the bound the same way, upwards, which is where every
+invalid bound we observed sat.
+
+\paragraph{When certification is attempted.}
+Certifying at the root is wasteful, because the tail of column
+generation buys almost nothing. Over ten recorded runs, stopping once
+the best reduced cost exceeded $-0.2$ gave up $0.00$ of LP value in
+nine of them and $0.59$ in $18795$ in the tenth, while saving between
+$62$ and $764$ seconds --- time that buys tree nodes, which is where
+the columns that change the fleet actually come from. We therefore
+stop on that tolerance and spend a single exact sweep at the end, over
+the final pool. If nothing prices out there and every $(g,t)$ returned
+a bound, the LP value of that pool is a valid lower bound. It is
+weaker than an unconverged root value, since more columns can only
+lower the LP; unlike it, it is true.
+
 \paragraph{Rounding the duals.}
 The prices $\pi$ are irrational in general and must be rounded before
 entering an integer-coefficient subproblem. We round them
@@ -340,6 +387,23 @@ big-$M$ disjunctions
 relaxation they entail. Section \ref{sec:results} reports the
 resulting difference.
 
+\paragraph{Making the oracle affordable.}
+Pricing dominates the running time of the tree completely: on a
+representative run it accounted for $1451$ of $1453$ seconds, against
+two seconds for every master LP solved at every node, and a comparable
+figure for the incumbent heuristic. Three measures bring it down
+without changing what is solved. A node prices only the directions and
+periods whose dispatch or delivery totals are fractional, those being
+where the relaxation is interpolating between columns it already
+holds. A node's target is derived from the master's residual, which
+barely moves between a parent and its child, so a target already
+priced on the same branch is skipped rather than solved again. And
+each call receives a quarter of its budget first, the full budget only
+if the short call returns nothing. Together these took a node from
+about $28$ seconds to a few milliseconds, and raised the number of
+nodes explored within a fixed budget by more than an order of
+magnitude.
+
 \subsection{Initial Columns}
 \label{sec:initcols}
 
@@ -352,6 +416,25 @@ which maximises the RTI count; every single-commodity vector
 $\mathbf{e}_{c}$, which yields pure loads and keeps the master
 flexible; the aggregate demand mix and each per-period demand mix;
 and a set of random draws from the simplex for diversification.
+
+A pool built from price vectors alone is \emph{extreme by
+construction}. For any weights, \eqref{eq:PPObjective} attains its
+optimum at an extreme point of $\operatorname{conv}(P^{g})$, so no
+demand-derived vector --- aggregate, per-period, random or pure ---
+can return a load from the interior of that hull. Yet interior mixes
+are precisely what an integer plan needs when demand does not
+decompose into full trucks, and on one instance the entire supplier
+side of the pool consisted of two pure loads for this reason. We
+therefore also seed by \emph{composition}: given a wanted mix
+$\hat{a}$, the oracle minimises the volume-weighted asymmetric
+deviation
+$\sum_{c}u_{c}\bigl(\kappa\,\mathrm{under}_{c}+\mathrm{over}_{c}\bigr)$
+with $\kappa>1$, subject to the same geometry, payload, crush and
+full-truckload constraints. Because the target enters only the
+objective, a mix too small to fill a truck degrades into the closest
+fillable load rather than into infeasibility --- which is what the
+last truck of a period needs. Seeding the per-period demand mixes this
+way took that supplier side from two pure loads to five mixed ones.
 
 Two devices make this robust. A constructive \emph{grid layout} ---
 tile the floor with a single stack type in its better orientation and
@@ -378,19 +461,56 @@ columns; the integer master cannot.
 \subsection{Branching}
 \label{sec:branching}
 
-Here we use the depth-first branching rule: once no new promising
-column can be found through the pricing problem, we take the
-$\lambda^{g}_{pt}$ with the largest fractional part and fix it to its
-ceiling, that is, we fix a truck load that must be dispatched. If
-rounding up renders the node infeasible, we round the same variable
-down instead. After fixing the variable, more columns are generated
-by the pricing algorithm, so new truck loads keep being created
-\emph{after} the branching decisions --- which a price-and-branch
-scheme over a frozen pool cannot do. Repeating this strategy leads to
-an integer solution of the RMP. As in \cite{Moreno2024Clustering},
-this method of branching does not guarantee an optimal solution, but
-it does guarantee a feasible one; the certified bound of Section
-\ref{sec:mp} is what quantifies the remaining loss.
+Branching on the master's own variables is the obvious rule and the
+wrong one here. Fixing the $\lambda^{g}_{pt}$ with the largest
+fractional part removes one load from the relaxation, but a
+Dantzig--Wolfe master of this kind holds many columns that differ only
+in detail, so the relaxation answers by shifting the same fractional
+weight onto a near-identical column. Run to exhaustion on one
+benchmark instance with the pool frozen, that rule branched $3000$
+times and reached depth $1971$ without ever producing an integral
+relaxation.
+
+We therefore branch on aggregates first, taking the shallowest level
+that is fractional:
+\begin{enumerate}
+\item the \emph{dispatch total} $\sum_{p}\lambda^{g}_{pt}$ of a
+  direction and period. It is integer in every feasible plan and has
+  no symmetric twin: every column of that period lies on one side of
+  the row, so the dichotomy partitions plans rather than one
+  variable's value.
+\item the \emph{delivery totals} $Q_{nt}$ and $Q^{r}_{rt}$. These
+  count physical units and are integer in any plan, although the
+  relaxation leaves them continuous. They are original variables, so
+  bounding one tightens a row that already carries a dual and the
+  pricing subproblem keeps its structure.
+\item the column variables $\lambda^{g}_{pt}$, as a last resort.
+\end{enumerate}
+The two aggregate levels absorb the fractionality almost entirely: on
+a representative run, $61$ of $90$ branchings were on delivery totals,
+$29$ on dispatch totals, and none on a column variable.
+
+Both children are kept and the node with the cheapest relaxation is
+expanded next, so a bad first move is recovered rather than carried to
+the bottom. Every node re-prices, and that is what makes the tree
+worth its cost. The pricing objective \eqref{eq:PPObjective} is
+linear, so for \emph{any} dual vector its optimum is an extreme point
+of $\operatorname{conv}(P^{g})$. A balanced load lying inside that
+hull is dominated by a fractional combination of extreme loads and can
+therefore never be priced, however the duals move --- the relaxation
+buys the combination for one truck, while an integer plan must pay for
+each of them. Branching down withdraws the dominating columns, the
+duals move, and the oracle is asked for a load that does not yet
+exist. On the hardest of our instances the search derived in this way
+the only mixed supplier load a twelve-truck plan admits, which column
+generation had not produced in $978$ columns; with it, a plan one
+truck smaller became reachable.
+
+Reaching integrality by branching alone remains slow, so the integer
+master is solved over the current pool every $20$ nodes and its
+solution kept as incumbent. It costs milliseconds at these pool sizes,
+and without it the open list only grows, there being no incumbent
+against which to prune.
 
 \input{BranchAlgorithm3D}
 

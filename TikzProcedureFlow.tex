@@ -1,0 +1,64 @@
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[>=Latex, font=\footnotesize, node distance=5.5mm,
+  pbox/.style={rectangle, draw=black, fill=white, text width=58mm,
+               align=center, inner sep=4pt, minimum height=8mm},
+  dec/.style={diamond, aspect=2.6, draw=black, fill=white, inner sep=1pt,
+              align=center, font=\scriptsize},
+  note/.style={font=\scriptsize, align=left, text width=34mm, color=black!65},
+  ln/.style={->, thick}]
+
+  \node[pbox] (init) {\textsc{InitialColumns}: price vectors
+        \emph{and} composition targets};
+  \node[pbox, below=of init] (cg) {column generation, stopped once
+        $rc>-\varepsilon$};
+  \node[pbox, below=of cg] (node) {expand the open node with the
+        cheapest relaxation};
+  \node[pbox, below=of node] (price) {price the $(g,t)$ whose dispatch or
+        delivery totals are fractional};
+  \node[dec, below=7mm of price] (int) {all aggregates and\\ $\lambda$ integral?};
+  \node[pbox, below=8mm of int] (branch) {branch on the shallowest fractional
+        level;\\ push \emph{both} children};
+  \node[pbox, below=of branch] (ip) {enrich with reduced loads;\\
+        integer master over the final pool};
+  \node[dec, below=7mm of ip] (cert) {one exact sweep:\\ nothing prices out,
+        every $(g,t)$?};
+  \node[pbox, below=8mm of cert] (verify) {verify every dispatched truck
+        against \eqref{eq:col-geom}--\eqref{eq:col-agg}};
+
+  \draw[ln] (init) -- (cg);
+  \draw[ln] (cg) -- (node);
+  \draw[ln] (node) -- (price);
+  \draw[ln] (price) -- (int);
+  \draw[ln] (int) -- node[right, font=\scriptsize, pos=0.35] {no} (branch);
+  \draw[ln] (branch.west) -- ++(-6mm,0) |- (node.west);
+  \draw[ln] (int.east) -- node[above, font=\scriptsize, pos=0.9] {yes}
+        ++(17mm,0) |- (ip.east);
+  \draw[ln] (ip) -- (cert);
+  \draw[ln] (cert) -- node[right, font=\scriptsize, pos=0.35]
+        {either way} (verify);
+
+  % the periodic primal heuristic, and what each decision yields
+  \node[note, right=20mm of node.east, anchor=west] (heur)
+      {every $20$ nodes the integer master is solved over the pool: the
+       incumbent it returns is what makes pruning possible};
+  \draw[->, dashed, black!55] (heur.west) -- (node.east);
+  \node[note, right=20mm of cert.east, anchor=west] (bnd)
+      {\textbf{yes}: the LP value over that pool is a certified lower
+       bound.\\[2pt] \textbf{no}: no bound is reported; the Lagrangian
+       estimate is recorded only};
+  \draw[->, dashed, black!55] (bnd.west) -- (cert.east);
+  \node[note, left=8mm of price.west, anchor=east, text width=30mm]
+      {a target already priced on this branch is skipped; each call gets a
+       quarter of its budget first};
+\end{tikzpicture}
+\caption{MATH-3D-SCPTOP end to end. Columns keep being generated
+\emph{after} the branching decisions, which a price-and-branch scheme
+over a frozen pool cannot do. Two conventions are worth reading off the
+diagram: the incumbent comes from an integer master solved
+periodically over the pool rather than from the tree reaching
+integrality, and the bound is decided at a single point --- either an
+exact sweep proves that nothing prices out anywhere, or no bound is
+reported at all.}
+\label{fig:procedure}
+\end{figure}

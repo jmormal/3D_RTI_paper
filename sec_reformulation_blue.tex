@@ -191,6 +191,8 @@ loads with negative reduced cost are added as new columns, the RMP is
 re-solved to generate new duals, and the process repeats until no
 further improving column is discovered.
 
+\input{TikzProcedureFlow}
+
 \subsection{Lower bounds}
 \label{sec:bounds}
 
@@ -240,7 +242,7 @@ enough to be informative.
 
 \paragraph{What we report.}
 We report the certified bound, and when certification fails we report
-no bound at all. The Lagrangian correction \eqref{eq:lagbound} is
+no bound at all; Figure~\ref{fig:bound} states the rule exactly. The Lagrangian correction \eqref{eq:lagbound} is
 computed and recorded, but not published. In our implementation it
 repeatedly returned values above solutions we could exhibit: on one
 instance it gave $21552.23$ while the pool of that same run admits a
@@ -284,6 +286,8 @@ the final pool. If nothing prices out there and every $(g,t)$ returned
 a bound, the LP value of that pool is a valid lower bound. It is
 weaker than an unconverged root value, since more columns can only
 lower the LP; unlike it, it is true.
+
+\input{TikzBoundDecision}
 
 \paragraph{Rounding the duals.}
 The prices $\pi$ are irrational in general and must be rounded before

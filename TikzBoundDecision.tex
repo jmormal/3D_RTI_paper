@@ -1,0 +1,43 @@
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[>=Latex, font=\footnotesize, node distance=6mm,
+  dec/.style={diamond, aspect=2.9, draw=black, fill=white, inner sep=1pt,
+              align=center, font=\scriptsize},
+  obox/.style={rectangle, draw=black, fill=white, align=center,
+              inner sep=4pt, text width=40mm},
+  why/.style={font=\scriptsize, align=left, text width=42mm, color=black!65},
+  ln/.style={->, thick}]
+
+  \node[dec] (d1) {did every $(g,t)$\\ return a pricing bound?};
+  \node[dec, below=9mm of d1] (d2) {was optimality \emph{proved}\\ for each of them?};
+  \node[dec, below=9mm of d2] (d3) {is the value at or below\\ the pool LP and the incumbent?};
+  \node[obox, below=9mm of d3] (rep) {\textbf{report it}\\ certified lower bound};
+  \node[obox, right=24mm of d3] (wd) {\textbf{withdraw it}\\ and record the reason};
+  \node[obox, left=20mm of d2] (none) {\textbf{report no bound}\\ record the Lagrangian
+        value as an estimate only};
+
+  \draw[ln] (d1) -- node[right, font=\scriptsize] {yes} (d2);
+  \draw[ln] (d2) -- node[right, font=\scriptsize] {yes} (d3);
+  \draw[ln] (d3) -- node[right, font=\scriptsize] {yes} (rep);
+  \draw[ln] (d3) -- node[above, font=\scriptsize] {no} (wd);
+  \draw[ln] (d1.west) -- ++(-8mm,0) |- node[above, font=\scriptsize, pos=0.75] {no} (none.north);
+  \draw[ln] (d2.west) -- node[above, font=\scriptsize] {no} (none.east);
+
+  \node[why, right=6mm of d1.east, anchor=west]
+      {a pair skipped by the dual test was never examined: the skip is sound
+       only when $cK-\nu_{gt}\ge 0$, which the test must check};
+  \node[why, right=6mm of d2.east, anchor=west]
+      {an oracle finding nothing is not a proof that nothing exists ---
+       reduced costs oscillate, $-0.01$ at one iteration and $-104.54$ two
+       later};
+\end{tikzpicture}
+\caption{What may be reported as a lower bound. A quantity above a
+solution one can exhibit is not a loose bound but a false statement,
+and it inflates every optimality gap computed from it. The final test
+is a falsifiability check rather than a proof step: on one instance the
+Lagrangian value $21552.23$ survived every internal consistency check
+while that run's own pool admitted a verified, slack-free plan costing
+$21502.80$ --- the restricted master lies above the true optimum too,
+so nothing inside the run contradicts it.}
+\label{fig:bound}
+\end{figure}

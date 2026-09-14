@@ -1,6 +1,6 @@
 
 
-This paper proposes a new mixed integer linear mathematical programming (MILP) model, dubbed 3D-SCPTOP, for procurement transport planning in manufacturing supply chains. The model effectively integrates procurement and transport decisions while accounting for three-dimensional full-truck loading constraints and managing returnable transport items (RTIs). Thus, we optimise the material to procure for an assembly manufacturing site, RTIs closed-loop management,  and the involved transport decisions, including the truck loading configuration. Procurement transport decisions are based on the demand of assemblers, the supplier's inventory levels, and the dimensions of the truck / RTIs. The optimisation model aims to minimise transportation and inventory costs. Because the loading subproblem is NP-hard and is replicated once per loading configuration, the compact model is intractable at industrial sizes. We therefore reformulate it by Dantzig--Wolfe decomposition, taking the complete loaded truck as the unit of decision: a column is a fully specified, geometrically realisable truck load, so every placement, height, crush-limit, payload and full-truckload constraint holds inside it by construction, and the per-stack crush cap is evaluated on the actual product mix rather than on a worst-case bound. Columns are priced on demand by a constraint programming oracle and integrality is reached by branch and price, yielding MATH-3D-SCPTOP. Branching is on aggregates --- dispatch totals per direction and period, then delivery totals --- rather than on the master's own variables, which a Dantzig--Wolfe master answers merely by shifting fractionality onto a near-identical column; the search keeps both children, and re-prices at every node, so the loads that make an integer plan cheap are generated after the branching decisions rather than assumed available beforehand. We report a lower bound only when the pricing oracle has proved that no column prices out, and none otherwise. Every plan the method returns is re-verified truck by truck, independently of the solver that produced it. The approach was validated with a case study in an automotive seating first-tier supplier, where it improves on the company's spreadsheet-based procedure in both transport and inventory terms. A comparison against a benchmark model that represents truck capacity volumetrically shows why the loading geometry cannot be abstracted away: the volumetric model returns cheaper plans whose truck loads cannot physically be loaded.
+This paper proposes a new mixed integer linear mathematical programming (MILP) model, dubbed 3D-SCPTOP, for procurement transport planning in manufacturing supply chains. The model effectively integrates procurement and transport decisions while accounting for three-dimensional full-truck loading constraints and managing returnable transport items (RTIs). Thus, we optimise the material to procure for an assembly manufacturing site, RTIs closed-loop management,  and the involved transport decisions, including the truck loading configuration. Procurement transport decisions are based on the demand of assemblers, the supplier's inventory levels, and the dimensions of the truck / RTIs. The optimisation model aims to minimise transportation and inventory costs. Because the loading subproblem is NP-hard and is replicated once per loading configuration, the compact model is intractable at industrial sizes. We therefore reformulate it by Dantzig--Wolfe decomposition, taking the complete loaded truck as the unit of decision: a column is a fully specified, geometrically realisable truck load, so every placement, height, crush-limit, payload and full-truckload constraint holds inside it by construction, and the per-stack crush cap is evaluated on the actual product mix rather than on a worst-case bound. Columns are priced on demand by a constraint programming oracle, and the master is solved by a two-level branch and bound over the fleet vector, yielding MATH-3D-SCPTOP: the first level partitions on the total number of trucks, whose cost the relaxation cannot offset, and the second on the per-period dispatch counts inside a fixed total. Its primal heuristic is a flow-first construction that decides shipment quantities and truck counts in an aggregate integer master and then partitions each period's deliveries into exactly that many legal trucks, so the pool receives both the extreme loads that pricing returns and the balanced loads that no dual vector can produce. We report a lower bound only when a full pricing sweep has proved that no column prices out, and none otherwise; no run reported here proves optimality. Every plan the method returns is re-verified truck by truck, independently of the solver that produced it. The approach is evaluated on a case study in an automotive seating first-tier supplier against the company's spreadsheet-based procedure, and against a benchmark model that represents truck capacity volumetrically, whose plans are cheaper on paper to the extent that the truck loads it prescribes cannot be placed in a trailer.
 
 \keywords{ Procurement, inventory, transport planning,  full-truckload, 3D container loading }
 \section{Introduction}
@@ -15,7 +15,7 @@ Furthermore, the capacity constraints used in the scientific literature on procu
 
 
 
-In this paper, we present four main contributions: (i) formulating a novel MILP model, 3D-SCPTOP, that integrates procurement transport, RTI management and inventory decisions with stack-based full-truck loading constraints; (ii) reformulating it by Dantzig--Wolfe decomposition over geometrically realisable truck loads, and solving it by branch and price with a constraint programming pricing oracle, giving MATH-3D-SCPTOP; (iii) showing that a volumetric representation of truck capacity, as used in the procurement transport literature, yields plans that are cheaper on paper but cannot be loaded in practice; (iv) validating and testing the proposal with a case study at a first-tier supplier of the automotive sector.
+In this paper, we present four main contributions: (i) formulating a novel MILP model, 3D-SCPTOP, that integrates procurement transport, RTI management and inventory decisions with stack-based full-truck loading constraints; (ii) reformulating it by Dantzig--Wolfe decomposition over geometrically realisable truck loads, and solving it by a branch and bound over the fleet vector with column generation, a constraint programming pricing oracle and a flow-first construction, giving MATH-3D-SCPTOP; (iii) showing that a volumetric representation of truck capacity, as used in the procurement transport literature, yields plans that are cheaper on paper but cannot be loaded in practice; (iv) validating and testing the proposal with a case study at a first-tier supplier of the automotive sector.
 
 
 Readers are referred to the typology by  \autocite{Wascher2007AnProblems} for a global view of container loading problems, where the different dimensions of the loading problem are described. Furthermore, \autocite{Silva2019ExactProblems} summarise the exact methods used in the literature to solve container loading problems, and \autocite{Zhao2016INTERNATIONALAlgorithms} explore other solution approaches in the literature. Readers are also referred to the literature reviews of \autocite{Mosca2019IntegratedReview} and \autocite{Diaz-Madronero2015ADecisions}, which focus more on integrating inventory decisions and transport. Here, we jointly address container loading, procurement transport and inventory decisions. {\color{blue} Furthermore, we refer readers () for insights about the packaging methods used in supply chains.}
@@ -433,7 +433,6 @@ Based on the literature review and the identified research gaps, our proposal is
 
 
 
-{
 % =====================================================================
 % 3D-SCPTOP -- stack-based reformulation (cleaned)
 % Drop-in replacement for Sections 3 and 4 of the original manuscript,
@@ -593,33 +592,34 @@ same instances.
   replacing them.
 \end{itemize}
 
-Table \ref{tab:case} reports the outcome. MATH-3D-SCPTOP reduces total cost by
-$11.4$--$12.8\%$ and the number of truck dispatches by $17$--$18\%$ relative to
-the company procedure, and by $10.5$--$11.9\%$ relative to the hand-drawn
-benchmark. Two features of the result matter more than the percentages.
+Table \ref{tab:case} reports the outcome. \pending{The case study has
+not yet been run against the current code; the baselines must be solved
+to the same gap as the method before any saving is stated, and the
+percentages of the previous revision are not repeated here.} Two
+features of the comparison matter more than the percentages, and both
+are readings of the regenerated table rather than claims made in
+advance of it.
 
-First, the advantage does not erode as demand variability grows; if anything it
-widens slightly, from $11.4\%$ under low variability to $12.8\%$ under high.
-This is the expected behaviour of a fixed configuration set: an average mix
-tracks a varying programme progressively worse, and the gap it leaves is
-exactly what generated configurations recover. It also answers the concern
-that such a method should help only when configurations and demand are
-misaligned --- the misalignment is not an occasional pathology but the normal
-state of a programme that varies at all.
+First, whether the advantage erodes as demand variability grows. The
+expected behaviour of a fixed configuration set is the opposite: an
+average mix tracks a varying programme progressively worse, and the
+gap it leaves is exactly what generated configurations recover. If
+the table bears that out, it also answers the concern that such a
+method should help only when configurations and demand are misaligned
+--- the misalignment would then be the normal state of a programme that
+varies at all, not an occasional pathology.
 
 Second, the size of the configuration set matters as much as its
 content. Reconstructing the company's set from average mixes alone
 yields very few distinct configurations when demand is stable --- at
 low variability the horizon average, the thirds and the per-period
-mixes all coincide --- and a set that small cannot serve the
+mixes all coincide --- and a set that small may not serve the
 programme. Crews do not work that way: they accumulate patterns by
 trial, one for the days a single product runs heavy, another for when
-two share the load. Reconstructing that variety (the average mix, one
-pattern per dominant product, single-product patterns, each at several
-fill levels) restores feasibility, and the number of configurations
-required to reach it is itself informative: on the low-variability
-instances the averaging rule supplies fewer than sixty, while serving
-the programme takes around two hundred.
+two share the load. The number of configurations the reconstruction
+needs before the programme can be served is itself informative, and
+is reported with the table (\pending{configuration counts by
+scenario}).
 
 That is the practical cost of a fixed configuration set. It is not
 that the procedure fails --- the plant plainly operates --- but that
@@ -632,17 +632,17 @@ that the loading configuration stops being an input fixed months in advance and
 becomes a decision taken with the transport plan, so that when the container
 mix moves the configurations move with it.
 
-Therefore, this method shows promising results for reducing inventory and transport costs, particularly under variable demand and misalignment between loading configurations and container types.
+The method is therefore designed to reduce inventory and transport costs precisely where a fixed configuration set is weakest: under variable demand and misalignment between loading configurations and container types. The regenerated case-study table is what will say whether it does.
 \section{Conclusions}
-We herein propose a MILP model, 3D-SCPTOP, to tackle procurement transportation planning at an operational level by incorporating stack-based full-truck loading constraints into its considerations. Given the NP-hard nature of the placement subproblem and the fact that the compact model replicates it once per loading configuration, we reformulate the problem by Dantzig--Wolfe decomposition, taking the complete loaded truck as the unit of decision, and solve it by branch and price with a constraint programming pricing oracle, giving MATH-3D-SCPTOP. Because every column is a fully specified truck layout, the plans the method returns are executable by construction and can be handed to a loading crew as a drawing; we verify each dispatched truck independently of the solver that produced it.
+We herein propose a MILP model, 3D-SCPTOP, to tackle procurement transportation planning at an operational level by incorporating stack-based full-truck loading constraints into its considerations. Given the NP-hard nature of the placement subproblem and the fact that the compact model replicates it once per loading configuration, we reformulate the problem by Dantzig--Wolfe decomposition, taking the complete loaded truck as the unit of decision, and solve it by a branch and bound over the fleet vector with column generation, a constraint programming pricing oracle and a flow-first construction as primal heuristic, giving MATH-3D-SCPTOP. Because every column is a fully specified truck layout, the plans the method returns are executable by construction and can be handed to a loading crew as a drawing; we verify each dispatched truck independently of the solver that produced it.
 
 A case study has also been conducted within an automotive SC that comprises a car assembler, a first-tier supplier and a second-tier supplier. The objective of the 3D-SCPTOP model is twofold: (i) to minimise the total number of trucks used; (ii) to minimise inventory holding costs. This approach takes into account the complexities of supply chain logistics in the automotive industry by demonstrating a successful integration of procurement transport planning and 3D loading constraints.
 
-Managerial implications in a SC context are oriented to the proposed solution methodology, improving the solutions found by the company’s procedure. It is also able to adapt to demand changes while finding high-quality solutions in reasonable computational times.
+Managerial implications in a SC context are oriented to the proposed solution methodology, which is designed to improve on the solutions found by the company’s procedure and to adapt to demand changes while returning executable plans in reasonable computational times; the case-study comparison that measures this is being regenerated under declared budgets.
 
-A second managerial finding concerns the representation of transport capacity. Procurement transport models in the literature typically express it volumetrically. Our comparison shows that doing so is not a harmless simplification: the volumetric model returns plans that are cheaper on paper precisely because most of the truck loads it prescribes cannot be placed in a trailer at all. A planner acting on such a plan discovers the shortfall on the loading dock, not in the model.
+A second managerial point concerns the representation of transport capacity. Procurement transport models in the literature typically express it volumetrically. Our comparison is built to show that doing so is not a harmless simplification: a volumetric model can return plans that are cheaper on paper precisely because truck loads it prescribes cannot be placed in a trailer at all, and each such load is submitted to an independent placeability proof so that the share is measured rather than asserted. A planner acting on such a plan discovers the shortfall on the loading dock, not in the model.
 
-Nevertheless, several challenges remain for further research lines to deal with; for instance, the inclusion of multiple suppliers to better represent complex supply chains. A more comprehensive transport operation model could be achieved by incorporating routing aspects, such as vehicle routing with 3D loading constraints. Future work may also relax the layer-homogeneity assumption to allow intra-layer mixing of RTI types, or extend the placement block with axle load-balance constraints. On the algorithmic side, the search already keeps both children of a branch and re-prices at every node, but reaching integrality by branching alone remains out of reach within a practical budget, and the incumbent still comes from an integer master solved over the pool; closing that gap, together with certifying the bound at every node rather than once at the end, would turn the matheuristic into an exact method. Integrating sourcing and delivery transport decisions could improve supply chain efficiency. Finally, the incorporation of production scheduling into the model has the potential of offering a cohesive approach to supply chain planning optimisation by aligning production timelines with transportation and inventory strategies.
+Nevertheless, several challenges remain for further research lines to deal with; for instance, the inclusion of multiple suppliers to better represent complex supply chains. A more comprehensive transport operation model could be achieved by incorporating routing aspects, such as vehicle routing with 3D loading constraints. Future work may also relax the layer-homogeneity assumption to allow intra-layer mixing of RTI types, or extend the placement block with axle load-balance constraints. On the algorithmic side, the fleet tree is an exact scheme whose bound is certified at the root and at the one region that could refute the incumbent, and in no run reported here did it close its gap: the cost of certifying every node with a geometric pricing oracle is what stands between the matheuristic and a proof, and a cheaper certificate for the constraint programme is the natural next step. The extension of the construction to 3D loading --- keeping the volumetric partition as a relaxation and cutting off the parts a placeability proof refutes --- is implemented and under evaluation. Integrating sourcing and delivery transport decisions could improve supply chain efficiency. Finally, the incorporation of production scheduling into the model has the potential of offering a cohesive approach to supply chain planning optimisation by aligning production timelines with transportation and inventory strategies.
 
 
 % \input{vistex/MF2}

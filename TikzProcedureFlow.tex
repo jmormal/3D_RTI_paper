@@ -1,64 +1,80 @@
 \begin{figure}[h!]
 \centering
-\begin{tikzpicture}[>=Latex, font=\footnotesize, node distance=5.5mm,
-  pbox/.style={rectangle, draw=black, fill=white, text width=58mm,
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[>=Latex, font=\footnotesize, node distance=5mm,
+  pbox/.style={rectangle, draw=black, fill=white, text width=62mm,
                align=center, inner sep=4pt, minimum height=8mm},
-  dec/.style={diamond, aspect=2.6, draw=black, fill=white, inner sep=1pt,
+  dec/.style={diamond, aspect=2.8, draw=black, fill=white, inner sep=1pt,
               align=center, font=\scriptsize},
-  note/.style={font=\scriptsize, align=left, text width=34mm, color=black!65},
+  note/.style={font=\scriptsize, align=left, text width=38mm, color=black!65},
   ln/.style={->, thick}]
 
-  \node[pbox] (init) {\textsc{InitialColumns}: price vectors
-        \emph{and} composition targets};
-  \node[pbox, below=of init] (cg) {column generation, stopped once
-        $rc>-\varepsilon$};
-  \node[pbox, below=of cg] (node) {expand the open node with the
-        cheapest relaxation};
-  \node[pbox, below=of node] (price) {price the $(g,t)$ whose dispatch or
-        delivery totals are fractional};
-  \node[dec, below=7mm of price] (int) {all aggregates and\\ $\lambda$ integral?};
-  \node[pbox, below=8mm of int] (branch) {branch on the shallowest fractional
-        level;\\ push \emph{both} children};
-  \node[pbox, below=of branch] (ip) {enrich with reduced loads;\\
-        integer master over the final pool};
-  \node[dec, below=7mm of ip] (cert) {one exact sweep:\\ nothing prices out,
-        every $(g,t)$?};
-  \node[pbox, below=8mm of cert] (verify) {verify every dispatched truck
+  \node[pbox] (init) {one full single-commodity truck per commodity
+        and direction};
+  \node[pbox, below=of init] (cert) {\textbf{root certificate}: column
+        generation to convergence --- full sweep, every $(g,t)$, every
+        pair proved};
+  \node[pbox, below=of cert] (cons) {\textbf{root construction}: aggregate
+        integer master $\to$ partition $\to$ integer master over pool +
+        parts};
+  \node[pbox, below=of cons] (push) {push $X\ge X^{\star}+1$,\;
+        $X\le X^{\star}-1$,\; $X=X^{\star}$};
+  \node[pbox, below=of push] (pop) {pop a region; impose it as fleet rows;
+        LP over the pool};
+  \node[dec, below=6mm of pop] (filt) {pool LP $\ge$ incumbent\\ and policy certifies?};
+  \node[pbox, below=7mm of filt] (cg) {certify the region; prune if
+        $\mathrm{LB}\ge$ incumbent or infeasible};
+  \node[pbox, below=of cg] (node) {construct \emph{inside} the region;
+        its columns join the pool; update the incumbent};
+  \node[dec, below=6mm of node] (fix) {region fixes $X$\\ and depth below cap?};
+  \node[pbox, below=7mm of fix] (murty) {push the three Murty children
+        around the plan just built};
+  \node[pbox, below=of murty] (front) {\textbf{frontier}: filter and
+        certify the regions left open; global bound $=$ min over them,
+        floored at the root};
+  \node[pbox, below=of front] (verify) {verify every dispatched truck
         against \eqref{eq:col-geom}--\eqref{eq:col-agg}};
 
-  \draw[ln] (init) -- (cg);
+  \draw[ln] (init) -- (cert);
+  \draw[ln] (cert) -- (cons);
+  \draw[ln] (cons) -- (push);
+  \draw[ln] (push) -- (pop);
+  \draw[ln] (pop) -- (filt);
+  \draw[ln] (filt) -- node[right, font=\scriptsize, pos=0.4] {yes} (cg);
+  \draw[ln] (filt.west) -- node[above, font=\scriptsize, pos=0.3] {no: parent's bound}
+        ++(-14mm,0) |- (node.west);
   \draw[ln] (cg) -- (node);
-  \draw[ln] (node) -- (price);
-  \draw[ln] (price) -- (int);
-  \draw[ln] (int) -- node[right, font=\scriptsize, pos=0.35] {no} (branch);
-  \draw[ln] (branch.west) -- ++(-6mm,0) |- (node.west);
-  \draw[ln] (int.east) -- node[above, font=\scriptsize, pos=0.9] {yes}
-        ++(17mm,0) |- (ip.east);
-  \draw[ln] (ip) -- (cert);
-  \draw[ln] (cert) -- node[right, font=\scriptsize, pos=0.35]
-        {either way} (verify);
+  \draw[ln] (node) -- (fix);
+  \draw[ln] (fix) -- node[right, font=\scriptsize, pos=0.4] {yes} (murty);
+  \draw[ln] (fix.east) -- node[above, font=\scriptsize, pos=0.3] {no}
+        ++(16mm,0) |- (pop.east);
+  \draw[ln] (murty.east) -- ++(16mm,0) |- (pop.east);
+  \draw[ln, dashed] (pop.west) -- ++(-14mm,0) |- node[left, font=\scriptsize, pos=0.25, align=right]
+        {stack empty\\ or deadline} (front.west);
+  \draw[ln] (front) -- (verify);
 
-  % the periodic primal heuristic, and what each decision yields
-  \node[note, right=20mm of node.east, anchor=west] (heur)
-      {every $20$ nodes the integer master is solved over the pool: the
-       incumbent it returns is what makes pruning possible};
-  \draw[->, dashed, black!55] (heur.west) -- (node.east);
-  \node[note, right=20mm of cert.east, anchor=west] (bnd)
-      {\textbf{yes}: the LP value over that pool is a certified lower
-       bound.\\[2pt] \textbf{no}: no bound is reported; the Lagrangian
-       estimate is recorded only};
-  \draw[->, dashed, black!55] (bnd.west) -- (cert.east);
-  \node[note, left=8mm of price.west, anchor=east, text width=30mm]
-      {a target already priced on this branch is skipped; each call gets a
-       quarter of its budget first};
-\end{tikzpicture}
-\caption{MATH-3D-SCPTOP end to end. Columns keep being generated
-\emph{after} the branching decisions, which a price-and-branch scheme
-over a frozen pool cannot do. Two conventions are worth reading off the
-diagram: the incumbent comes from an integer master solved
-periodically over the pool rather than from the tree reaching
-integrality, and the bound is decided at a single point --- either an
-exact sweep proves that nothing prices out anywhere, or no bound is
-reported at all.}
+  \node[note, right=18mm of cert.east, anchor=west]
+      {the RMP value is an \emph{upper} bound on the master LP until
+       pricing converges; only a full, proved sweep turns it into a
+       lower bound};
+  \node[note, right=18mm of cons.east, anchor=west]
+      {step 2 decides the objective with no oracle call; steps 3--4 build
+       the trucks it implies};
+  \node[note, right=18mm of pop.east, anchor=west]
+      {a pool LP over-estimates the region's LP: it can say ``cannot
+       prune'', never ``bound''};
+  \node[note, right=18mm of node.east, anchor=west]
+      {two generators, one pool: pricing gives vertices of
+       $\operatorname{conv}(P^{g})$, the construction gives interior
+       points; a pruned node still leaves its columns behind};
+\end{tikzpicture}}
+\caption{The fleet tree end to end. The search's value is not that it
+reaches an integral relaxation --- it essentially never does --- but
+that each region asks the construction for a plan under constraints the
+root never saw, and the loads that plan needs are added to a pool every
+later node can use. The bound is decided by certification alone: a
+region that was not swept in full, with every pair proved, carries its
+parent's bound, and the global bound is the minimum over the frontier
+rather than the root value.}
 \label{fig:procedure}
 \end{figure}

@@ -48,8 +48,9 @@ $\pi$ its optimum is attained at a vertex of that frontier. The load
 $(74,126)$ lies strictly below it --- it is dominated componentwise by
 the blend $0.78\,(28,168)+0.22\,(238,0)=(74,131.2)$ --- so no choice of
 duals returns it. The relaxation buys that blend for one truck, while
-an integer plan must pay for both of the trucks it mixes. Branching
-down withdraws a dominating vertex, which moves the duals and makes
-the interior reachable.}
+an integer plan must pay for both of the trucks it mixes. The
+construction of Section~\ref{sec:branching} reaches the interior
+directly: it partitions a delivery vector into exact loads instead of
+asking a linear objective for them.}
 \label{fig:hull}
 \end{figure}

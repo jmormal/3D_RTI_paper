@@ -8,7 +8,7 @@
   side/.style={rectangle, draw=black!35, dashed, fill=white,
                text width=44mm, align=left, inner sep=4pt, font=\scriptsize}]
 
-  \node[io] (in) {duals $\pi_{ct}$, $\nu_{gt}$\\[2pt] \emph{or} a target mix $\hat a$};
+  \node[io] (in) {duals $\pi_{ct}$, $\nu_{gt}$\\[2pt] rounded \emph{upwards}};
   \node[box, right=9mm of in] (oracle)
     {\textbf{CP oracle: design one truck}\\[3pt]
      \textbullet\; \emph{stack types} --- one per distinct footprint;
@@ -23,27 +23,28 @@
   \draw[->] (oracle) -- (out);
 
   \node[side, below=8mm of oracle.south west, anchor=north west] (modes)
-    {\textbf{dual mode}\quad $\max\sum_{c}\pi_{ct}a_{c}$\\
-     returns a \emph{vertex} of $\operatorname{conv}(P^{g})$\\[4pt]
-     \textbf{target mode}\quad
-     $\min\sum_{c}u_{c}(\kappa\,\mathrm{under}_{c}+\mathrm{over}_{c})$\\
-     reaches the \emph{interior} of that hull};
+    {\textbf{what it returns}\quad $\max\sum_{c}\pi_{ct}a_{c}$\\
+     a \emph{vertex} of $\operatorname{conv}(P^{g})$, for any duals\\[4pt]
+     \textbf{what it cannot return}\\
+     an interior load; those come from the construction
+     (Section~\ref{sec:branching}) and join the same pool};
   \node[side, right=6mm of modes] (fast)
-    {\textbf{making it affordable}\\
-     price only where the relaxation is fractional;\\
-     skip a target already priced on this branch;\\
-     a quarter of the budget first, all of it only on failure};
+    {\textbf{what a certificate costs}\\
+     one full sweep: every $(g,t)$, no memoisation, no restriction to
+     the pairs a branch touched, every call closed to proven
+     optimality; with this oracle that confines certification to the
+     root and the region $X\le X^{\star}-1$};
   \draw[->, dashed, black!55] (modes.north) -- ++(0,6mm);
 \end{tikzpicture}
 \caption{The pricing subproblem. Geometry, height, crush limits,
 payload and the full-truckload rule are enforced \emph{inside} the
-oracle, so any column it returns is a physically loadable truck. In
-dual mode it maximises the dual-weighted load and therefore returns a
-vertex of $\operatorname{conv}(P^{g})$; in target mode it minimises a
-volume-weighted asymmetric deviation from a wanted composition, which
-is how loads in the interior of that hull are obtained
-(Figure~\ref{fig:hull}). Pricing accounted for $1451$ of $1453$
-seconds of one search, so the measures on the right are what make a
-node affordable.}
+oracle, so any column it returns is a physically loadable truck. It
+maximises the dual-weighted load and therefore returns a vertex of
+$\operatorname{conv}(P^{g})$ whatever the duals are; loads in the
+interior of that hull (Figure~\ref{fig:hull}) are supplied by the
+construction of Section~\ref{sec:branching}, not by pricing. A
+certificate needs every call of a sweep closed to proven optimality,
+which on this oracle is the whole budget of a node, and is therefore
+spent only where a bound changes what the tree can conclude.}
 \label{fig:pricing}
 \end{figure}

@@ -13,22 +13,21 @@ that the model replicates a complete two-dimensional packing problem
 $|G|\cdot|L|$ times, and each replica contributes
 $4\binom{|I|}{2}$ big-$M$ disjunctions
 \eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2} whose linear
-relaxation is weak. The third is that the configurations are mutually
-interchangeable, so the search tree is massively symmetric.
+relaxation is weak. The third is that the model indexes its variables
+by truck, and trucks are interchangeable: any two used trucks of the
+same direction and period can swap their entire loads, so every
+solution appears in the search a factorial number of times.
 
-It would overstate the case to call the resulting model intractable in
-general, and Section \ref{sec:results} shows why: with a good
-incumbent supplied, instances spanning five periods are solved to
-proven optimality in seconds, even at sixty thousand variables. What
-defeats it is the planning horizon. The placement block is replicated
-per configuration rather than per period, but the truck-assignment and
-inventory blocks grow with $|T|$, and it is their interaction with the
-symmetric configuration design that explodes: at ten periods the model
-returns no feasible solution within half an hour. Operational
-procurement planning lives at horizons of weeks, so that is the regime
-the method has to serve, and it is the regime in which a decomposition
-earns its place. A column generation scheme based on branch and price
-is therefore developed.
+The third difficulty is the one that scales worst, because it does not
+depend on the loading geometry at all. It is present in the volumetric
+benchmark of Appendix \ref{appendix:A} exactly as in 3D-SCPTOP, and
+Section \ref{sec:results} reports what it costs there: on the larger
+instances the compact model's search tree grows until it reaches the
+memory budget it is given, with its dual bound stalled. Operational
+procurement planning lives at horizons of weeks over dozens of
+trucks, so that is the regime the method has to serve, and it is the
+regime in which a decomposition earns its place. A column generation
+scheme based on branch and price is therefore developed.
 
 The key components of the branch and price algorithm are the master
 problem (MP), the restricted master problem (RMP), the pricing
@@ -44,7 +43,10 @@ $Q_{rt}$ of \eqref{sb:eq:flow-n}--\eqref{sb:eq:flow-r}. The model is
 therefore block-angular, with one independent block per dispatched
 truck. This suggests taking as the unit of decision neither the
 individual RTI nor the loading configuration, but the
-\emph{complete loaded truck}.
+\emph{complete loaded truck}. A column is then a load, and the master
+decides how many trucks carry it, so the trucks are never
+distinguished in the first place and the symmetry disappears by
+construction.
 
 The MP is typically too large to be solved directly because it
 involves a huge number of columns representing all possible truck
@@ -117,9 +119,8 @@ that produced it.
 Constraint \eqref{eq:col-truck} is the same disjunction as
 \eqref{sb:eq:util}--\eqref{sb:eq:utilw}, written on the load a truck
 actually carries rather than on the capacity its configuration
-provides. Section \ref{sec:results} shows that both regimes occur
-across the benchmark: at $v=60$ the trailer fills by volume, at
-$v=120$ it fills by weight.
+provides. Both regimes occur in practice: coarse containers fill the
+trailer by volume, dense ones by weight.
 
 Let $\lambda^{g}_{pt}\in\mathbb{Z}_{\ge0}$ count the trucks
 dispatched in direction $g$ and period $t$ carrying load $p$, and let
@@ -150,6 +151,9 @@ holding cost. Constraints
 \eqref{eq:MPlinkp}--\eqref{eq:MPlinks} state that the flow of full
 and folded RTIs is exactly what the dispatched trucks carry, and
 \eqref{eq:MPfleet} caps the fleet available per direction and period.
+The coverage-stock rows \eqref{sb:eq:safety} are carried over for both
+nodes and both kinds of stock, full and folded, exactly as the compact
+model states them (Section \ref{sec:corrections}).
 
 MP and 3D-SCPTOP have the same optimal value whenever $|L|$ is not
 restricted a priori. Given a 3D-SCPTOP solution, each used truck
@@ -190,114 +194,89 @@ loads with negative reduced cost are added as new columns, the RMP is
 re-solved to generate new duals, and the process repeats until no
 further improving column is discovered.
 
-\input{TikzProcedureFlow}
+Three implementation details of the RMP matter for what follows.
+First, the RMP carries \emph{artificial} variables on the linking
+rows \eqref{eq:MPlinkp}--\eqref{eq:MPlinks} and on the coverage-stock
+rows, penalised at a large cost $M$ in the objective, so that it is
+feasible for any pool and always yields duals; a solution with
+positive artificials is not a plan. Second, it carries cumulative
+cover cuts: by period $t$ the plant must have received cumulative
+demand plus coverage stock, and dividing that requirement by the most
+a single truck can carry bounds the number of trucks dispatched up to
+$t-lt$ from below. They tighten the relaxation considerably, and their
+duals, like those of every row the search later adds, are folded into
+$\nu_{gt}$ so that \eqref{eq:redcost} remains the exact reduced cost.
+Third, the RMP is \emph{period-scoped}: a column priced against the
+duals of period $t$ receives a dispatch variable at $t$ alone, and only
+the shared initial pool is offered to every period. This changes the
+size of the restricted master, not the master --- the pricing
+subproblem is still solved per $(g,t)$ over the whole of $P^{g}$, so a
+sweep that finds nothing at any pair still proves that the restricted
+LP equals the master LP.
 
 \subsection{Lower bounds}
 \label{sec:bounds}
 
 Care is needed here, because the natural candidate is not a bound at
 all. The RMP is a \emph{restriction} of the MP: it optimises over
-$\bar P^{g}\subseteq P^{g}$, so
-$z_{\mathrm{RMP}}\ge z_{\mathrm{MP}}$. Reporting the RMP value as a
-lower bound is therefore valid only once column generation has
-converged, and wrong before then. We use two bounds accordingly.
+$\bar P^{g}\subseteq P^{g}$, so its LP value satisfies
+$z_{\mathrm{RMP}}\ge z_{\mathrm{MP}}$. Until column generation has
+converged the RMP value is an \emph{upper} bound on the master LP,
+and reporting it as a lower bound is simply wrong. Three rules decide
+what may be reported; Figure~\ref{fig:bound} states them as a
+decision.
 
-\paragraph{Certified bound.}
+\paragraph{A certificate needs a full sweep.}
 When the PP has \emph{proven} that
 $\zeta_{gt}:=\max_{p\in P^{g}}\sum_{c}\pi_{ct}a^{p}_{c}\le cK-\nu_{gt}$
 for every $g$ and $t$, no column outside $\bar P^{g}$ has negative
 reduced cost, so the current duals are feasible for the dual of the
 full MP. Weak duality then gives
 $z_{\mathrm{RMP}}=z_{\mathrm{MP}}\le z^{\star}_{\text{3D-SCPTOP}}$.
-We report such bounds as \emph{certified}; the gap against the final
-integer solution is then a genuine optimality gap, and not a gap with
-respect to a pool.
+The proof is only as good as the exhaustiveness of the sweep behind
+it. Two economies that are legitimate while columns are still coming
+--- pricing only the pairs whose aggregates are fractional, and
+skipping a pair whose duals round to something already priced ---
+forfeit the right to certify, because a pair nobody looked at proves
+nothing. Certification therefore runs one sweep over \emph{every}
+$(g,t)$, with no memoisation and no restriction to the pairs a branch
+has touched, and every call must come back \emph{proved}: an oracle
+stopped on its time limit reports itself unproven, and a sweep with
+one such pair proves nothing about the whole. When any of this fails
+the node carries its parent's bound, which remains valid for the
+child because the child's region is a subset of the parent's.
 
-\paragraph{Lagrangian bound.}
-Certification requires the two-dimensional packing subproblem to be
-closed to proven optimality, which is not always possible inside a
-sensible time limit. Dualising
-\eqref{eq:MPlinkp}--\eqref{eq:MPlinks} with the current $\pi$ leaves a
-subproblem in which each column enters with reduced cost
-\eqref{eq:redcost}; since the number of trucks an optimal solution can
-dispatch in total is bounded by $\bar X$, the correction
-\begin{equation}
-z_{\mathrm{MP}}\;\ge\;z_{\mathrm{RMP}}
-   \;+\;\bar X\cdot\min_{g\in G,\,t\in T}\;
-   \min\bigl\{0,\;cK-\zeta_{gt}-\nu_{gt}\bigr\}
-\label{eq:lagbound}
-\end{equation}
-holds at every iteration, converged or not. Two choices make
-\eqref{eq:lagbound} usable rather than vacuous. The value substituted
-for $\zeta_{gt}$ is the solver's own dual bound on the PP, never its
-incumbent, so a subproblem stopped early still yields a valid
-verdict. And $\bar X$ must be a genuine bound on the fleet actually
-used: the textbook form charges $|K|$ separately for every direction
-and period, which here is roughly an order of magnitude too
-pessimistic and drove the reported gaps above $80\%$. Because
-transport cost alone cannot exceed the objective, any incumbent
-$\bar z$ gives $\bar X=\bar z/cK$, which is both valid and tight
-enough to be informative.
+\paragraph{The bound is the raw LP value.}
+The RMP objective includes the penalty $M$ on the artificial
+variables. The cost of a plan is the value \emph{net} of that penalty,
+and that is the right number to report as a cost; the bound is the
+\emph{raw} value with the penalty included, because the penalty is
+part of the LP whose dual the certificate rests on. Positive
+artificials at convergence mean the region cannot be made feasible by
+any column of $P^{g}$, so the region is infeasible in the true problem
+and is pruned rather than bounded.
 
-\paragraph{What we report.}
-We report the certified bound, and when certification fails we report
-no bound at all; Figure~\ref{fig:bound} states the rule exactly. The Lagrangian correction \eqref{eq:lagbound} is
-computed and recorded, but not published. In our implementation it
-repeatedly returned values above solutions we could exhibit: on one
-instance it gave $21552.23$ while the pool of that same run admits a
-slack-free plan, verified truck by truck, costing $21502.80$. What
-makes this dangerous rather than merely loose is that no check inside
-the run detects it --- the run's own restricted master lies above the
-true optimum too, so the estimate looks consistent from the inside,
-and only an externally exhibited plan exposes it. A quantity that
-cannot be falsified from within the method is not one we are willing
-to print as a bound.
-
-\paragraph{Two ways a certificate can be void.}
-A certificate is only as good as the exhaustiveness of the check
-behind it, and two implementation details silently broke ours. First,
-the sweep skipped any $(g,t)$ whose commodity duals were all
-non-positive, on the argument that nothing there can pay for a
-truck. The reduced cost is
-$cK-\nu_{gt}-\sum_{c}\pi_{ct}a_{c}$: non-positive duals bound the sum
-by zero, so the argument establishes only $rc\ge cK-\nu_{gt}$ and holds
-just when $cK-\nu_{gt}\ge 0$. The test never looked at $\nu$. A pair
-skipped this way contributes neither a proof nor an objection, so the
-certificate was claimed over pairs nobody had examined --- and it is
-the only path by which that can happen, since a subproblem stopped on
-time already reports itself unproven. Second, when the pricing model
-is infeasible under a threshold constraint, the oracle returned a
-bound of zero. Infeasibility there proves only that no column beats
-the threshold, so the \emph{threshold} bounds $\zeta_{gt}$; reporting
-zero understates $\zeta_{gt}$ and inflates \eqref{eq:lagbound}. Both
-defects push the bound the same way, upwards, which is where every
-invalid bound we observed sat.
-
-\paragraph{When certification is attempted.}
-Certifying at the root is wasteful, because the tail of column
-generation buys almost nothing. Over ten recorded runs, stopping once
-the best reduced cost exceeded $-0.2$ gave up $0.00$ of LP value in
-nine of them and $0.59$ in $18795$ in the tenth, while saving between
-$62$ and $764$ seconds --- time that buys tree nodes, which is where
-the columns that change the fleet actually come from. We therefore
-stop on that tolerance and spend a single exact sweep at the end, over
-the final pool. If nothing prices out there and every $(g,t)$ returned
-a bound, the LP value of that pool is a valid lower bound. It is
-weaker than an unconverged root value, since more columns can only
-lower the LP; unlike it, it is true.
-
-\input{TikzBoundDecision}
+\paragraph{The restricted value is not a bound.}
+At every node the search first solves the LP over the current pool.
+That value sits \emph{above} the region's true LP value and is used
+only as a filter: if even the over-estimate lies below the incumbent
+the region cannot be pruned and the expensive sweep is not run. It is
+never entered as a bound, and a search stopped by its deadline reports
+the last \emph{certified} value it holds, not the last LP it solved.
+Reduced costs oscillate here, and a sweep that finds nothing is
+not convergence unless every pair was proved.
 
 \paragraph{Rounding the duals.}
 The prices $\pi$ are irrational in general and must be rounded before
 entering an integer-coefficient subproblem. We round them
 \emph{upwards}, so the rounded objective dominates the true one and
-the returned bound remains an over-estimate of $\zeta_{gt}$, as both
-bounds above require. Rounding to nearest --- the obvious choice ---
+the returned bound remains an over-estimate of $\zeta_{gt}$, as the
+certificate requires. Rounding to nearest --- the obvious choice ---
 makes the bound a slight under-estimate and silently invalidates the
-certificate; in our first implementation it returned $1000.1$ against
-a threshold of $1000.0$ on instances where the reduced cost was
-exactly zero, and convergence was never declared.
+certificate; with reduced costs at exactly zero it returns a value
+just above the threshold and convergence is never declared.
+
+\input{TikzBoundDecision}
 
 \subsection{Pricing Subproblem}
 \label{sec:pp}
@@ -388,145 +367,213 @@ core is the disjunctive non-overlap relation
 a global constraint, whereas a MILP must encode it with the four
 big-$M$ disjunctions
 \eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2} and accept the weak
-relaxation they entail. Section \ref{sec:results} reports the
-resulting difference.
+relaxation they entail. Whichever technology solves it, the oracle
+must solve \emph{this} problem: an earlier MILP oracle imposed the
+full-truckload requirement as the sum of the two ratios in
+\eqref{eq:col-truck} rather than as their maximum, solved a strictly
+weaker problem, and returned a column that failed verification.
 
-\paragraph{Making the oracle affordable.}
-Pricing dominates the running time of the tree completely: on a
-representative run it accounted for $1451$ of $1453$ seconds, against
-two seconds for every master LP solved at every node, and a comparable
-figure for the incumbent heuristic. Figure~\ref{fig:pricing} shows the oracle and its two objectives. Three measures bring its cost down without changing what is solved. A node prices only the directions and
-periods whose dispatch or delivery totals are fractional, those being
-where the relaxation is interpolating between columns it already
-holds. A node's target is derived from the master's residual, which
-barely moves between a parent and its child, so a target already
-priced on the same branch is skipped rather than solved again. And
-each call receives a quarter of its budget first, the full budget only
-if the short call returns nothing. Together these took a node from
-about $28$ seconds to a few milliseconds, and raised the number of
-nodes explored within a fixed budget by more than an order of
-magnitude.
+\paragraph{The volumetric oracle.}
+The same master, with the same inventory balances, coverage stock and
+fleet limit, is also solved over the loads of the volumetric benchmark
+of Appendix \ref{appendix:A}: there a load is a column iff its volume
+fits the trailer's, its weight the payload, and it clears the
+full-truckload floor on the binding resource. Pricing is then a
+two-constraint integer knapsack that closes in milliseconds. Running
+both oracles through one master and one search is what makes the
+comparison of Section \ref{sec:results} an experiment about the
+loading representation rather than about two solution technologies,
+and it is the setting in which the search of Section
+\ref{sec:branching} can afford to certify at every node.
+
+\paragraph{What a certificate costs.}
+Figure~\ref{fig:pricing} shows the oracle and what it can and cannot
+return. A certified node is a full sweep, $2|T|$ calls each closed to
+proven optimality. On the volumetric oracle that is affordable at
+every node. On the constraint programme it is not --- a single call on
+the benchmark instances takes tens of seconds to minutes, and a sweep
+is then the whole budget of a node --- so with the CP oracle
+certification is confined to the root and to the one region that can
+refute the incumbent outright (Section \ref{sec:branching}), and the
+rest of the budget goes to constructing plans.
 
 \input{TikzPricingOracle}
 
 \subsection{Initial Columns}
 \label{sec:initcols}
 
-Column generation converges from any starting set, but a good one
-shortens it and leaves the integer master more freedom to combine
-loads. We initialise $\bar P^{g}$ by solving
-\eqref{eq:PPObjective}--\eqref{eq:PPsymm} under a family of
-demand-derived price vectors rather than duals: the unit vector,
-which maximises the RTI count; every single-commodity vector
-$\mathbf{e}_{c}$, which yields pure loads and keeps the master
-flexible; the aggregate demand mix and each per-period demand mix;
-and a set of random draws from the simplex for diversification.
+The search starts from the plainest possible pool: one maximally full
+truck per commodity and direction, obtained in the geometric case from
+a constructive \emph{grid layout} --- tile the floor with the
+commodity's stack type in its better orientation and fill each slot to
+its height, weight and crush limit --- and in the volumetric case by
+filling to capacity. No demand mixes, no diversification and no
+reduced variants are seeded, so whatever the search then reaches, it
+reached by pricing, branching and construction. The single-commodity
+pool guarantees that no direction is ever left without columns, and
+because these columns are shared they are offered to every period.
 
-A pool built from price vectors alone is \emph{extreme by
-construction}, as Figure~\ref{fig:hull} shows on a real pool. For any weights, \eqref{eq:PPObjective} attains its
-optimum at an extreme point of $\operatorname{conv}(P^{g})$, so no
-demand-derived vector --- aggregate, per-period, random or pure ---
-can return a load from the interior of that hull. Yet interior mixes
-are precisely what an integer plan needs when demand does not
-decompose into full trucks, and on one instance the entire supplier
-side of the pool consisted of two pure loads for this reason. We
-therefore also seed by \emph{composition}: given a wanted mix
-$\hat{a}$, the oracle minimises the volume-weighted asymmetric
-deviation
-$\sum_{c}u_{c}\bigl(\kappa\,\mathrm{under}_{c}+\mathrm{over}_{c}\bigr)$
-with $\kappa>1$, subject to the same geometry, payload, crush and
-full-truckload constraints. Because the target enters only the
-objective, a mix too small to fill a truck degrades into the closest
-fillable load rather than into infeasibility --- which is what the
-last truck of a period needs. Seeding the per-period demand mixes this
-way took that supplier side from two pure loads to five mixed ones.
+What such a pool, and any pool grown from it by pricing alone,
+\emph{cannot} contain is shown in Figure~\ref{fig:hull} on a real
+pool. For any dual vector, \eqref{eq:PPObjective} attains its
+optimum at an extreme point of $\operatorname{conv}(P^{g})$, so
+pricing returns extreme loads only. A balanced load lying inside the
+hull is dominated componentwise by a fractional blend of
+single-commodity trucks; the relaxation buys that blend for the price
+of one truck, while an integer plan must pay for each truck it mixes.
+No choice of duals returns the interior load, however the search moves
+them. Interior loads are precisely what an integer plan needs when a
+period's demand does not decompose into full trucks, and the method
+therefore has a second generator for them, described next.
 
 \input{TikzHullFigure}
 
-Two devices make this robust. A constructive \emph{grid layout} ---
-tile the floor with a single stack type in its better orientation and
-fill each slot to its height, weight and crush limit --- is supplied
-to the CP solver as a hint and retained as a fallback column. For the
-near-tiling footprints of a real RTI catalogue it is already close to
-the best attainable utilisation, and it guarantees that no direction
-is ever left without columns. And any pricing call that returns
-nothing is retried with a longer limit before being believed, since
-an empty answer usually means the solver was starved of time rather
-than that no load exists.
-
-Before the integer master is solved, the pool is enriched with
-\emph{reduced} loads obtained by unloading RTIs from existing
-columns. Removing RTIs from a valid layout cannot break the geometry,
-the height budget, a crush limit or the payload, so every reduced
-load that still clears the full-truckload floor is itself feasible.
-This matters because columns priced at the LP optimum are close to
-full trucks, and integer combinations of full trucks are too coarse
-to land inside the narrow delivery band left open by the supplier's
-coverage stock. The LP hides this, because it can interpolate between
-columns; the integer master cannot.
-
-\subsection{Branching}
+\subsection{The fleet tree}
 \label{sec:branching}
 
 Branching on the master's own variables is the obvious rule and the
-wrong one here. Fixing the $\lambda^{g}_{pt}$ with the largest
-fractional part removes one load from the relaxation, but a
-Dantzig--Wolfe master of this kind holds many columns that differ only
-in detail, so the relaxation answers by shifting the same fractional
-weight onto a near-identical column. Run to exhaustion on one
-benchmark instance with the pool frozen, that rule branched $3000$
-times and reached depth $1971$ without ever producing an integral
-relaxation.
+wrong one here. Bounding one $\lambda^{g}_{pt}$ removes one load
+from the relaxation, but a Dantzig--Wolfe master of this kind holds
+many columns that differ only in detail, so the relaxation answers by
+shifting the same fractional weight onto a near-identical column. Run
+to exhaustion on a benchmark instance with the pool frozen, that rule
+branched thousands of times without ever producing an integral
+relaxation. Branching on a per-period dispatch total has no symmetric
+twin, but it has an escape of its own: the relaxation answers a bound
+on one period by moving a truckload into a neighbouring period, at
+the price of one period's holding cost, so the bound barely moves.
 
-We therefore branch on aggregates first, taking the shallowest level
-that is fractional:
+We therefore branch on the \emph{fleet}. Let
+$n_{gt}:=\sum_{p\in P^{g}}\lambda^{g}_{pt}$ be the dispatch total of
+direction $g$ in period $t$, $\mathbf{n}=(n_{gt})_{g,t}$ the fleet
+vector, and $X:=\sum_{g,t}n_{gt}$ the total fleet. Both are integer in
+every plan, and every bound placed on them is a row of the master that
+already carries a dual, so the pricing subproblem is untouched. Given
+an incumbent plan with fleet vector $\mathbf{n}^{\star}$ and total
+$X^{\star}$, the tree has two levels that ask different questions;
+Figure~\ref{fig:branching} draws them.
+
+\paragraph{Level 1: the total fleet.}
+Transport cost is exactly $cK\cdot X$, so a bound on the total has
+nothing to compensate it. Three regions partition the space:
+\begin{itemize}
+\item $X\ge X^{\star}+1$ costs a whole truck with no offset. A plan in
+  it improves on the incumbent only if the extra truck saves more than
+  $cK$ minus the incumbent's gap in inventory, and the region's
+  relaxation says at once whether that is possible; it is usually
+  pruned by bound.
+\item $X=X^{\star}$ fixes transport. Everything inside is inventory
+  allocation, and this is where the second level goes.
+\item $X\le X^{\star}-1$ is the only region that can beat the incumbent
+  outright --- ``is there a plan with fewer trucks?'' --- and is
+  therefore worth a certificate of its own.
+\end{itemize}
+
+\paragraph{Level 2: the fleet vector, inside $X=X^{\star}$.}
+Fix an order on the pairs $(g,t)$ --- periods first, then direction.
+The fleet vector of any plan in the region differs from
+$\mathbf{n}^{\star}$ at a first index $j$, or nowhere. Branching at
+the first pair where a solution may differ gives three children,
+$n_{j}\le n^{\star}_{j}-1$, $n_{j}\ge n^{\star}_{j}+1$ and
+$n_{j}=n^{\star}_{j}$, and the equality child is partitioned again
+at index $j+1$ (Murty's scheme). The regions are disjoint and
+exhaustive, and the equality child is expanded first so that the
+neighbourhood of the incumbent is searched before its complement.
+The partition is taken around the plan \emph{constructed at that
+node}, not around the global incumbent, so a node that improves the
+incumbent is immediately re-partitioned around the better plan and
+nothing has to be restarted. The chain is cut at a fixed depth.
+
+\paragraph{Processing a node.}
+A node is a region imposed on the RMP as fleet rows. The LP over the
+current pool is solved first; being an over-estimate of the region's
+LP it is a filter and never a bound (Section \ref{sec:bounds}). If the
+filter allows pruning and the certification policy admits the node,
+column generation is run to a certificate; a certified value at or
+above the incumbent prunes the node, an infeasible region is
+discarded, and a certified value below the incumbent is recorded as
+that region's bound. In every other case the node carries its
+parent's bound. The construction below is then run \emph{inside} the
+region --- it must stay inside, or the children it induces partition
+around a point outside the node --- and if it returns a plan cheaper
+than the incumbent the incumbent is replaced. Finally, if the region
+fixes $X$, the Murty children are generated around the constructed
+plan.
+
+\paragraph{The construction.}
+The primal heuristic is a flow-first construction in four steps. It
+decides first how much moves and how many trucks carry it, and builds
+the trucks afterwards.
 \begin{enumerate}
-\item the \emph{dispatch total} $\sum_{p}\lambda^{g}_{pt}$ of a
-  direction and period. It is integer in every feasible plan and has
-  no symmetric twin: every column of that period lies on one side of
-  the row, so the dichotomy partitions plans rather than one
-  variable's value.
-\item the \emph{delivery totals} $Q_{nt}$ and $Q^{r}_{rt}$. These
-  count physical units and are integer in any plan, although the
-  relaxation leaves them continuous. They are original variables, so
-  bounding one tightens a row that already carries a dual and the
-  pricing subproblem keeps its structure.
-\item the column variables $\lambda^{g}_{pt}$, as a last resort.
+\item \emph{Restricted master.} The LP over the pool, inside the
+  region, gives the duals and the fractional point the node stands on.
+\item \emph{Aggregate integer master.} On a fresh copy of the RMP the
+  shipment quantities $Q_{nt}$, $Q_{rt}$ and the dispatch totals
+  $n_{gt}$ are made integral, with the column variables left
+  \emph{continuous}, and the region's bounds are imposed on the
+  $n_{gt}$ as well as on the columns. This is where the objective is
+  actually decided: it chooses the flows and the fleet, and it does so
+  without a single oracle call. A solution carrying artificial slack
+  beyond a small tolerance means the region is infeasible over this
+  pool and the node is abandoned; a small slack means the integer
+  solve ran out of time short of a clean solution, and the partitions
+  built from it are still valid loads that step 4 may combine with the
+  pool.
+\item \emph{Partition.} For each direction and period, the delivery
+  vector chosen in step 2 is split into \emph{exactly} $n_{gt}$ legal
+  trucks by a small MIP: integer parts summing to the vector, each
+  within the trailer's volume and payload and clearing the
+  full-truckload floor on the binding resource, ordered by weight to
+  break the symmetry among parts. If $n_{gt}$ parts cannot be formed,
+  $n_{gt}+1$ is tried, provided the region allows it. A timeout is not
+  a proof: only a model that comes back infeasible says the split is
+  impossible.
+\item \emph{Integer master over pool plus partitions.} The parts are
+  added to the pool as columns and the integer master is solved over
+  the enlarged pool, warm-started with the partition itself. Its
+  solution is the node's plan, and its value the candidate incumbent.
 \end{enumerate}
-Figure~\ref{fig:branching} summarises the rule. The two aggregate levels absorb the fractionality almost entirely: on
-a representative run, $61$ of $90$ branchings were on delivery totals,
-$29$ on dispatch totals, and none on a column variable.
 
-Both children are kept and the node with the cheapest relaxation is
-expanded next, so a bad first move is recovered rather than carried to
-the bottom. Every node re-prices, and that is what makes the tree
-worth its cost. The pricing objective \eqref{eq:PPObjective} is
-linear, so for \emph{any} dual vector its optimum is an extreme point
-of $\operatorname{conv}(P^{g})$. A balanced load lying inside that
-hull is dominated by a fractional combination of extreme loads and can
-therefore never be priced, however the duals move --- the relaxation
-buys the combination for one truck, while an integer plan must pay for
-each of them. Branching down withdraws the dominating columns, the
-duals move, and the oracle is asked for a load that does not yet
-exist. On the hardest of our instances the search derived in this way
-the only mixed supplier load a twelve-truck plan admits, which column
-generation had not produced in $978$ columns; with it, a plan one
-truck smaller became reachable.
+\paragraph{Two generators, one pool.}
+Pricing returns extreme points of $\operatorname{conv}(P^{g})$; the
+construction returns exact partitions of a delivery vector, which are
+interior points that no dual vector reaches
+(Figure~\ref{fig:hull}). A column is a feasible load, and a node's
+constraints bound the multipliers $\lambda$, not the load, so a column
+found anywhere is valid everywhere: every column from either generator
+goes into the one shared pool, and a node that is pruned still leaves
+its columns behind. That is the mechanism by which the tree improves
+on the root: it is not that it reaches an integral relaxation --- it
+essentially never does --- but that each region it visits asks the
+construction for a plan under constraints the root never saw, and the
+loads that plan needs are added for every later node to use.
 
-Reaching integrality by branching alone remains slow, so the integer
-master is solved over the current pool every $20$ nodes and its
-solution kept as incumbent. It costs milliseconds at these pool sizes,
-and without it the open list only grows, there being no incumbent
-against which to prune.
+\paragraph{What the tree reports.}
+The incumbent is the cheapest verified plan found by any construction.
+The root bound is the certificate obtained before any branching. The
+global bound of a branch and bound is the minimum over its
+\emph{frontier}, not its root: a region nobody expanded contributes
+nothing, which is why a dive reports its root value however far it has
+gone. At the end of the budget the regions still open are therefore
+swept --- filtered by their pool LP and certified where the filter
+allows --- and the global bound is the minimum over the certified
+bounds of the open regions, floored at the root bound and capped at
+the incumbent. Optimality is claimed \emph{only} when the root is
+certified, no region remains open, no restart has broken the
+partition, and the incumbent meets the global bound. None of the runs
+reported in Section \ref{sec:results} meets these conditions, and the
+paper claims no proof of optimality anywhere.
 
 \input{TikzBranchingLevels}
+
+\input{TikzProcedureFlow}
 
 \input{BranchAlgorithm3D}
 
 \subsection{Two corrections to the compact model}
 \label{sec:corrections}
 
-Implementing 3D-SCPTOP surfaced two defects worth recording, both
+Implementing 3D-SCPTOP surfaced two points worth recording, both
 invisible at $lt=1$.
 
 \paragraph{Inventory recursion under a lead time.}
@@ -547,9 +594,59 @@ survived; with $lt\ge2$ the original silently discards $lt-1$ periods
 of stock.
 
 \paragraph{Coverage stock on folded RTIs.}
-Requiring $Ie_{gtr}\ge ss_{gtr}$ at \emph{both} nodes, as
-\eqref{sb:eq:safety} does, forces the plant to hoard empties it has
-no use for and can render an otherwise feasible instance infeasible
-when the RTI fleet is tight. The operationally meaningful requirement
-is that the \emph{supplier} hold enough folded RTIs to cover its
-production, so we impose the bound at $g=s$ only.
+Constraint \eqref{sb:eq:safety} requires $Ie_{gtr}\ge ss_{gtr}$ at
+\emph{both} nodes, and every model in this paper enforces it that way:
+the master of Section \ref{sec:mp}, the volumetric benchmark of
+Appendix \ref{appendix:A}, the company procedure PLC-SCPTOP and the
+compact model itself. An earlier implementation imposed the folded
+bound at the supplier only, on the argument that the plant has no
+operational use for a stock of empties and that the extra row could
+render an instance with a tight RTI fleet infeasible. The row is what
+the model states, so it was reinstated, and the concern did not
+materialise: on the largest instances of Section \ref{sec:results} the
+root LP value is identical with and without it, no coverage row
+carries artificial slack, and the row is tight in a minority of
+periods without moving the optimum. Enforcing it everywhere also
+removes an asymmetry: had the master enforced the plant side and the
+comparison models not, the comparison would have been unfair in the
+master's favour.
+
+\subsection{Work in progress: the construction under 3D loading}
+\label{sec:wip3d}
+
+\textbf{This subsection describes an extension whose experiments are
+being run at the time of writing; it reports no results.}
+
+Step 3 of the construction builds trucks from a delivery vector with a
+volumetric notion of a legal load. In the runs of Section
+\ref{sec:results} the tree is applied to the master over the
+volumetric oracle, where that notion \emph{is} the definition of a
+column and every part the partition proposes is a column by
+construction. Under 3D loading it is not: a load must also satisfy
+\eqref{eq:col-geom}--\eqref{eq:col-agg}. The volumetric conditions are
+nevertheless \emph{necessary} for geometric feasibility --- a placeable
+load has volume at most the trailer's and weight at most the payload,
+and it must clear the same full-truckload floor --- so the partition
+MIP of step 3 is kept as a \emph{relaxation} of the geometric
+partition. Each part it proposes is then tested for placeability with
+the constraint programme of Section \ref{sec:pp}, run in feasibility
+mode on that exact set of RTIs; a placeable part becomes a column with
+its layout as witness, exactly as a priced column does. A part proved
+unplaceable is excluded from the partition MIP by a \emph{no-good
+cut}: no future part may contain that load. The cut is valid because
+placeability is downward closed --- removing an RTI from a placeable
+load cannot break the geometry, the height budget, a crush limit or
+the payload, so any load that dominates an unplaceable one
+componentwise is itself unplaceable --- and it therefore cuts off the
+whole up-set of the refuted load rather than the single point. The MIP
+is re-solved with the cut and the loop repeats until every part is
+placeable or the MIP proves that no partition into $n_{gt}$ parts
+avoids all the cuts, in which case $n_{gt}+1$ is tried as before. Only
+a part whose placement problem the constraint programme has
+\emph{proved} infeasible is cut off; a part undecided within the time
+limit is neither accepted nor excluded, and the partition is
+re-solved without it. Step 2 makes no oracle calls and is unchanged,
+so the objective is still decided before any geometry is examined;
+what the extension changes is only whether the trucks that objective
+implies can be built. Step 4 and the verification of every dispatched
+truck are as in the volumetric case.

@@ -1,51 +1,53 @@
 \begin{algorithm}[!h]
-\caption{Branch and price for 3D-SCPTOP}\label{alg:bp3d}
+\caption{The fleet tree for 3D-SCPTOP: branch and bound over the fleet
+vector with the flow-first construction as primal}\label{alg:bp3d}
 \begin{algorithmic}[1]
-\State $\bar P \gets \textsc{InitialColumns}()$
-       \Comment{price vectors \emph{and} composition targets, Section \ref{sec:initcols}}
-\State $\bar P \gets \textsc{ColumnGeneration}(\bar P,\ \text{stop when } rc > -\varepsilon)$
-       \Comment{the tail buys almost nothing, Section \ref{sec:bounds}}
-\State $\mathcal{O} \gets \{\text{root}\}$;\quad
-       $\mathrm{UB} \gets \infty$;\quad $\mathrm{LB} \gets 0$
-\While{$\mathcal{O} \ne \emptyset$ and time remains}
-   \State $n \gets$ node of $\mathcal{O}$ with the cheapest relaxation;
-          remove it from $\mathcal{O}$
-   \State $\pi,\nu,\lambda \gets \textsc{SolveRMP}(\bar P \mid n)$
-   \If{infeasible or its value $\ge \mathrm{UB}$} \State \textbf{continue}
-          \Comment{pruned} \EndIf
-   \ForAll{$(g,t)$ whose dispatch or delivery total is fractional}
-      \State $\hat a \gets$ residual of $(g,t)$;\quad
-             \textbf{skip} if $\hat a$ was already priced on this branch
-      \State $p \gets \textsc{Price}(\hat a,\ \tau_{\mathrm{short}})$,
-             retried at $\tau_{\mathrm{full}}$ only if empty
-      \State append $p$ to $\bar P$ if new
-      \Comment{columns are created \emph{after} the branching decisions}
-   \EndFor
-   \If{$n$ is a multiple of the heuristic period}
-      \State $\mathrm{UB} \gets \min\{\mathrm{UB},\ \textsc{SolveRMP}(\bar P)$
-             as an integer program$\}$
-             \Comment{supplies the incumbent that makes pruning possible}
+\State $\bar P \gets$ one full single-commodity truck per commodity and direction
+       \Comment{Section \ref{sec:initcols}}
+\State $\mathrm{LB}_{0} \gets \textsc{Certify}(\bar P,\ \text{root})$
+       \Comment{full sweep, every $(g,t)$, every pair proved; else no bound}
+\State $(\bar z,\mathbf{n}^{\star},\bar P) \gets \textsc{Construct}(\bar P,\ \text{root})$;
+       \quad $X^{\star}\gets\sum_{g,t}n^{\star}_{gt}$
+       \Comment{steps 1--4, Section \ref{sec:branching}}
+\State $\mathcal{S} \gets \bigl[\,X\ge X^{\star}+1,\;\; X\le X^{\star}-1,\;\; X=X^{\star}\,\bigr]$
+       \Comment{a stack; the equality region is expanded first}
+\While{$\mathcal{S} \ne \emptyset$ and time remains}
+   \State $\mathcal{R} \gets$ pop $\mathcal{S}$; impose $\mathcal{R}$ on the RMP as fleet rows
+   \State $\tilde z \gets$ LP over $\bar P$ inside $\mathcal{R}$
+          \Comment{over-estimates the region's LP: a filter, never a bound}
+   \If{LP infeasible} \State \textbf{continue} \Comment{discarded} \EndIf
+   \If{$\tilde z \ge \bar z$ and the policy certifies $\mathcal{R}$}
+      \State $(\mathrm{LB}_{\mathcal{R}},\text{proved}) \gets \textsc{Certify}(\bar P,\mathcal{R})$
+      \If{region infeasible or $\mathrm{LB}_{\mathcal{R}} \ge \bar z$}
+         \State \textbf{continue} \Comment{pruned}
+      \EndIf
+      \State record $\mathrm{LB}_{\mathcal{R}}$ as an open bound
+   \Else
+      \State $\mathcal{R}$ carries its parent's bound
    \EndIf
-   \State $\lambda \gets$ re-solve the relaxation, columns having been added
-   \If{$\lambda$ and all aggregates are integral}
-      \State $\mathrm{UB} \gets \min\{\mathrm{UB}, \text{value of } \lambda\}$;
-             \textbf{continue}
+   \State $(z,\mathbf{n},\bar P) \gets \textsc{Construct}(\bar P,\ \mathcal{R})$
+          \Comment{inside the region; its columns join the shared pool}
+   \If{no plan} \State \textbf{continue} \EndIf
+   \If{$z < \bar z$} \State $(\bar z,\mathbf{n}^{\star}) \gets (z,\mathbf{n})$
+          \Comment{new incumbent} \EndIf
+   \If{$\mathcal{R}$ fixes $X$ and its depth $j$ is below the cap}
+      \State $(g,t) \gets$ the $j$-th pair in the fixed order
+      \State push $\mathcal{R}\cap\{n_{gt}\ge n_{gt}+1\}$,\;
+             $\mathcal{R}\cap\{n_{gt}\le n_{gt}-1\}$,\;
+             $\mathcal{R}\cap\{n_{gt}= n_{gt}\}$ onto $\mathcal{S}$
+             \Comment{Murty, around the plan just constructed}
    \EndIf
-   \State choose the shallowest fractional level: dispatch total,
-          else delivery total, else $\lambda^{g}_{pt}$
-          \Comment{Section \ref{sec:branching}}
-   \State push \emph{both} children $\le\lfloor v\rfloor$ and
-          $\ge\lceil v\rceil$ onto $\mathcal{O}$
+   \State release $\mathcal{R}$
 \EndWhile
-\State $\bar P \gets \bar P \cup \textsc{ReducedLoads}(\bar P)$
-\State $\mathrm{UB} \gets \min\{\mathrm{UB},\ \textsc{SolveRMP}(\bar P)$
-       as an integer program$\}$
-\If{one exact sweep proves $rc \ge 0$ for \emph{every} $(g,t)$}
-   \State $\mathrm{LB} \gets$ LP value over the final $\bar P$
-          \Comment{certified; otherwise no bound is reported}
-\EndIf
-\State verify every dispatched column against
+\ForAll{$\mathcal{R}$ still on $\mathcal{S}$, while a reserve of time remains}
+   \State filter by the pool LP; certify the survivors; record their bounds
+   \Comment{the frontier}
+\EndFor
+\State $\mathrm{LB} \gets \max\bigl\{\mathrm{LB}_{0},\ \min\text{ over open and frontier bounds}\bigr\}$,
+       capped at $\bar z$
+\State verify every dispatched truck of the incumbent against
        \eqref{eq:col-geom}--\eqref{eq:col-agg}
-\State \Return $(\mathrm{UB}, \mathrm{LB})$
+\State \Return $(\bar z, \mathrm{LB})$;\ optimality is claimed only if $\mathrm{LB}_{0}$ was
+       proved, $\mathcal{S}=\emptyset$, no restart occurred and $\bar z=\mathrm{LB}$
 \end{algorithmic}
 \end{algorithm}

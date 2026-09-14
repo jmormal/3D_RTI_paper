@@ -10,30 +10,130 @@ two questions, and a third that turns out to dominate both: whether a
 model that abstracts the loading geometry away produces plans that
 can be executed at all.
 
-All calculations use Python. The master and restricted master
-problems, the volumetric benchmark and the compact model are solved
-with Gurobi 12; the pricing subproblem
-\eqref{eq:PPObjective}--\eqref{eq:PPsymm} with CP-SAT from OR-Tools
-9.12. Tests run on a 16-core machine with 30 GB of RAM. A relative
-gap of $2\%$ is set on every integer program.
+% ---------------------------------------------------------------
+\subsection{Protocol and declared budgets}
+\label{sec:protocol}
 
+All calculations use Python. The restricted master, the aggregate
+integer master and the partition MIPs of the construction, the
+volumetric benchmark and the compact models are solved with Gurobi
+12; the pricing subproblem
+\eqref{eq:PPObjective}--\eqref{eq:PPsymm} and the placeability tests
+with CP-SAT from OR-Tools 9.12. The machine on which each run was
+made is recorded with the run and reported with the tables
+(\pending{host and core count of the regenerated campaign}).
+
+\paragraph{Every row carries its configuration.}
+Five parameters can change the answer a solver returns, and every run
+records all five with its result: the wall-clock \emph{time limit};
+the relative \emph{MIP gap} at which an integer solve is allowed to
+stop; the \emph{thread count}; the \emph{memory cap} per model; and
+the random \emph{seed}. Table~\ref{tab:protocol} states the values
+under which each stage of the study is run. A row whose configuration
+is not recorded is not reported: an earlier set of fleet-tree runs was
+discarded on exactly that ground, since nothing tied them to a budget.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Declared budgets, per stage. Every value is read from the
+run's own record, not from the script that launched it; the memory cap
+is Gurobi's per-model soft limit, at which a solve stops and keeps its
+incumbent and dual bound. The fleet tree divides its time limit
+between phases as described in Section~\ref{sec:branching}.}
+\label{tab:protocol}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+stage & time limit (s) & MIP gap & threads & memory cap (GB) & seed \\
+\midrule
+fleet tree, volumetric master (Alg.~\ref{alg:bp3d}) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+compact SCPTOP reference & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+MATH-3D-SCPTOP, CP oracle (benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+SCPTOP (volumetric benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+PLC-SCPTOP (company procedure) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+placeability recheck of SCPTOP loads & \pendingcell & --- & \pendingcell & \pendingcell & \pendingcell \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\paragraph{Memory is a budget, not an accident.}
+Gurobi holds its branch-and-bound tree in memory and imposes no limit
+of its own, so a compact model whose dual bound has stalled simply
+grows its list of unexplored nodes until the machine intervenes. We
+therefore give every model an explicit per-model soft memory limit,
+at which the solver stops and returns its incumbent and its dual bound
+with the status \textsc{mem\_limit}, exactly as a time limit would.
+Two consequences follow for how the results may be read. A solve that
+stopped on memory is a solve that stopped, and its dual bound is a
+valid lower bound on the model's optimum regardless of why it stopped.
+And reaching a fixed per-model cap sooner on a larger model is a
+statement about the cap, not about tractability; we draw no inference
+from \emph{when} the cap was reached, and the cap is reported as a
+parameter of the experiment like the time limit.
+
+\paragraph{What each reported quantity means.}
+\begin{itemize}
+\item $z$ is the cost \eqref{eq:MPObjective} of the plan returned,
+  net of any artificial penalty; a plan is reported only if it carries
+  no artificial slack. For the fleet tree and MATH-3D-SCPTOP it is the
+  incumbent of Algorithm~\ref{alg:bp3d}; for the compact models it is
+  the solver's incumbent at its stop. It is an upper bound on the
+  optimum in every case.
+\item \emph{trucks} is $\sum_{g,t}n_{gt}$ for that plan.
+\item $\mathrm{LB}$ is a lower bound on the optimum of the model the
+  method solves. For the tree it is the \emph{certified} bound of
+  Section~\ref{sec:bounds}: the root certificate, or the minimum over
+  the certified bounds of the open frontier when that is higher. A
+  \emph{root proved} flag records whether the root sweep returned
+  every pair proved; without it no bound is printed. For a compact
+  model it is the solver's dual bound at its stop.
+\item \emph{gap} is $(z-\mathrm{LB})/z$ against the method's own
+  bound. It is an optimality gap only where the bound is certified; it
+  is never a gap to a proven optimum unless the row says
+  \emph{proved}.
+\item \emph{stop} names the condition under which a solve ended:
+  \textsc{optimal}, \textsc{time\_limit} or \textsc{mem\_limit}. A time
+  or memory stop makes the row's time the budget rather than a solve
+  time.
+\item \emph{nodes}, \emph{open}, \emph{columns} (priced / built) and
+  the time split between column generation, the aggregate master, the
+  partitions and the integer master describe the tree. \emph{open} is
+  the number of regions left unexpanded when time ran out; a run with
+  open regions has not searched the space, whatever its gap.
+\item \emph{loadable} is the outcome of re-verifying every dispatched
+  truck of a plan against \eqref{eq:col-geom}--\eqref{eq:col-agg} by a
+  routine that shares no code with the solver that produced it.
+  \emph{unloadable} counts, among the loads a volumetric plan
+  dispatches, those a constraint programme has \emph{proved} cannot be
+  stacked and placed in a trailer; loads the programme could not decide
+  within its limit are reported separately as \emph{undecided} and are
+  counted neither way.
+\item $\Delta z$ is the cost of one method relative to another on the
+  same instance, and is meaningful only between plans both of which
+  are loadable.
+\end{itemize}
+
+% ---------------------------------------------------------------
 \subsection{Instance generation}
 
-Thirty-six instances are artificially generated as a full factorial
-over the four explanatory variables of the study: the number of
-products $|N|\in\{4,8\}$, the horizon $|T|\in\{5,10\}$, the number of
-RTI types $|R|\in\{2,3,4\}$ and the volumetric granularity
+Thirty-six benchmark instances are generated as a full factorial over
+the four explanatory variables of the study: the number of products
+$|N|\in\{4,8\}$, the horizon $|T|\in\{5,10\}$, the number of RTI
+types $|R|\in\{2,3,4\}$ and the volumetric granularity
 $v\in\{60,90,120\}$. Instances are named $I\_|N|\_|T|\_|R|\_v$.
 
 \begin{itemize}
   \item \textbf{Container dimensions}: footprints are drawn from the
   industrial catalogue $\{1200\times800,\;1200\times1000,\;
-  1200\times1600,\;2400\times1200\}$ mm. Heights are quantised to
-  $50$ mm and confined to $[400,1500]$ mm so that at least two layers
-  fit under the trailer roof. Whenever $|R|\ge3$ several RTI types
-  share a footprint, reproducing a real catalogue in which container
-  families sit on a common pallet base; this is what allows a stack to
-  mix types across layers.
+  800\times600,\;1200\times1600,\;2400\times1200\}$ mm. Heights are
+  quantised to $50$ mm and a footprint is admissible for a given $v$
+  only if the implied erected height lies in $[400,1500]$ mm, so that
+  an RTI is worth stacking and at least two layers fit under the
+  trailer roof. Whenever $|R|\ge3$ several RTI types share a
+  footprint, reproducing a real catalogue in which container families
+  sit on a common pallet base; this is what allows a stack to mix
+  types across layers.
 
   \item \textbf{Container volume}: $v$ is the number of erected RTIs
   that fill one truck by volume, and every RTI type is generated with
@@ -58,26 +158,56 @@ $pK^{w}=24$ t, per-stack crush limit $W^{\max}=1200$ kg, minimum
 utilisation $\alpha=0.55$ and cost $cK=1000$ per dispatch. Lead time
 is $lt=1$ and coverage stock one period of demand.
 
+\paragraph{A size ladder.}
+The benchmark tops out at $|N|=8$ and $|T|=10$. To find where, if
+anywhere, the decomposition pays against the compact model, a second
+set of instances is generated with the same rules along two axes:
+$(|N|,|T|)\in\{(8,10),(12,12),(16,15),(24,20),(32,20)\}$, and the
+number of truckloads consumed per period, $2.5$, $5$ or $8$, which
+scales the fleet $K$ and with it the number of interchangeable trucks
+the compact model indexes. These instances have $|R|=2$ and $v=90$ and
+are named $I\_|N|\_|T|\_2\_90\_k$ followed by ten times the truckloads
+per period. They stress different things: $|N|$ and $|T|$ grow the
+master and the number of pricing calls, while the fleet grows the
+compact model's per-truck variables and its symmetry.
+
 \paragraph{Sizing the RTI fleet.}
 One generation parameter deserves comment because it is easy to get
 wrong and the symptom is misleading. Empties return by the truckload,
 and a return truck leaves only once the plant has accumulated enough
 folded RTIs to clear the full-truckload floor. Since folded RTIs pack
-very densely --- two to three hundred to a trailer against an
-accumulation rate of a few dozen per period --- that takes several
-periods, during which the supplier must live off its own folded
-stock. If the fleet is sized only for the lead time, the linear
-relaxation remains feasible by dispatching fractional trucks while the
-integer problem has no solution at all. We therefore size the
-supplier's folded stock to cover $lt+SC+\lceil
-\alpha\Gamma_{K}/(\gamma_{sr}\cdot\text{empties per period})\rceil$
-periods, which is the standard closed-loop argument that an RTI fleet
-must cover the cycle time.
+very densely, that takes several periods, during which the supplier
+must live off its own folded stock. If the fleet is sized only for the
+lead time, the linear relaxation remains feasible by dispatching
+fractional trucks while the integer problem has no solution at all.
+We therefore size the supplier's initial folded stock of each type to
+cover $lt+SC$ periods plus the number of periods, capped at six,
+needed to accumulate $\lceil\alpha\Gamma_{K}/\gamma_{sr}\rceil$
+folded RTIs at the plant's rate of emptying them, which is the
+standard closed-loop argument that an RTI fleet must cover the cycle
+time.
 
+% ---------------------------------------------------------------
 \subsection{Methods compared}
 
 \begin{itemize}
-\item \textbf{MATH-3D-SCPTOP} --- Algorithm \ref{alg:bp3d}.
+\item \textbf{Fleet tree} --- Algorithm \ref{alg:bp3d} on the
+      Dantzig--Wolfe master over the volumetric oracle of
+      Section~\ref{sec:pp}, certified at the root and at the region
+      $X\le X^{\star}-1$. This is the configuration under which the
+      size ladder is run, since it is where per-node certification is
+      affordable.
+\item \textbf{Compact SCPTOP reference} --- the volumetric model of
+      Appendix~\ref{appendix:A} solved directly by Gurobi, under the
+      declared budgets of Table~\ref{tab:protocol}. It solves the same
+      problem as the fleet tree row above, so the two bracket a common
+      optimum.
+\item \textbf{MATH-3D-SCPTOP} --- Algorithm \ref{alg:bp3d} with the
+      constraint programming oracle, on the benchmark instances. The
+      construction's step 3 is volumetric there
+      (Section~\ref{sec:wip3d}), so its plans are those of the
+      integer master over priced columns and of partitions that
+      passed placeability; every dispatched truck is verified.
 \item \textbf{Company procedure (PLC-SCPTOP)} --- the master problem
       over a fixed pool of manually derived loading configurations,
       one regular grid per container type, as produced today by a
@@ -86,182 +216,117 @@ must cover the cycle time.
       \ref{appendix:A}, identical to the master in every respect
       \emph{except} that truck capacity is volumetric. The comparison
       therefore isolates the effect of the loading representation.
-\item \textbf{Compact 3D-SCPTOP} --- solved directly, on the
-      instances where that is still possible, to measure the
-      matheuristic's true optimality gap without a bounding argument.
+\item \textbf{Compact 3D-SCPTOP} --- solved directly, on the small
+      instances where that is still possible, warm-started with the
+      matheuristic's plan.
 \end{itemize}
 
-Every truck that MATH-3D-SCPTOP dispatches is re-verified from
+Every truck that a geometric method dispatches is re-verified from
 scratch against \eqref{eq:col-geom}--\eqref{eq:col-agg} by a routine
 that shares no code with the solver that produced it. Every truck
 that SCPTOP dispatches is submitted to an independent constraint
 programme asking whether that exact set of RTIs can be stacked and
-placed in a trailer at all.
+placed in a trailer at all, with the slot bound \eqref{sb:eq:Ibound}
+in force so that an infeasibility verdict is a proof.
 
+% ---------------------------------------------------------------
 \subsection{Results}
+
+\pending{The tables below are generated fragments. The benchmark,
+case-study, oracle and exact-comparison tables are being regenerated
+under the declared budgets of Table~\ref{tab:protocol}; the fleet-tree
+table is produced by the campaign now running. No number from the
+previous revision is carried forward.}
 
 \input{tab_results}
 
+\input{tab_fleet_tree}
+
+% ---------------------------------------------------------------
 \subsection{Discussion}
 
-\paragraph{A volumetric capacity is not a conservative approximation.}
-Across the 36 instances SCPTOP dispatches 723 truck loads. A constraint
-programme proves that 503 of them --- $70\%$ --- cannot be placed in a
-trailer at all: there is no assignment of their containers to stacks
-that respects the height budget and the crush limit and whose
-footprints fit on the floor without overlap. Only 17 loads are
-demonstrably loadable; the rest are undecided within the time limit.
-SCPTOP's plans are on average $17\%$ cheaper than
-MATH-3D-SCPTOP's, and that entire margin is bought by loading trucks
-beyond what geometry allows. A planner handed such a plan discovers
-the shortfall on the loading dock.
+\paragraph{Bracketing the volumetric optimum.}
+On the size ladder the fleet tree and the compact SCPTOP model solve
+the same problem, and each returns a verified plan and a valid lower
+bound. Neither proves optimality: the compact model stops on its
+memory cap on every ladder instance, and the tree closes none of its
+open regions. What can be stated is a \emph{bracket}: the optimum lies
+between the higher of the two lower bounds and the lower of the two
+plan costs. On the three largest instances of the ladder ---
+$I\_16\_15\_2\_90\_k50$, $I\_24\_20\_2\_90\_k50$ and
+$I\_24\_20\_2\_90\_k80$ --- the compact model's dual bound at its
+memory stop lies \emph{below} the tree's certified root bound, so the
+Dantzig--Wolfe certificate is the lower end of the bracket there; on
+the two smallest the compact model's bound at its stop is the higher
+of the two. Table~\ref{tab:fleet} reports the values, the stop
+condition of every compact solve, and the number of regions the tree
+left open.
 
-The effect is strongly modulated by container size. At $v=60$, where
-each RTI occupies about a sixtieth of the trailer, $93\%$ of the
-volumetric loads are impossible and the apparent saving rises to
-$33\%$; at $v=90$ it falls to $54\%$ and $7.8\%$. Coarse containers
-leave large unusable remainders once footprints and layer heights are
-respected, and it is exactly that remainder a volumetric model spends.
-The direction of the error is worth stating plainly: a volumetric
-capacity is not a safe approximation that merely loses a little
-precision --- it is systematically optimistic, and most so when the
-containers are large, which is the regime of interest in automotive
-procurement.
+\paragraph{What the tree does not deliver.}
+In every recorded run the tree's global bound equals its root bound:
+no open region was certified to a value above the root, and no run
+satisfied the conditions under which Algorithm~\ref{alg:bp3d} claims a
+proof. The tree therefore closed no gap in these experiments. What it
+did is documented by the columns it built: the incumbents come from
+constructions inside regions the root never examined, and the gaps
+reported are gaps to a root certificate, not to an optimum. We report
+them as such.
+
+\paragraph{A volumetric capacity is not a conservative approximation.}
+The loads that SCPTOP dispatches are each submitted to a placeability
+proof. The share proved impossible to place, by instance factor, is
+reported in Table~\ref{tab:summary}, together with the share left
+undecided, which must be read alongside it: a zero count of proven
+infeasibilities means nothing if most loads were undecided. The
+direction of the error is what the comparison is designed to expose.
+A volumetric capacity ignores the remainders that footprints and layer
+heights leave unusable, so where it errs it errs by dispatching loads
+that do not fit, and a planner handed such a plan discovers the
+shortfall on the loading dock. Whether that error concentrates on the
+coarse containers, as the geometry suggests it should, is a reading of
+Table~\ref{tab:summary} and is left to the regenerated table.
 
 \paragraph{Feasibility by construction.}
-Every one of the 36 plans MATH-3D-SCPTOP returns passes an independent
-truck-by-truck verification against
-\eqref{eq:col-geom}--\eqref{eq:col-agg}, performed by code that shares
-nothing with the solver that produced it. That is not a coincidence of
-the search but a property of the formulation: a column is a witnessed
-layout, so a plan assembled from columns is executable by
-construction, and can be handed to a loading crew as a drawing. The
-realised utilisation confirms the loads are not merely legal but full:
-the least-filled truck in a plan reaches $68\%$ of the binding
-resource on average, never below the $\alpha=0.55$ floor.
+Every plan the geometric method returns is re-verified truck by truck
+against \eqref{eq:col-geom}--\eqref{eq:col-agg} by code that shares
+nothing with the solver that produced it, and the \emph{loadable}
+column of Table~\ref{tab:main} records the outcome for every row. That
+is a property of the formulation rather than of the search: a column
+is a witnessed layout, so a plan assembled from columns is executable
+by construction and can be handed to a loading crew as a drawing. The
+realised utilisation of the least-filled truck in each plan is
+reported with the table.
 
 \paragraph{Against the procedure in use.}
-On the case study built from the industrial catalogue,
-MATH-3D-SCPTOP reduces total cost by $11.4$--$12.8\%$ and the number
-of truck dispatches by $17$--$18\%$ relative to the company's
-average-mix procedure, consistently across the low-, normal- and
-high-variability scenarios. Against the stronger hand-drawn baseline
---- regular grids plus two-zone layouts, which is more than the
-planner actually maintains --- the reduction is $10.5$--$11.9\%$.
-Two further observations matter more than the percentages. First, the
-advantage does not erode as demand variability grows; if anything it
-widens slightly, because a fixed set of average-mix configurations
-tracks a varying programme less and less well. Second, the size of the
-configuration set matters as much as its content. Reconstructed from
-average mixes alone the set is very small when demand is stable --- at
-low variability the horizon average and the per-period mixes coincide
---- and too small to serve the programme. That is a statement about
-the reconstruction rather than about the procedure: the plant operates,
-so the set its crews work with is feasible by construction. Rebuilding
-the variety they accumulate in practice --- one pattern per dominant
-product, single-product patterns, several fill levels --- restores
-feasibility, and the number of configurations needed to do so is
-itself the finding: on the low-variability instances an averaging rule
-supplies fewer than sixty where serving the programme takes around two
-hundred. Keeping a fixed configuration set feasible as the programme
-moves means maintaining a large catalogue by hand, every entry of it
-found by trial.
+The case study of Section~\ref{sec:case} compares the same machinery
+against the company's average-mix configurations and against a richer
+hand-drawn set. Its table is pending regeneration with the current
+code and with the baselines solved to the same gap as the method, and
+no percentage from the previous revision is repeated here.
 
 \paragraph{Pricing technology.}
 The subproblem was solved both as a constraint programme and as a MILP
 with the big-$M$ non-overlap encoding
-\eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2}, under identical
-budgets, by running the whole matheuristic with each backend on the
-same nine instances (Table \ref{tab:oracle}). Neither technology
-dominates. The mean ratio of objectives is $0.9997$ --- a tie --- and
-the per-instance scatter runs from $-6.4\%$ to $+4.6\%$, so the
-difference between them is smaller than the variability of either.
-Both return feasible plans on every instance.
-
-What does differ is how they get there. The MILP reaches comparable
-plans with roughly half as many columns ($459$ against $875$ on
-average) and slightly less time ($768$ s against $866$ s), and it
-certified a bound on one instance where the constraint programme
-certified none. The interpretation we prefer is that the disjunctive
-structure of non-overlap is propagated more cheaply by a global
-constraint, so the CP oracle answers each pricing call faster and the
-column generation therefore takes more, smaller steps; the MILP
-answers fewer calls but each is more informative. Neither effect is
-large enough to matter for the plans that come out.
-
-We report this because the natural expectation --- that a packing
-subproblem must favour constraint programming --- is not what the
-measurements show, and because an earlier version of this comparison
-appeared to show a clear CP advantage. That version was invalid: the
-MILP oracle then imposed the full-truckload requirement as the sum of
-the volume and weight ratios rather than as the disjunction
-\eqref{eq:col-truck}, so it was solving a strictly weaker problem and
-one of its columns failed verification. Once both oracles solve the
-same problem the advantage disappears. We use CP-SAT for the large
-instances on the strength of the marginally better mean, but the
-choice is immaterial.
-\paragraph{On bounds, and what the method does not deliver.}
-The lower bounds are the weak point of these results and we report
-them as such. Certification requires the packing subproblem to be
-closed to proven optimality at the final pricing sweep, which succeeds
-on only 3 of the 36 instances; elsewhere the Lagrangian bound
-\eqref{eq:lagbound} applies, and it is loose --- a mean gap of
-$28.6\%$, which reflects the bound rather than the plans. Where the
-compact model can be solved, the true gaps are far smaller (Table
-\ref{tab:exact}) --- a median of about $2\%$, with two outliers on the
-two-product instances where the plan uses only a couple of trucks and
-the objective is dominated by inventory cost, so that a single
-over-delivered truckload moves it appreciably. That is the honest way
-to read the large-instance gaps: as an artefact of the bounding
-argument rather than a measure of the cost being left on the table.
-Closing them would require
-embedding the column generation in a branch-and-bound tree rather than
-the depth-first dive used here, which is the natural next step and is
-beyond the scope of this paper.
+\eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2}, by running the whole
+method with each backend on the same instances under identical
+budgets (Table~\ref{tab:oracle}). The comparison is valid only because
+both oracles now solve the same problem: an earlier version of the
+MILP oracle imposed the full-truckload requirement as the sum of the
+two ratios rather than as the disjunction \eqref{eq:col-truck}, solved
+a strictly weaker problem, and produced a column that failed
+verification, so the advantage it appeared to show was an artefact.
+Which technology is used for the geometric rows, and on what evidence,
+is stated with the regenerated table.
 
 \paragraph{Where each method belongs.}
-Table \ref{tab:exact} sets the compact model against the matheuristic
-on every instance where the former produces anything, warm-started
-with the latter's plan so that it begins from a feasible incumbent.
-Both methods receive the same wall-clock budget, which earlier
-revisions of this experiment did not: the matheuristic was given $400$
-seconds against the compact model's $1800$, and the deficits reported at
-that setting were an artefact of the handicap rather than a property of
-the method. Under equal budgets the matheuristic matches or improves on
-the compact model on five of the twelve instances --- twice to the cent,
-and by $0.02$ to $0.20\%$ on three more --- and lies within $0.9\%$ on
-four others, using between a quarter and two thirds of the wall-clock.
-Where the compact model closes an instance outright it remains the
-better tool: it proves optimality in eleven and fourteen seconds on the
-two three-product instances, against which the matheuristic gives away
-$0.03$ and $0.06\%$. At ten periods the compact model returns nothing
-at all within half an hour, while the matheuristic returns a plan with a
-\emph{certified} gap of $1.42\%$.
-
-The honest reading is that the crossover is the planning horizon
-rather than the raw size of the formulation, and that for short
-horizons the compact model should simply be used. The case for the
-decomposition rests on the regime beyond it, where the compact model
-produces no plan and the matheuristic returns a verified one in twenty
-minutes; the industrial instances of Section \ref{sec:case} sit there.
-
-One deficit is worth naming precisely, because it is neither a bounding
-artefact nor noise: on the eight-product instance the matheuristic
-dispatches fourteen trucks against the compact model's twelve, a
-$10.8\%$ difference that two independently derived lower bounds
-corroborate --- the compact model's own bound and the matheuristic's
-Lagrangian bound agree to within $0.02\%$, and the incumbent lies above
-both. The remaining large percentage in the table is of a different
-kind: on a two-truck instance a single extra dispatch is $28\%$ of the
-objective, where the same physical error costs $1.6$ to $2.3\%$ on the
-benchmark instances, and that instance converges to within $0.008\%$ of
-the compact model once the pricing sweeps are given the threads and the
-time they need. Percentages on plans this small measure granularity
-rather than quality. The cause is granularity. The master can only ship integer combinations of
-the loads that have been generated, and when no such combination
-reaches the delivery target with the smaller fleet it must add a
-truck, whereas the compact model chooses each truck's contents freely.
-Enriching the pool with reduced loads narrows this but does not close
-it. Generating loads against the residual requirement of a fractional
-master solution, rather than against dual prices alone, is the obvious
-remedy and is left for future work.
+Table~\ref{tab:exact} sets the compact 3D-SCPTOP model against the
+matheuristic on the small instances, both under the same wall-clock
+budget and the compact model warm-started with the matheuristic's
+plan. The reading we expect, and will state only where the table
+supports it, is that the crossover is the planning horizon and the
+fleet rather than the raw size of the formulation: where the compact
+model closes an instance it remains the better tool, and the case for
+the decomposition rests on the regime beyond that, where the compact
+model's tree grows to its memory budget with a stalled bound while the
+decomposition returns a verified plan and a certified bound. The size
+ladder is where that regime is measured.

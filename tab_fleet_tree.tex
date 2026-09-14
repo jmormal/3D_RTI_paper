@@ -1,0 +1,22 @@
+% PLACEHOLDER FRAGMENT.  To be generated from the fleet-tree runs and the
+% compact SCPTOP reference runs (results/hp/tree_*.json and
+% results/compact_ref/*.json in the data root), each of which records its
+% configuration.  A row without a recorded configuration must not appear.
+% The bracket column is [max(LB_compact, LB_tree), min(z_compact, z_tree)].
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{\pending{generated from the campaign now running} The fleet tree (Algorithm~\ref{alg:bp3d}, volumetric master) against the compact SCPTOP model on the size ladder, under the budgets of Table~\ref{tab:protocol}. Both solve the same problem. \emph{stop} is the compact model's stop condition and its LB the dual bound at that stop; the tree's LB is its certified bound, with \emph{root proved} recording whether the root sweep returned every pair proved. \emph{open} is the number of regions the tree left unexpanded. No row claims a proof of optimality; the last column is the bracket in which the optimum lies.}
+\label{tab:fleet}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrrrrrrr}
+\toprule
+& \multicolumn{4}{c}{compact SCPTOP} & \multicolumn{8}{c}{fleet tree} & \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-13}
+Instance & $z$ & LB & stop & time (s) & $z$ & trucks & LB (cert.) & root proved & nodes & open & columns (priced / built) & time (s) & bracket \\
+\midrule
+\multicolumn{14}{c}{\pending{one row per ladder instance}} \\
+\bottomrule
+\end{tabular}}
+\end{table}

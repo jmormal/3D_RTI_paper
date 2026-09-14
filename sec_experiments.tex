@@ -55,7 +55,7 @@ stage & time limit (s) & MIP gap & threads & memory cap (GB) & seed \\
 fleet tree, volumetric master (Alg.~\ref{alg:bp3d}) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 compact SCPTOP reference & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 MATH-3D-SCPTOP, 3D (Tables~\ref{tab:3d-head}--\ref{tab:rootcg}) & 900 / 1\,800 & $5\cdot10^{-4}$ (step 2), 0 (step 4) & 10 & 4 & 0 \\
-compact 3D-SCPTOP, $|L|=3$ (Table~\ref{tab:3d-head}) & 1\,800 & 0 & 10 & 20 & 0 \\
+compact 3D-SCPTOP, $|L|=3$ (Tables~\ref{tab:3d-head}, \ref{tab:3d-compact-ladder}) & 1\,800 & 0 & 10 & 20 & 0 \\
 MATH-3D-SCPTOP, CP oracle (benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 SCPTOP (volumetric benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 PLC-SCPTOP (company procedure) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
@@ -270,6 +270,34 @@ it and both methods agree on twelve trucks. The tree's own gap to its
 own bound is $0.0076\%$; the compact model's bound is the tighter of
 the two by $0.22$, and it is the compact model's bound, not its plan,
 that closes the bracket.
+
+\paragraph{At ten periods the compact model returns nothing.}
+Table~\ref{tab:3d-compact-ladder} adds the second rung. On
+$I\_8\_10\_2\_90\_k25$ --- $119\,424$ variables and $164\,692$
+constraints at $|L|=3$ --- the compact 3D model found \emph{no feasible
+solution at all} in $1\,800$ s. It stopped on time, not on memory: its
+peak resident set was $6.1$ GB against the declared $20$ GB cap, so
+this run had the budget and did not use it, and the honest statement is
+that the model could not reach a first incumbent within the time it was
+given. Nor is this the leak guard rejecting a corrupt solution:
+\emph{leaked} is zero because there was no solution to leak. Its dual
+bound at the stop, $36\,458.75$, is valid but lies $6.4\%$ below the
+certified Dantzig--Wolfe bound of $38\,791.14$. The reformulation
+therefore wins on both sides at once here: it produces the only
+feasible plan --- twenty-six verified trucks at $38\,857.16$ --- and the
+better bound. That is a stronger statement than the volumetric chapter
+can make, where the compact model sometimes held the tighter bound of
+the two; what separates the regimes is that the compact 3D model
+carries the placement block, and at ten periods it does not find a
+feasible point in it. No optimum is known on this instance: the
+interval $[38\,791.14,\,38\,857.16]$, a gap of $0.17\%$, comes from the
+reformulation alone, and the compact model contributes nothing to it.
+Read as a progression the ladder is short but clear: at five periods
+the compact model closes to $0.11\%$ of its own bound, loses to the
+tree's plan by $0.10\%$ and takes forty-two times longer to reach a
+worse one; at ten periods it returns nothing. Two rungs are two rungs,
+and we do not generalise from them beyond the instance sizes they
+cover.
 
 \paragraph{When a volumetric capacity is adequate, and when it is not.}
 Table~\ref{tab:3d-ladder} contains the finding that reframes the

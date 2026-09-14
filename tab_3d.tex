@@ -5,6 +5,7 @@
 %   compact 3D, I_8_5_2_90: results/compact_3d/compact3d_I_8_5_2_90.json
 %   tree, I_8_10_2_90_k25: results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_thr10_fixed2.json
 %   tree, I_16_15_2_90_k25: results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_thr10_fixed2.json
+%   compact 3D, k25:       results/compact_3d/compact3d_I_8_10_2_90_k25.json
 %   compact volumetric, k25: results/hp/compact_truth.json (MEM_LIMIT at a 4 GB cap)
 %   volumetric tree, I_16_15: results/hp/tree_I_16_15_2_90_k25.json
 
@@ -69,15 +70,25 @@ $I\_16\_15\_2\_90\_k25$ & 68\,139.59 & 45 & 88\,255.57 & 62 & 68\,131.43 & 22.8\
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\pending{compact 3D-SCPTOP on $I\_8\_10\_2\_90\_k25$ is still running and may return no plan; its row is filled when it stops.} Compact 3D-SCPTOP on the size ladder, with its stop condition.}
+\caption{Compact 3D-SCPTOP on the two rungs of the ladder on which it
+was run, $|L|=3$, against MATH-3D-SCPTOP, both under the budgets of
+Table~\ref{tab:protocol}. \emph{stop} names the compact model's stop
+condition and \emph{peak RSS} its memory use against a declared $20$ GB
+cap; its LB is its dual bound at the stop. The tree's LB is the certified
+volumetric relaxation. \emph{none} means no feasible solution was found
+within the budget.}
 \label{tab:3d-compact-ladder}
-\begin{tabular}{lrrrlr}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrlrrrrrrr}
 \toprule
-Instance & $z$ & trucks & LB & stop & time (s) \\
+& \multicolumn{6}{c}{compact 3D-SCPTOP} & \multicolumn{4}{c}{MATH-3D-SCPTOP} & \\
+\cmidrule(lr){2-7}\cmidrule(lr){8-11}
+Instance & $z$ & trucks & LB & stop & time (s) & peak RSS (GB) & $z$ & trucks & LB (cert.) & time to plan (s) & optimum in \\
 \midrule
-$I\_8\_10\_2\_90\_k25$ & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 1\,800 & 3.8 & 18\,796.96 & 12 & 18\,795.54 & 42.6 & $[18\,795.76,\;18\,796.96]$ \\
+$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time\_limit} & 1\,800 & 6.1 & 38\,857.16 & 26 & 38\,791.14 & 900 & $[38\,791.14,\;38\,857.16]$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \begin{table}[!htbp]

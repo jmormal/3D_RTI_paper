@@ -1,0 +1,101 @@
+% GENERATED-BY-HAND FRAGMENT from recorded runs; every number below is read
+% from a file in the data root (paths in the comments) and each run records
+% its configuration.  Rows marked \pending await runs still in progress.
+%   tree, I_8_5_2_90:      results/fleet_tree_3d/tree_3d_I_8_5_2_90_thr10_nocg.json (+ .log for the 42.6 s first hit)
+%   compact 3D, I_8_5_2_90: results/compact_3d/compact3d_I_8_5_2_90.json
+%   tree, I_8_10_2_90_k25: results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_thr10_fixed2.json
+%   tree, I_16_15_2_90_k25: results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_thr10_fixed2.json
+%   compact volumetric, k25: results/hp/compact_truth.json (MEM_LIMIT at a 4 GB cap)
+%   volumetric tree, I_16_15: results/hp/tree_I_16_15_2_90_k25.json
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{The compact 3D-SCPTOP model against MATH-3D-SCPTOP on
+$I\_8\_5\_2\_90$, both under the budgets of Table~\ref{tab:protocol}.
+\emph{stop} is the condition under which each solve ended; the compact
+model's LB is its dual bound at that stop, the tree's the certified bound
+of the volumetric relaxation (Proposition~\ref{prop:inclusion}).
+\emph{verified} is the independent truck-by-truck check. Neither value is
+an optimum: the two bounds and the two plans bracket it.}
+\label{tab:3d-head}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrlrrl}
+\toprule
+method & $z$ & trucks & LB & stop & time (s) & first hit (s) & verified \\
+\midrule
+compact 3D-SCPTOP, $|L|=3$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 1\,800 & --- & 108 complaints$^{a}$ \\
+MATH-3D-SCPTOP (fleet tree, 3D) & 18\,796.96 & 12 & 18\,795.54$^{\dagger}$ & regions exhausted & 330 & 42.6 & 12 / 12 \\
+\midrule
+\multicolumn{8}{l}{optimum in $[18\,795.76,\;18\,796.96]$: the tree's plan is within $0.0064\%$ of it} \\
+\bottomrule
+\end{tabular}}
+\begin{flushleft}\footnotesize
+$^{\dagger}$ certified (root sweep of the volumetric relaxation, every pair proved).
+$^{a}$ The compact plan carries no phantom freight (\emph{leaked} $=0$) and is a
+feasible solution of the compact model; the verifier rejects its layouts
+because they state under-filled slots against the designed layer count,
+which the column definition \eqref{eq:col-assign} does not admit as a
+witness. Its bound is unaffected.
+\end{flushleft}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{MATH-3D-SCPTOP on the size ladder in 3D, against the volumetric
+optimum of the same instance. The volumetric reference is the compact
+SCPTOP model's incumbent at a \textsc{mem\_limit} stop (4 GB cap) on
+$I\_8\_10\_2\_90\_k25$ and the volumetric fleet tree's plan on
+$I\_16\_15\_2\_90\_k25$; the 3D bound is the certified volumetric
+relaxation. \emph{parts} is the share of distinct compositions the
+partition proposed that were placed, proved unplaceable, or left
+undecided. Gaps are to the 3D method's own certified bound and are not
+gaps to an optimum.}
+\label{tab:3d-ladder}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrrl}
+\toprule
+& \multicolumn{2}{c}{volumetric reference} & \multicolumn{6}{c}{MATH-3D-SCPTOP} & \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-9}
+Instance & $z$ & trucks & $z$ & trucks & LB (cert.) & gap & budget / used (s) & nodes / open & parts placed / unplaceable / undecided \\
+\midrule
+$I\_8\_10\_2\_90\_k25$ & 38\,856.38 & 26 & 38\,857.16 & 26 & 38\,791.14 & 0.17\% & 900 / 900 & 74 / 7 & 90.0\% / 8.6\% / 1.5\% \\
+$I\_16\_15\_2\_90\_k25$ & 68\,139.59 & 45 & 88\,255.57 & 62 & 68\,131.43 & 22.8\% & 1\,800 / 1\,530 & 3 / 9 & 57.2\% / 41.4\% / 1.5\% \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{\pending{compact 3D-SCPTOP on $I\_8\_10\_2\_90\_k25$ is still running and may return no plan; its row is filled when it stops.} Compact 3D-SCPTOP on the size ladder, with its stop condition.}
+\label{tab:3d-compact-ladder}
+\begin{tabular}{lrrrlr}
+\toprule
+Instance & $z$ & trucks & LB & stop & time (s) \\
+\midrule
+$I\_8\_10\_2\_90\_k25$ & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{When root pricing earns its time. MATH-3D-SCPTOP on
+$I\_8\_5\_2\_90$ with the root column generation given a share of the
+budget, all else equal ($900$ s, 10 threads, 5 s placeability limit).
+Every run reaches the same plan; what the share buys is a root
+construction closer to it, which the tree otherwise closes in a handful
+of Murty steps. The bound is the volumetric relaxation's in both rows.}
+\label{tab:rootcg}
+\begin{tabular}{lrrrrr}
+\toprule
+root CG share & root plan & incumbent & Murty steps to it & first hit (s) & LB (cert.) \\
+\midrule
+$5\%$ & 18\,797.85 & 18\,796.96 & 3 & 48.5 & 18\,795.54 \\
+$0$   & 18\,799.28 & 18\,796.96 & 4 & 42.6 & 18\,795.54 \\
+\bottomrule
+\end{tabular}
+\end{table}

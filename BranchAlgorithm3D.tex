@@ -5,7 +5,8 @@ vector with the flow-first construction as primal}\label{alg:bp3d}
 \State $\bar P \gets$ one full single-commodity truck per commodity and direction
        \Comment{Section \ref{sec:initcols}}
 \State $\mathrm{LB}_{0} \gets \textsc{Certify}(\bar P,\ \text{root})$
-       \Comment{full sweep, every $(g,t)$, every pair proved; else no bound}
+       \Comment{full sweep, every $(g,t)$, every pair proved; else no bound.
+                In 3D: on the volumetric relaxation, Prop.~\ref{prop:inclusion}}
 \State $(\bar z,\mathbf{n}^{\star},\bar P) \gets \textsc{Construct}(\bar P,\ \text{root})$;
        \quad $X^{\star}\gets\sum_{g,t}n^{\star}_{gt}$
        \Comment{steps 1--4, Section \ref{sec:branching}}

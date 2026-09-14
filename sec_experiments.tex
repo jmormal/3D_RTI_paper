@@ -19,9 +19,11 @@ integer master and the partition MIPs of the construction, the
 volumetric benchmark and the compact models are solved with Gurobi
 12; the pricing subproblem
 \eqref{eq:PPObjective}--\eqref{eq:PPsymm} and the placeability tests
-with CP-SAT from OR-Tools 9.12. The machine on which each run was
-made is recorded with the run and reported with the tables
-(\pending{host and core count of the regenerated campaign}).
+with CP-SAT from OR-Tools 9.12. The 3D runs of Tables~\ref{tab:3d-head}--\ref{tab:rootcg} were made on
+one machine (Gurobi 12.0.1, Python 3.12.3, ten solver threads); the
+machine of the regenerated campaign is recorded with each run and
+reported with its tables (\pending{host and core count of the
+regenerated campaign}).
 
 \paragraph{Every row carries its configuration.}
 Five parameters can change the answer a solver returns, and every run
@@ -40,7 +42,10 @@ discarded on exactly that ground, since nothing tied them to a budget.
 run's own record, not from the script that launched it; the memory cap
 is Gurobi's per-model soft limit, at which a solve stops and keeps its
 incumbent and dual bound. The fleet tree divides its time limit
-between phases as described in Section~\ref{sec:branching}.}
+between phases as described in Section~\ref{sec:branching}; in 3D its
+placeability calls are limited to $5$ s and its pricing calls to $20$ s,
+with no root pricing unless stated, and $I\_16\_15\_2\_90\_k25$ ran
+with the $1\,800$ s budget.}
 \label{tab:protocol}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrrr}
@@ -49,6 +54,8 @@ stage & time limit (s) & MIP gap & threads & memory cap (GB) & seed \\
 \midrule
 fleet tree, volumetric master (Alg.~\ref{alg:bp3d}) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 compact SCPTOP reference & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+MATH-3D-SCPTOP, 3D (Tables~\ref{tab:3d-head}--\ref{tab:rootcg}) & 900 / 1\,800 & $5\cdot10^{-4}$ (step 2), 0 (step 4) & 10 & 4 & 0 \\
+compact 3D-SCPTOP, $|L|=3$ (Table~\ref{tab:3d-head}) & 1\,800 & 0 & 10 & 20 & 0 \\
 MATH-3D-SCPTOP, CP oracle (benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 SCPTOP (volumetric benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 PLC-SCPTOP (company procedure) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
@@ -202,12 +209,12 @@ time.
       declared budgets of Table~\ref{tab:protocol}. It solves the same
       problem as the fleet tree row above, so the two bracket a common
       optimum.
-\item \textbf{MATH-3D-SCPTOP} --- Algorithm \ref{alg:bp3d} with the
-      constraint programming oracle, on the benchmark instances. The
-      construction's step 3 is volumetric there
-      (Section~\ref{sec:wip3d}), so its plans are those of the
-      integer master over priced columns and of partitions that
-      passed placeability; every dispatched truck is verified.
+\item \textbf{MATH-3D-SCPTOP} --- Algorithm \ref{alg:bp3d} on the
+      3D problem, Section~\ref{sec:geo3d}: the volumetric partition kept
+      as a relaxation, every part proved placeable before it becomes a
+      column, dominance cuts on the parts proved unplaceable, the bound
+      from the volumetric relaxation (Proposition~\ref{prop:inclusion}).
+      Every dispatched truck is verified.
 \item \textbf{Company procedure (PLC-SCPTOP)} --- the master problem
       over a fixed pool of manually derived loading configurations,
       one regular grid per container type, as produced today by a
@@ -238,12 +245,88 @@ under the declared budgets of Table~\ref{tab:protocol}; the fleet-tree
 table is produced by the campaign now running. No number from the
 previous revision is carried forward.}
 
+\input{tab_3d}
+
 \input{tab_results}
 
 \input{tab_fleet_tree}
 
 % ---------------------------------------------------------------
 \subsection{Discussion}
+
+\paragraph{Head to head in 3D.}
+Table~\ref{tab:3d-head} sets the compact 3D-SCPTOP model against
+MATH-3D-SCPTOP on $I\_8\_5\_2\_90$, the instance on which both can be
+run. The compact model, with three configurations per direction,
+$67\,674$ variables and $92\,092$ constraints, stops on its $1\,800$ s
+time limit at $18\,816.13$ with a dual bound of $18\,795.76$ and no
+phantom freight. The fleet tree reaches $18\,796.96$ with twelve
+verified trucks $42.6$ s into its run and exhausts its regions at
+$330$ s, with a certified bound of $18\,795.54$ from the volumetric
+relaxation. Neither is an optimum, and the row says how each stopped;
+what the two together establish is that the optimum lies in
+$[18\,795.76,\,18\,796.96]$, so the tree's plan is within $0.0064\%$ of
+it and both methods agree on twelve trucks. The tree's own gap to its
+own bound is $0.0076\%$; the compact model's bound is the tighter of
+the two by $0.22$, and it is the compact model's bound, not its plan,
+that closes the bracket.
+
+\paragraph{When a volumetric capacity is adequate, and when it is not.}
+Table~\ref{tab:3d-ladder} contains the finding that reframes the
+comparison. On $I\_8\_10\_2\_90\_k25$ the 3D plan costs $0.002\%$ more
+than the compact volumetric model's incumbent at its stop, with the same
+twenty-six trucks and a certified 3D gap of $0.17\%$; the geometry is
+nearly free there. On $I\_16\_15\_2\_90\_k25$ the 3D method needs
+sixty-two trucks where the volumetric plan uses forty-five, a
+difference no search will close, because the volumetric optimum is not
+a placeable target on that catalogue: a probe of the aggregate master
+over a pool of $1\,608$ placeable columns bounds it at $78\,049$
+against the relaxation's $68\,131$. The mechanism is in the catalogue.
+The error of a volumetric capacity is governed by whether a family's
+height-limited and crush-limited layer counts coincide. On the first
+instance they do for both families ($950$ mm and $1\,150$ mm tall, three
+and two layers by either rule). On the second, the $R_{1}$ family is
+$650$ mm tall --- four layers under the $3\,000$ mm roof --- but $378$
+to $484$ kg full, two layers under the $1\,200$ kg crush limit for all
+but its lightest products, so a volumetric fill credits a truck with
+roughly twice the placeable count of that family: the relaxation loads
+$272$ folded $R_{1}$ where $260$ can be placed, and $41\%$ of the
+distinct compositions the partition proposed were proved unplaceable
+against $8.6\%$ on the first instance. This cuts both ways, and is
+meant to. It says when a volumetric model is adequate --- which most of
+the procurement transport literature assumes without checking --- and
+it says when it is not, and the test is a property of the container
+catalogue that a planner can read off before choosing a model. The
+sixty-two-truck plan itself is an incumbent under an $1\,800$ s budget,
+found at $973$ s on a pool later found inadequate, and we claim nothing
+about its distance from the 3D optimum: it is evidence that the
+volumetric optimum is unreachable on that catalogue, and nothing more.
+
+\paragraph{When the tree earns its time.}
+The fleet tree is what makes the method exact given compute, and on
+every 3D run it is where the incumbent comes from. On $I\_8\_5\_2\_90$
+with no root pricing the root construction lands at $18\,799.28$ and
+the tree closes it to $18\,796.96$ in four Murty steps
+(Table~\ref{tab:rootcg}); with five percent of the budget spent on root
+pricing the root construction is closer, at $18\,797.85$, and the tree
+closes the same distance in three. Pricing and branching are
+substitutes at very different prices, and the tree is the cheaper one
+here. Its contribution is bounded by what the root leaves it: on
+$I\_8\_10\_2\_90\_k25$ the placeability caps took the search from ten
+nodes to seventy-four within the same budget and improved the plan by
+$0.0175\%$, which is the size of the room the root construction left.
+
+\paragraph{Where the time goes in 3D.}
+Not in the geometry. On $I\_8\_10\_2\_90\_k25$ the aggregate master of
+step 2 took $294$ s and the integer master of step 4 took $355$ s of a
+$900$ s run, against $85$ s of placeability calls and $4$ s of partition
+MIPs proper; column generation on the volumetric relaxation took $10$ s.
+The constructive shelf design answered every one of the $1\,642$
+successful placements on that run, with the constraint programme
+contributing the proofs of infeasibility. The aggregate MIPs are the
+scaling limit, and they are shared with the volumetric method; once the
+caps are known the geometry is nearly free.
+
 
 \paragraph{Bracketing the volumetric optimum.}
 On the size ladder the fleet tree and the compact SCPTOP model solve
@@ -260,7 +343,7 @@ Dantzig--Wolfe certificate is the lower end of the bracket there; on
 the two smallest the compact model's bound at its stop is the higher
 of the two. Table~\ref{tab:fleet} reports the values, the stop
 condition of every compact solve, and the number of regions the tree
-left open.
+left open; Table~\ref{tab:3d-head} does the same in 3D.
 
 \paragraph{What the tree does not deliver.}
 In every recorded run the tree's global bound equals its root bound:

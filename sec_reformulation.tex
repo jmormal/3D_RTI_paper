@@ -266,6 +266,46 @@ the last \emph{certified} value it holds, not the last LP it solved.
 Reduced costs oscillate here, and a sweep that finds nothing is
 not convergence unless every pair was proved.
 
+\paragraph{A bound by inclusion.}
+The certificate above is expensive when the oracle is the constraint
+programme of Section \ref{sec:pp}; the following observation makes a
+cheaper one available for the geometric problem.
+
+\begin{proposition}[bound by inclusion]
+\label{prop:inclusion}
+Let $P^{g}_{\mathrm{vol}}\supseteq P^{g}$ be the set of loads that fit
+the trailer's volume and the payload and clear the full-truckload floor
+on the binding resource, and let $z_{\mathrm{vol}}$ be the LP value of
+the master \eqref{eq:MPObjective}--\eqref{eq:MPfleet} over
+$P^{g}_{\mathrm{vol}}$, certified as above. Then
+$z_{\mathrm{vol}}\le z^{\star}_{\text{3D-SCPTOP}}$, and the same holds
+inside any region defined by bounds on the fleet vector.
+\end{proposition}
+\begin{proof}
+A valid placement satisfying \eqref{eq:col-geom}--\eqref{eq:col-agg}
+has total RTI volume at most $\Gamma_{K}$ and total weight at most
+$pK^{w}$, and \eqref{eq:col-truck} is the same floor in both sets, so
+$P^{g}\subseteq P^{g}_{\mathrm{vol}}$. The rows of the master --- the
+linking, fleet, inventory and coverage rows, and any bound on
+$n_{gt}$ or $X$ --- do not depend on the load model; only the column set
+does. The 3D master is therefore the volumetric master with columns
+removed, its LP value is at least $z_{\mathrm{vol}}$, and its optimum
+is at least its LP value.
+\end{proof}
+
+The practical consequence is the part that matters. A geometric
+pricing sweep costs $2|T|$ calls at the pricing limit and, on the
+benchmark instances, does not certify inside a root window at all;
+the volumetric relaxation --- a two-constraint knapsack oracle over the
+same master --- certifies in a few seconds. The method therefore takes
+its bound from the volumetric relaxation and asks geometric pricing
+only for columns. It can run with \emph{no geometric pricing at the
+root at all}: the plan comes from the seeded pool and the tree, the
+bound comes from the relaxation, and the gap between them is a genuine
+optimality gap for the 3D problem. This is a principled division of
+labour rather than a shortcut, and Section \ref{sec:results} measures
+what root pricing adds when it is given time.
+
 \paragraph{Rounding the duals.}
 The prices $\pi$ are irrational in general and must be rounded before
 entering an integer-coefficient subproblem. We round them
@@ -392,10 +432,11 @@ return. A certified node is a full sweep, $2|T|$ calls each closed to
 proven optimality. On the volumetric oracle that is affordable at
 every node. On the constraint programme it is not --- a single call on
 the benchmark instances takes tens of seconds to minutes, and a sweep
-is then the whole budget of a node --- so with the CP oracle
-certification is confined to the root and to the one region that can
-refute the incumbent outright (Section \ref{sec:branching}), and the
-rest of the budget goes to constructing plans.
+is then the whole budget of a node --- so with the CP oracle the
+certificate is taken from the volumetric relaxation
+(Proposition~\ref{prop:inclusion}), at the root and in the one region
+that can refute the incumbent outright (Section \ref{sec:branching}),
+and geometric pricing is asked only for columns.
 
 \input{TikzPricingOracle}
 
@@ -550,7 +591,9 @@ loads that plan needs are added for every later node to use.
 
 \paragraph{What the tree reports.}
 The incumbent is the cheapest verified plan found by any construction.
-The root bound is the certificate obtained before any branching. The
+The root bound is the certificate obtained before any branching ---
+under 3D loading, that of the volumetric relaxation
+(Proposition~\ref{prop:inclusion}). The
 global bound of a branch and bound is the minimum over its
 \emph{frontier}, not its root: a region nobody expanded contributes
 nothing, which is why a dive reports its root value however far it has
@@ -611,42 +654,86 @@ removes an asymmetry: had the master enforced the plant side and the
 comparison models not, the comparison would have been unfair in the
 master's favour.
 
-\subsection{Work in progress: the construction under 3D loading}
-\label{sec:wip3d}
-
-\textbf{This subsection describes an extension whose experiments are
-being run at the time of writing; it reports no results.}
+\subsection{The construction under 3D loading}
+\label{sec:geo3d}
 
 Step 3 of the construction builds trucks from a delivery vector with a
-volumetric notion of a legal load. In the runs of Section
-\ref{sec:results} the tree is applied to the master over the
-volumetric oracle, where that notion \emph{is} the definition of a
-column and every part the partition proposes is a column by
-construction. Under 3D loading it is not: a load must also satisfy
-\eqref{eq:col-geom}--\eqref{eq:col-agg}. The volumetric conditions are
-nevertheless \emph{necessary} for geometric feasibility --- a placeable
-load has volume at most the trailer's and weight at most the payload,
-and it must clear the same full-truckload floor --- so the partition
-MIP of step 3 is kept as a \emph{relaxation} of the geometric
-partition. Each part it proposes is then tested for placeability with
-the constraint programme of Section \ref{sec:pp}, run in feasibility
-mode on that exact set of RTIs; a placeable part becomes a column with
-its layout as witness, exactly as a priced column does. A part proved
-unplaceable is excluded from the partition MIP by a \emph{no-good
-cut}: no future part may contain that load. The cut is valid because
-placeability is downward closed --- removing an RTI from a placeable
-load cannot break the geometry, the height budget, a crush limit or
-the payload, so any load that dominates an unplaceable one
-componentwise is itself unplaceable --- and it therefore cuts off the
-whole up-set of the refuted load rather than the single point. The MIP
-is re-solved with the cut and the loop repeats until every part is
-placeable or the MIP proves that no partition into $n_{gt}$ parts
-avoids all the cuts, in which case $n_{gt}+1$ is tried as before. Only
-a part whose placement problem the constraint programme has
-\emph{proved} infeasible is cut off; a part undecided within the time
-limit is neither accepted nor excluded, and the partition is
-re-solved without it. Step 2 makes no oracle calls and is unchanged,
-so the objective is still decided before any geometry is examined;
-what the extension changes is only whether the trucks that objective
-implies can be built. Step 4 and the verification of every dispatched
-truck are as in the volumetric case.
+volumetric notion of a legal load. Over the volumetric oracle that
+notion \emph{is} the definition of a column, and every part the
+partition proposes is a column by construction. Under 3D loading a
+load must also satisfy \eqref{eq:col-geom}--\eqref{eq:col-agg}. The
+volumetric conditions are nevertheless \emph{necessary} for geometric
+feasibility (Proposition~\ref{prop:inclusion}), so the partition MIP of
+step 3 is kept as a \emph{relaxation} of the geometric partition and
+each part it proposes is then tested for placeability. Step 2 makes no
+oracle calls and is unchanged, so the objective is still decided before
+any geometry is examined; what changes is only whether the trucks that
+objective implies can be built.
+
+\paragraph{Deciding placeability.}
+A part is submitted to a placeability oracle that returns one of three
+answers. A constructive \emph{shelf design} --- a small MIP that lays
+the part's stacks in shelves along the trailer length, one integer
+count per shelf, footprint and orientation --- supplies essentially
+every positive answer, and its layout is passed through the
+independent verifier of Section \ref{sec:results} before it counts; a
+witness the verifier rejects is not a witness. The constraint programme
+of Section \ref{sec:pp}, run in feasibility mode with the true slot
+bound \eqref{sb:eq:Ibound}, supplies the \emph{infeasibility} proofs.
+A part left undecided within the limit is neither accepted nor refuted;
+retrying it longer does not help in practice, since such loads are hard
+rather than slow. A placeable part becomes a column with its layout as
+witness, exactly as a priced column does.
+
+\paragraph{Two kinds of cut, and they are different claims.}
+A part \emph{proved} unplaceable yields a \emph{dominance cut}
+forbidding every load that dominates it componentwise. The cut is valid
+because placeability is downward closed: removing an RTI from a
+placeable layout leaves every position unchanged and every stack no
+taller and no heavier, so a load dominating an unplaceable one is
+itself unplaceable, and the cut removes the whole up-set of the refuted
+load rather than a single point. The full-truckload floor is not part
+of the placeability test, so it does not break the closure. A part left
+\emph{undecided} is instead excluded as a single point, so that the
+partition MIP proposes something else. That is a restriction of a
+primal heuristic and never a validity claim: it cannot make the method
+report an invalid plan, only fail to find one. The two constraints are
+kept separate because they rest on different grounds, and only the
+first may ever be read as knowledge about the instance.
+
+\paragraph{Placeability caps.}
+The maximum count of a single commodity in one truck is a scalar, and
+by the same closure it is monotone, so it is bisected once per
+direction and commodity at the start of a run --- a proved pricing
+optimum tightens it, an undecided probe leaves the analytic cap in
+force --- and handed to the partition MIP as an upper bound before it
+solves. Without it a single-commodity dominance cut advances one unit
+per round, from the volumetric fill down towards the placeable count,
+at a placeability call and a partition re-solve each. The caps also
+measure the volumetric relaxation's optimism directly: on one instance
+it fills a truck with $272$ folded RTIs of a family of which $260$ can
+be placed.
+
+\paragraph{A stack relaxation inside the partition.}
+The partition MIP additionally carries, per truck and footprint, an
+integer number of stacks, with the crush limit and the height budget
+imposed per stack and the stacks' floor areas summed against the
+trailer floor. It is linear, valid --- every placeable load satisfies
+it --- and it is exactly the constraint the volumetric relaxation
+omits: a family whose RTIs are short enough for four layers by height
+but heavy enough for only two by the crush limit is credited by volume
+with twice its placeable count. The relaxation says nothing about the
+two-dimensional arrangement of the stacks, which the placeability test
+and the dominance cuts cover.
+
+\paragraph{The pool and the bound.}
+The starting pool is seeded without a solver: placeable pure trucks
+and their reductions, and demand-shaped fills that the shelf design
+places, every one of them verified. This is a requirement rather than
+an optimisation, since over pure trucks alone step 2 is a hard
+knapsack, and the volumetric fills of the single-commodity pool are
+themselves not placeable in general. The root bound is the certified
+value of the volumetric relaxation (Proposition~\ref{prop:inclusion});
+geometric pricing, when given a share of the root budget, supplies
+columns and nothing else. Section \ref{sec:results} reports what it
+supplies.

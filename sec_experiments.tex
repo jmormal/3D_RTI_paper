@@ -19,8 +19,11 @@ integer master and the partition MIPs of the construction, the
 volumetric benchmark and the compact models are solved with Gurobi
 12; the pricing subproblem
 \eqref{eq:PPObjective}--\eqref{eq:PPsymm} and the placeability tests
-with CP-SAT from OR-Tools 9.12. The 3D runs of Tables~\ref{tab:3d-head}--\ref{tab:rootcg} were made on
-one machine (Gurobi 12.0.1, Python 3.12.3, ten solver threads); the
+with CP-SAT from OR-Tools 9.12. The 3D runs of
+Tables~\ref{tab:3d-head}--\ref{tab:ladder} and the compact references
+they are set against were made on one machine (Gurobi 12.0.1, Python
+3.12.3, ten solver threads), each from a recorded run that names its
+commit, and no other solver job shared the cores while they ran; the
 machine of the regenerated campaign is recorded with each run and
 reported with its tables (\pending{host and core count of the
 regenerated campaign}).
@@ -42,10 +45,15 @@ discarded on exactly that ground, since nothing tied them to a budget.
 run's own record, not from the script that launched it; the memory cap
 is Gurobi's per-model soft limit, at which a solve stops and keeps its
 incumbent and dual bound. The fleet tree divides its time limit
-between phases as described in Section~\ref{sec:branching}; in 3D its
-placeability calls are limited to $5$ s and its pricing calls to $20$ s,
-with no root pricing unless stated, and $I\_16\_15\_2\_90\_k25$ ran
-with the $1\,800$ s budget.}
+between phases as described in Section~\ref{sec:branching}: in 3D,
+$15\%$ of the budget to root column generation, $15\%$ reserved for the
+frontier sweep, placeability calls limited to $5$ s and pricing calls to
+$20$ s (eight CP-SAT workers each), the heuristic rung on with a $0.5\%$
+qualifying margin and the stop-early oracle, Murty depth $6$, and the
+region $X\le X^{\star}-1$ certified. The $900$ s budget applies to
+$I\_8\_5\_2\_90$ and $I\_8\_10\_2\_90\_k25$, $1\,800$ s to
+$I\_12\_12\_2\_90\_k25$ and $I\_16\_15\_2\_90\_k25$, and the
+$3\,600$ s rows are pending.}
 \label{tab:protocol}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrrr}
@@ -54,8 +62,12 @@ stage & time limit (s) & MIP gap & threads & memory cap (GB) & seed \\
 \midrule
 fleet tree, volumetric master (Alg.~\ref{alg:bp3d}) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 compact SCPTOP reference & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
-MATH-3D-SCPTOP, 3D (Tables~\ref{tab:3d-head}--\ref{tab:rootcg}) & 900 / 1\,800 & $5\cdot10^{-4}$ (step 2), 0 (step 4) & 10 & 4 & 0 \\
-compact 3D-SCPTOP, $|L|=3$ (Tables~\ref{tab:3d-head}, \ref{tab:3d-compact-ladder}) & 1\,800 & 0 & 10 & 20 & 0 \\
+% tree rows: config blocks of results/fleet_tree_3d/tree_3d_*_pure_ladder_*.json (time_limit 900/1800, step2_gap 5e-4, threads 10, soft_mem_gb 20, seed 0)
+MATH-3D-SCPTOP, 3D (Tables~\ref{tab:3d-head}--\ref{tab:ladder}) & 900 / 1\,800 & $5\cdot10^{-4}$ (step 2), 0 (step 4) & 10 & 20 & 0 \\
+% compact 3D rows: config blocks of results/compact_3d/compact3d_*.json (time_limit 1800, mipgap 0, threads 10, soft_mem_gb 20, seed 0)
+compact 3D-SCPTOP, $|L|=3$ (Table~\ref{tab:3d-head}) & 1\,800 & 0 & 10 & 20 & 0 \\
+% compact volumetric rows: config blocks of results/compact_ref/compact_ref_*.json (time_limit 3600, mipgap 0, threads 10, soft_mem_gb 20, seed 0)
+compact SCPTOP, volumetric reference of the 3D rows (Table~\ref{tab:3d-ladder}) & 3\,600 & 0 & 10 & 20 & 0 \\
 MATH-3D-SCPTOP, CP oracle (benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 SCPTOP (volumetric benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 PLC-SCPTOP (company procedure) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
@@ -210,11 +222,16 @@ time.
       problem as the fleet tree row above, so the two bracket a common
       optimum.
 \item \textbf{MATH-3D-SCPTOP} --- Algorithm \ref{alg:bp3d} on the
-      3D problem, Section~\ref{sec:geo3d}: the volumetric partition kept
-      as a relaxation, every part proved placeable before it becomes a
-      column, dominance cuts on the parts proved unplaceable, the bound
-      from the volumetric relaxation (Proposition~\ref{prop:inclusion}).
-      Every dispatched truck is verified.
+      3D problem, Section~\ref{sec:geo3d}: a starting pool of the
+      placeable single-commodity trucks and nothing else, columns from
+      the pricing ladder of Section~\ref{sec:pp}, the volumetric
+      partition kept as a relaxation and run as a cover, every part
+      proved placeable before it becomes a column, dominance cuts on the
+      parts proved unplaceable, integer stack counts in the aggregate
+      master, the region $X\le X^{\star}-1$ explored first, and the
+      bound from the volumetric relaxation
+      (Proposition~\ref{prop:inclusion}). Every dispatched truck is
+      verified.
 \item \textbf{Company procedure (PLC-SCPTOP)} --- the master problem
       over a fixed pool of manually derived loading configurations,
       one regular grid per container type, as produced today by a
@@ -239,11 +256,14 @@ in force so that an infeasibility verdict is a proof.
 % ---------------------------------------------------------------
 \subsection{Results}
 
-\pending{The tables below are generated fragments. The benchmark,
-case-study, oracle and exact-comparison tables are being regenerated
-under the declared budgets of Table~\ref{tab:protocol}; the fleet-tree
-table is produced by the campaign now running. No number from the
-previous revision is carried forward.}
+Tables~\ref{tab:3d-head}--\ref{tab:ladder} hold the 3D results, each
+read from a recorded run whose file is named beside the row in the
+source; cells marked pending name the run that will fill them.
+\pending{The benchmark, case-study, oracle and exact-comparison tables
+of Tables~\ref{tab:main}--\ref{tab:times-summary} and the volumetric
+ladder of Table~\ref{tab:fleet} are being regenerated under the declared
+budgets of Table~\ref{tab:protocol}. No number from the previous
+revision is carried forward.}
 
 \input{tab_3d}
 
@@ -256,132 +276,238 @@ previous revision is carried forward.}
 
 \paragraph{Head to head in 3D.}
 Table~\ref{tab:3d-head} sets the compact 3D-SCPTOP model against
-MATH-3D-SCPTOP on $I\_8\_5\_2\_90$, the instance on which both can be
-run. The compact model, with three configurations per direction,
-$67\,674$ variables and $92\,092$ constraints, stops on its $1\,800$ s
-time limit at $18\,816.13$ with a dual bound of $18\,795.76$ and no
-phantom freight. The fleet tree reaches $18\,796.96$ with twelve
-verified trucks $42.6$ s into its run and exhausts its regions at
-$330$ s, with a certified bound of $18\,795.54$ from the volumetric
-relaxation. Neither is an optimum, and the row says how each stopped;
-what the two together establish is that the optimum lies in
-$[18\,795.76,\,18\,796.96]$, so the tree's plan is within $0.0064\%$ of
-it and both methods agree on twelve trucks. The tree's own gap to its
-own bound is $0.0076\%$; the compact model's bound is the tighter of
-the two by $0.22$, and it is the compact model's bound, not its plan,
-that closes the bracket.
+MATH-3D-SCPTOP on three rungs of the ladder. On $I\_8\_5\_2\_90$, the
+one instance on which the compact model returns a plan, it has three
+configurations per direction, $67\,674$ variables and $92\,092$
+constraints, and stops on its $1\,800$ s time limit at $18\,816.13$ with
+a dual bound of $18\,795.76$, no phantom freight and a peak resident set
+of $3.8$ GB against the $20$ GB cap. The fleet tree, from the ten
+single-commodity trucks and nothing else, reaches $18\,796.96$ with
+twelve verified trucks at $139.9$ s --- the root construction's plan,
+which $170$ nodes then fail to improve --- and its certified bound from
+the volumetric relaxation is $18\,795.54$, a gap of $0.0076\%$. Neither
+is an optimum, and the row says how each stopped; together they
+establish that the optimum lies in $[18\,795.76,\,18\,796.96]$, so the
+tree's plan is within $0.0064\%$ of it, both methods agree on twelve
+trucks, and the compact model's bound is the tighter of the two by
+$0.22$. The region $X\le11$ was constructed in first and returned no
+plan over the pool, was priced under its own duals, and was left
+without a certificate; eleven trucks is neither found nor excluded.
+% compact: results/compact_3d/compact3d_I_8_5_2_90.json (n_vars 67674, n_cons 92092, obj 18816.13, bound 18795.757, TIME_LIMIT, peak_rss_gb 3.80, leaked 0)
+% tree: results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_tree2_900.json (trace "139.9 root plan 18796.96", "185.0 X<=11: no plan over the pool; priced +10 columns inside the region ... proved=False", nodes 170, vol_lb 18795.5396 proved)
 
-\paragraph{At ten periods the compact model returns nothing.}
-Table~\ref{tab:3d-compact-ladder} adds the second rung. On
-$I\_8\_10\_2\_90\_k25$ --- $119\,424$ variables and $164\,692$
+\paragraph{At ten and twelve periods the compact model returns nothing.}
+On $I\_8\_10\_2\_90\_k25$ --- $119\,424$ variables and $164\,692$
 constraints at $|L|=3$ --- the compact 3D model found \emph{no feasible
-solution at all} in $1\,800$ s. It stopped on time, not on memory: its
-peak resident set was $6.1$ GB against the declared $20$ GB cap, so
-this run had the budget and did not use it, and the honest statement is
-that the model could not reach a first incumbent within the time it was
-given. Nor is this the leak guard rejecting a corrupt solution:
-\emph{leaked} is zero because there was no solution to leak. Its dual
-bound at the stop, $36\,458.75$, is valid but lies $6.4\%$ below the
-certified Dantzig--Wolfe bound of $38\,791.14$. The reformulation
-therefore wins on both sides at once here: it produces the only
-feasible plan --- twenty-six verified trucks at $38\,857.16$ --- and the
-better bound. That is a stronger statement than the volumetric chapter
-can make, where the compact model sometimes held the tighter bound of
-the two; what separates the regimes is that the compact 3D model
-carries the placement block, and at ten periods it does not find a
-feasible point in it. No optimum is known on this instance: the
-interval $[38\,791.14,\,38\,857.16]$, a gap of $0.17\%$, comes from the
-reformulation alone, and the compact model contributes nothing to it.
-Read as a progression the ladder is short but clear: at five periods
-the compact model closes to $0.11\%$ of its own bound, loses to the
-tree's plan by $0.10\%$ and takes forty-two times longer to reach a
-worse one; at ten periods it returns nothing. Two rungs are two rungs,
-and we do not generalise from them beyond the instance sizes they
-cover.
+solution at all} in $1\,800$ s, and on $I\_12\_12\_2\_90\_k25$, with
+$200\,748$ variables and $256\,180$ constraints, neither. Both stopped
+on time, not on memory: their peak resident sets were $6.1$ and $2.7$
+GB against the declared $20$ GB cap, so the runs had their memory
+budget and did not use it, and the honest statement is that the model
+could not reach a first incumbent within the time it was given. Nor is
+this the leak guard rejecting a corrupt solution: \emph{leaked} is zero
+because there was no solution to leak. Their dual bounds at the stop,
+$36\,458.75$ and $48\,516.86$, are valid but lie $6.0\%$ and $6.9\%$
+below the certified Dantzig--Wolfe bounds of $38\,791.14$ and
+$52\,105.25$. The reformulation therefore holds both sides at once on
+these rungs: the only feasible plans --- twenty-six verified trucks at
+$38\,855.06$ in $900$ s, thirty-four at $52\,131.81$ in $1\,800$ s ---
+and the better bounds, with certified gaps of $0.16\%$ and $0.051\%$.
+The twelve-period pair is the equal-budget comparison, $1\,800$ s on
+each side; on the ten-period pair the tree had half the compact model's
+time. No optimum is known on either instance: the intervals
+$[38\,791.14,\,38\,855.06]$ and $[52\,105.25,\,52\,131.81]$ come from the
+reformulation alone, and the compact model contributes nothing to them.
+Read as a progression the ladder is short but clear: at five periods the
+compact model closes to $0.11\%$ of its own bound and loses to a plan
+the tree had in hand thirteen times sooner; at ten and twelve periods it
+returns nothing. Three rungs are three rungs, and we do not generalise
+from them beyond the instance sizes they cover. The compact 3D run on
+$I\_16\_15\_2\_90\_k25$ is pending and has its row.
+% compact: results/compact_3d/compact3d_I_8_10_2_90_k25.json (n_vars 119424, n_cons 164692, obj inf, bound 36458.753, TIME_LIMIT, peak_rss_gb 6.12, leaked 0)
+%          results/compact_3d/compact3d_I_12_12_2_90_k25.json (n_vars 200748, n_cons 256180, obj inf, bound 48516.860, TIME_LIMIT, peak_rss_gb 2.65, leaked 0)
+% tree:    results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_900.json (38855.06 / 26, vol_lb 38791.1376 proved)
+%          results/fleet_tree_3d/tree_3d_I_12_12_2_90_k25_pure_ladder_1800.json (52131.81 / 34, vol_lb 52105.2467 proved)
+% 6.0% = (38791.14-36458.75)/38791.14; 6.9% = (52105.25-48516.86)/52105.25; 0.11% = compact gap 0.00108 on I_8_5; thirteen = 1800/139.9
+
+\paragraph{The volumetric model as a cross-check.}
+Every placeable load is volumetrically feasible and every column clears
+the full-truckload floor, so a verified 3D plan is a feasible solution
+of the volumetric problem: it can never be cheaper than the volumetric
+optimum, and the compact volumetric model's dual bound, whatever its
+stop condition, is a valid bound for the 3D problem
+(Proposition~\ref{prop:inclusion}). This is asserted over every 3D row
+against the compact volumetric references, and Table~\ref{tab:3d-ladder}
+reports the pairs. On $I\_8\_10\_2\_90\_k25$ the compact volumetric model,
+given $3\,600$ s, stopped on its memory cap at $3\,243$ s with an
+incumbent of $38\,855.65$ and a dual bound of $38\,851.93$; the 3D plan,
+$38\,855.06$ in $900$ s on the harder problem, lies inside that interval,
+as it must, and the volumetric bound is in fact the tighter valid 3D
+bound on this instance, placing the 3D plan within $0.008\%$ of its
+optimum. Neither model proves anything here, and no optimum is claimed:
+what the pair shows is that on this catalogue the geometry costs
+nothing measurable, and that the $0.16\%$ gap the tree reports is the
+looseness of its own certificate, not of its plan.
+% results/compact_ref/compact_ref_I_8_10_2_90_k25.json (status MEM_LIMIT, runtime 3243 s, obj 38855.65, bound 38851.9306, config time_limit 3600, soft_mem_gb 20, threads 10)
+% results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_900.json (38855.06); 0.008% = (38855.06-38851.93)/38855.06
+% the assertion is experiments/check_vol_dominance.py over every tree_3d_*.json with a verified plan
 
 \paragraph{When a volumetric capacity is adequate, and when it is not.}
 Table~\ref{tab:3d-ladder} contains the finding that reframes the
-comparison. On $I\_8\_10\_2\_90\_k25$ the 3D plan costs $0.002\%$ more
-than the compact volumetric model's incumbent at its stop, with the same
-twenty-six trucks and a certified 3D gap of $0.17\%$; the geometry is
-nearly free there. On $I\_16\_15\_2\_90\_k25$ the 3D method needs
-sixty-two trucks where the volumetric plan uses forty-five, a
-difference no search will close, because the volumetric optimum is not
-a placeable target on that catalogue: a probe of the aggregate master
-over a pool of $1\,608$ placeable columns bounds it at $78\,049$
-against the relaxation's $68\,131$. The mechanism is in the catalogue.
+comparison. On $I\_8\_10\_2\_90\_k25$ the 3D plan matches the volumetric
+model's twenty-six trucks and sits inside its interval; not one of the
+$428$ distinct compositions the partition proposed was proved
+unplaceable. On $I\_16\_15\_2\_90\_k25$ the compact volumetric model is
+solved to \emph{proven} optimality --- forty-five trucks at $68\,139.17$
+in $1\,349$ s --- while the best verified 3D plan needs fifty-four
+trucks at $78\,808.39$, and $31.2\%$ of the $984$ distinct compositions
+proposed were proved unplaceable. The mechanism is in the catalogue.
 The error of a volumetric capacity is governed by whether a family's
 height-limited and crush-limited layer counts coincide. On the first
 instance they do for both families ($950$ mm and $1\,150$ mm tall, three
 and two layers by either rule). On the second, the $R_{1}$ family is
-$650$ mm tall --- four layers under the $3\,000$ mm roof --- but $378$
-to $484$ kg full, two layers under the $1\,200$ kg crush limit for all
-but its lightest products, so a volumetric fill credits a truck with
-roughly twice the placeable count of that family: the relaxation loads
-$272$ folded $R_{1}$ where $260$ can be placed, and $41\%$ of the
-distinct compositions the partition proposed were proved unplaceable
-against $8.6\%$ on the first instance. This cuts both ways, and is
+$650$ mm tall --- four layers under the $3\,000$ mm roof --- but $378$ to
+$484$ kg full, two layers under the $1\,200$ kg crush limit for six of
+its eight products, so a volumetric fill credits a truck with roughly
+twice the placeable count of that family: the payload admits $57$ full
+RTIs of $P_{1}$ where $32$ can be placed. This cuts both ways, and is
 meant to. It says when a volumetric model is adequate --- which most of
 the procurement transport literature assumes without checking --- and
 it says when it is not, and the test is a property of the container
-catalogue that a planner can read off before choosing a model. The
-sixty-two-truck plan itself is an incumbent under an $1\,800$ s budget,
-found at $973$ s on a pool later found inadequate, and we claim nothing
-about its distance from the 3D optimum: it is evidence that the
-volumetric optimum is unreachable on that catalogue, and nothing more.
+catalogue that a planner can read off before choosing a model.
+% instances_scale/I_8_10_2_90_k25.json (R1 h_full 950, R2 1150; products 312-455 kg) and I_16_15_2_90_k25.json (R1 1200x1600x650, w_full 378.0-483.6; R2 1150)
+% distinct_parts_unplaceable / distinct_parts: 0/428 (tree_3d_I_8_10_2_90_k25_pure_ladder_900.json), 307/984 (tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json)
+% compact_ref_I_16_15_2_90_k25.json: OPTIMAL, obj 68139.17, 45 trucks, runtime 1349 s
+% 57 = floor(24000/419.2); 32 = stats.caps["p|P1"] proved, tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json
 
-\paragraph{When the tree earns its time.}
-The fleet tree is what makes the method exact given compute, and on
-every 3D run it is where the incumbent comes from. On $I\_8\_5\_2\_90$
-with no root pricing the root construction lands at $18\,799.28$ and
-the tree closes it to $18\,796.96$ in four Murty steps
-(Table~\ref{tab:rootcg}); with five percent of the budget spent on root
-pricing the root construction is closer, at $18\,797.85$, and the tree
-closes the same distance in three. Pricing and branching are
-substitutes at very different prices, and the tree is the cheaper one
-here. Its contribution is bounded by what the root leaves it: on
-$I\_8\_10\_2\_90\_k25$ the placeability caps took the search from ten
-nodes to seventy-four within the same budget and improved the plan by
-$0.0175\%$, which is the size of the room the root construction left.
+\paragraph{The gap on the crush-binding catalogue is in the bound.}
+The $13.5\%$ that Table~\ref{tab:3d-head} reports on
+$I\_16\_15\_2\_90\_k25$ is a gap to the certified volumetric bound,
+$68\,131.43$, and the same bound is loose for the same reason the
+volumetric plan is unplaceable: it credits every $R_{1}$ stack with four
+layers where two can be carried. Every other instance in the table
+measures under $0.2\%$ against the same kind of bound, and we attribute
+the gap to the bound rather than to the plan; nothing in this paper can
+prove that, and the fifty-four-truck plan is reported as what it is, a
+verified upper bound under an $1\,800$ s budget. What can be said about
+the plan is how it was found. The restricted master over the seventeen
+single-commodity trucks is infeasible on this instance, at $1.55\cdot
+10^{8}$ of big-$M$ artificials; three sweeps of a $5$ s exact oracle
+leave it at $3.4\cdot10^{7}$, still not covering demand, while the
+heuristic rung brings it to a feasible $79\,400$ after one iteration and
+$76\,810$ after three (Table~\ref{tab:ladder}). In the $1\,800$ s run
+thirty-eight of the forty-nine dispatched loads are the rung's columns,
+and the tree opened no node: the root construction ran to the search
+deadline at $1\,530$ s, so this row is the construction's plan over the
+rung's columns and not yet the tree's. Earlier configurations on this
+instance --- a hand-seeded pool, a $4$ GB cap, earlier commits and the
+earlier shelf packer --- returned $88\,255.57$ with sixty-two trucks and
+$89\,256.35$ with sixty-six; those are earlier configurations, not a
+controlled comparison, and the run at $3\,600$ s that lets the tree
+open is pending. A bound that is tight where the crush limit binds is
+sketched in the conclusions as the next step.
+% tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json: 78808.39 / 54, vol_lb 68131.4266 proved, nodes 0, wall 1530.1, dispatch 49 rows of which 38 origin "grasp"; 13.5% = (78808.39-68131.43)/78808.39
+% ladder_measure_I_16_15_2_90_k25.json: exact trace it0 lp 1.5508e8, final_lp 3.4049e7; ladder trace it1 79400.38, final_lp 76810.49
+% earlier rows: tree_3d_I_16_15_2_90_k25_thr10_fixed2.json (88255.57 / 62, seeded, 4 GB) and _thr10_holefix (89256.35 / 66), per results/fleet_tree_3d/STATE.md
+% pending: results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_pure_ladder_stk_3600.json
+
+\paragraph{What the pool costs, and what the tree adds.}
+Table~\ref{tab:pool} isolates two decisions on $I\_8\_5\_2\_90$. From
+the pure pool, with the equality region expanded first and a linear
+stack-area row in step 2, the tree returned thirteen trucks at
+$19\,682.36$ whether or not the rung was on: step 2 chose the twelve-truck
+flow at the root but asked the partition for a supplier delivery that
+needs thirty stacks of seven on a floor that holds twenty-nine, the pair
+went to two trucks, and the region $X\le12$ was never popped while the
+Murty subtree of $X=13$ consumed the budget. Counting stacks in integers
+in step 2 and constructing $X\le X^{\star}-1$ first returns the
+twelve-truck plan at $18\,796.96$ --- to the cent the value of the
+hand-seeded reference, which ran at a different cap on an earlier
+commit and is not compared for time. The pure pool costs nothing here,
+and the reference it is measured against is the last hand-seeded number
+in the paper. What the tree then adds is bounded by what the root leaves
+it. On $I\_8\_10\_2\_90\_k25$ the root construction lands at $38\,860.96$
+at $138.7$ s and six Murty steps take it to $38\,855.06$ at $535.9$ s; on
+$I\_12\_12\_2\_90\_k25$ the first plan, $52\,140.30$ at $763.8$ s, is
+improved three times to $52\,131.81$ at $1\,458.1$ s, every improvement
+inside $X=X^{\star}$; on $I\_8\_5\_2\_90$ the root plan is already the
+best found. Pricing and branching are substitutes at very different
+prices, and the tree is the cheaper one where it has room.
+% tab:pool files as in tab_3d.tex; the thirty-stack diagnosis is the docstring of _add_aggregate_stack_area (src/rti3d/fleet_tree.py, commit bdd39ca) on I_8_5_2_90_3d_900_pure_ladder.log
+% tree_3d_I_8_10_2_90_k25_pure_ladder_900.json trace: "138.7 X==26: NEW INCUMBENT 38860.96" ... "535.9 ... NEW INCUMBENT 38855.06" (seven incumbents)
+% tree_3d_I_12_12_2_90_k25_pure_ladder_1800.json trace: "763.8 X<=34: NEW INCUMBENT 52140.30" ... "1458.1 ... NEW INCUMBENT 52131.81"
+
+\paragraph{The pricing ladder, measured.}
+The rung is qualified by reduced cost under the current duals, so what
+it contributes depends on the instance. Where the volumetric relaxation
+is nearly exact it is neutral to slightly negative: on $I\_8\_5\_2\_90$
+the stand-alone measurement of Table~\ref{tab:ladder} reaches an LP of
+$18\,798.56$ after five iterations with the rung against $18\,796.66$
+without it, on a pool sixty percent larger, and the production runs
+reach the same plan and the same twelve trucks with or without it. On
+$I\_16\_15\_2\_90\_k25$ it is the difference between a feasible master
+and none. Inside the production runs it served $17$, $15$, $78$ and
+$210$ of the $130$, $119$, $267$ and $609$ pricing calls without the
+exact oracle, and its share of the dispatched loads rises from none on
+the two smallest instances to thirty-eight of forty-nine on the largest.
+The certificate is never the rung's: the bound of every row is one
+uncapped exact sweep of the volumetric oracle.
+% ladder_measure_I_8_5_2_90.json: exact final_lp 18796.6558 (30 columns), ladder 18798.5613 (48 columns)
+% same plan with/without: tree_3d_I_8_5_2_90_pure_cg0.15_900.json and tree_3d_I_8_5_2_90_pure_ladder_900.json both 19682.36 / 13
+% stats.ladder calls / grasp_hits: 130/17, 119/15, 267/78, 609/210 in the four Table tab:3d-head files; dispatch origins as in tab_3d.tex
 
 \paragraph{Where the time goes in 3D.}
-Not in the geometry. On $I\_8\_10\_2\_90\_k25$ the aggregate master of
-step 2 took $294$ s and the integer master of step 4 took $355$ s of a
-$900$ s run, against $85$ s of placeability calls and $4$ s of partition
-MIPs proper; column generation on the volumetric relaxation took $10$ s.
-The constructive shelf design answered every one of the $1\,642$
-successful placements on that run, with the constraint programme
-contributing the proofs of infeasibility. The aggregate MIPs are the
-scaling limit, and they are shared with the volumetric method; once the
-caps are known the geometry is nearly free.
-
+It depends on whether the crush limit binds. On $I\_8\_10\_2\_90\_k25$
+the aggregate master of step 2 took $526$ s of a $900$ s run, root
+column generation $132$ s, the partitions $86$ s of which $81$ s were
+placeability calls, and the integer master $16$ s; the aggregate MIP is
+the scaling limit there, and it is shared with the volumetric method.
+On $I\_12\_12\_2\_90\_k25$ step 2 and the partitions split the $1\,800$ s
+evenly, $574$ and $580$ s, with $557$ s of the latter in placeability.
+On $I\_16\_15\_2\_90\_k25$ step 2 took $4$ s and the partitions $1\,174$
+s of $1\,530$, of which $920$ s were placeability calls: where the
+volumetric relaxation proposes parts that cannot be placed, proving so
+is where the time goes, and the geometry is no longer nearly free. The
+constructive shelf design answered $1\,653$ of the $1\,682$ successful
+placements on that run and the constraint programme the other $29$,
+together with the $307$ proofs of infeasibility.
+% t_step2 / t_cg / t_partition / t_pack / t_ip: 525.9 / 131.9 / 85.7 / 80.5 / 16.2 (tree_3d_I_8_10_2_90_k25_pure_ladder_900.json);
+%   574.5 / 358.3 / 580.3 / 556.7 / 14.6 (tree_3d_I_12_12_2_90_k25_pure_ladder_1800.json);
+%   4.2 / 248.3 / 1174.2 / 920.0 / 81.4, wall 1530.1 (tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json)
+% pack_ok_shelf 1653, pack_ok_cpsat 29, distinct_parts_unplaceable 307 (same file)
 
 \paragraph{Bracketing the volumetric optimum.}
-On the size ladder the fleet tree and the compact SCPTOP model solve
-the same problem, and each returns a verified plan and a valid lower
-bound. Neither proves optimality: the compact model stops on its
-memory cap on every ladder instance, and the tree closes none of its
-open regions. What can be stated is a \emph{bracket}: the optimum lies
-between the higher of the two lower bounds and the lower of the two
-plan costs. On the three largest instances of the ladder ---
-$I\_16\_15\_2\_90\_k50$, $I\_24\_20\_2\_90\_k50$ and
-$I\_24\_20\_2\_90\_k80$ --- the compact model's dual bound at its
-memory stop lies \emph{below} the tree's certified root bound, so the
-Dantzig--Wolfe certificate is the lower end of the bracket there; on
-the two smallest the compact model's bound at its stop is the higher
-of the two. Table~\ref{tab:fleet} reports the values, the stop
-condition of every compact solve, and the number of regions the tree
-left open; Table~\ref{tab:3d-head} does the same in 3D.
+On the size ladder the fleet tree over the volumetric oracle and the
+compact SCPTOP model solve the same problem, so each returns a plan and
+a bound for the other. The compact references are recorded: with
+$3\,600$ s, ten threads and a $20$ GB cap the compact model proves
+$I\_16\_15\_2\_90\_k25$ optimal and stops on its memory cap on
+$I\_8\_10\_2\_90\_k25$, $I\_16\_15\_2\_90\_k50$, $I\_24\_20\_2\_90\_k50$
+and $I\_24\_20\_2\_90\_k80$, keeping an incumbent and a dual bound in
+each case. The volumetric fleet-tree rows on those instances predate the
+recording of a configuration with every run and are not reported;
+Table~\ref{tab:fleet} is regenerated from runs that carry one, and no
+bracket is quoted until it is.
+% results/compact_ref/compact_ref_I_16_15_2_90_k25.json OPTIMAL; compact_ref_I_8_10_2_90_k25.json, _I_16_15_2_90_k50.json, _I_24_20_2_90_k50.json, _I_24_20_2_90_k80.json MEM_LIMIT (config time_limit 3600, threads 10, soft_mem_gb 20)
+% results/hp/tree_I_*.json carry no config block (report-results: provenance unknown), hence not tabulated
 
 \paragraph{What the tree does not deliver.}
-In every recorded run the tree's global bound equals its root bound:
+In every recorded 3D run the tree's global bound equals its root bound:
 no open region was certified to a value above the root, and no run
 satisfied the conditions under which Algorithm~\ref{alg:bp3d} claims a
-proof. The tree therefore closed no gap in these experiments. What it
-did is documented by the columns it built: the incumbents come from
-constructions inside regions the root never examined, and the gaps
-reported are gaps to a root certificate, not to an optimum. We report
-them as such.
+proof. The tree therefore closed no gap in these experiments. The runs
+reported here certified their regions with geometric sweeps, which
+bounded none of them --- five, four and fifteen regions were left
+without a bound on the three instances where the tree opened, and the
+sweep on $I\_12\_12\_2\_90\_k25$ spent $272$ s doing so --- and the
+volumetric region certificate of Section~\ref{sec:branching}, which
+replaces those sweeps, postdates every row in the tables; runs under it
+are pending. What the tree did is documented by the columns it built:
+the incumbents come from constructions inside regions the root never
+examined, and the gaps reported are gaps to a root certificate, not to
+an optimum. We report them as such.
+% regions_unbounded 5 / 4 / 15 and frontier_bounded 0 in tree_3d_I_8_5_2_90_pure_ladder_tree2_900.json, tree_3d_I_8_10_2_90_k25_pure_ladder_900.json, tree_3d_I_12_12_2_90_k25_pure_ladder_1800.json;
+% 272 s is the phase-3 review figure in the message of commit 4fe6dc6 (night-dev); pending: tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json, tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_1800.json (night7_chain.sh)
 
 \paragraph{A volumetric capacity is not a conservative approximation.}
 The loads that SCPTOP dispatches are each submitted to a placeability
@@ -413,7 +539,11 @@ The case study of Section~\ref{sec:case} compares the same machinery
 against the company's average-mix configurations and against a richer
 hand-drawn set. Its table is pending regeneration with the current
 code and with the baselines solved to the same gap as the method, and
-no percentage from the previous revision is repeated here.
+no percentage from the previous revision is repeated here: the
+company's configurations in the existing file were laid out by an
+earlier, less dense shelf packer, so the baseline there is artificially
+worse and the saving over it overstated.
+% results/case_study.csv company_* / bench_* columns: see results/fleet_tree_3d/STATE.md, "Results produced by the OLD shelf packer"; do not fill tab:case from them
 
 \paragraph{Pricing technology.}
 The subproblem was solved both as a constraint programme and as a MILP

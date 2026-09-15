@@ -10,8 +10,8 @@ vector with the flow-first construction as primal}\label{alg:bp3d}
 \State $(\bar z,\mathbf{n}^{\star},\bar P) \gets \textsc{Construct}(\bar P,\ \text{root})$;
        \quad $X^{\star}\gets\sum_{g,t}n^{\star}_{gt}$
        \Comment{steps 1--4, Section \ref{sec:branching}}
-\State $\mathcal{S} \gets \bigl[\,X\ge X^{\star}+1,\;\; X\le X^{\star}-1,\;\; X=X^{\star}\,\bigr]$
-       \Comment{a stack; the equality region is expanded first}
+\State $\mathcal{S} \gets \bigl[\,X\ge X^{\star}+1,\;\; X=X^{\star},\;\; X\le X^{\star}-1\,\bigr]$
+       \Comment{a stack; the region that can beat the incumbent is expanded first}
 \While{$\mathcal{S} \ne \emptyset$ and time remains}
    \State $\mathcal{R} \gets$ pop $\mathcal{S}$; impose $\mathcal{R}$ on the RMP as fleet rows
    \State $\tilde z \gets$ LP over $\bar P$ inside $\mathcal{R}$
@@ -28,9 +28,11 @@ vector with the flow-first construction as primal}\label{alg:bp3d}
    \EndIf
    \State $(z,\mathbf{n},\bar P) \gets \textsc{Construct}(\bar P,\ \mathcal{R})$
           \Comment{inside the region; its columns join the shared pool}
-   \If{no plan} \State \textbf{continue} \EndIf
+   \If{no plan} \State price under the region's duals; \textsc{Construct} once more; \textbf{continue} if still none \EndIf
    \If{$z < \bar z$} \State $(\bar z,\mathbf{n}^{\star}) \gets (z,\mathbf{n})$
           \Comment{new incumbent} \EndIf
+   \If{$\mathcal{R}$ does not fix $X$} \State push $\mathcal{R}\cap\{X\ge X_{2}+1\}$, $\mathcal{R}\cap\{X=X_{2}\}$, $\mathcal{R}\cap\{X\le X_{2}-1\}$ with $X_{2}=\sum_{g,t}n_{gt}$
+          \Comment{level 1 recurses} \EndIf
    \If{$\mathcal{R}$ fixes $X$ and its depth $j$ is below the cap}
       \State $(g,t) \gets$ the $j$-th pair in the fixed order
       \State push $\mathcal{R}\cap\{n_{gt}\ge n_{gt}+1\}$,\;

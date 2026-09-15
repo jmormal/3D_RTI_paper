@@ -300,9 +300,9 @@ the volumetric relaxation --- a two-constraint knapsack oracle over the
 same master --- certifies in a few seconds. The method therefore takes
 its bound from the volumetric relaxation and asks geometric pricing
 only for columns. It can run with \emph{no geometric pricing at the
-root at all}: the plan comes from the seeded pool and the tree, the
-bound comes from the relaxation, and the gap between them is a genuine
-optimality gap for the 3D problem. This is a principled division of
+root at all}: the plan comes from the single-commodity pool, the
+construction and the tree, the bound comes from the relaxation, and the
+gap between them is a genuine optimality gap for the 3D problem. This is a principled division of
 labour rather than a shortcut, and Section \ref{sec:results} measures
 what root pricing adds when it is given time.
 
@@ -438,19 +438,42 @@ certificate is taken from the volumetric relaxation
 that can refute the incumbent outright (Section \ref{sec:branching}),
 and geometric pricing is asked only for columns.
 
+\paragraph{A pricing ladder.}
+Any column of negative reduced cost improves the restricted master; the
+\emph{most} negative one is needed only for the certificate. Column
+generation over the constraint programme therefore runs as a ladder.
+The first rung is a heuristic run \emph{under the current duals} at every
+iteration --- a randomised greedy construction over enumerated stack
+fills, placed by a shelf packer, together with a re-fill of the slot
+geometry of columns already in the pool --- whose output is pricing
+output, never seeding. A heuristic load \emph{qualifies} only if its
+reduced cost lies below a margin of half a percent of the pair's
+threshold, so that a marginal heuristic column cannot pre-empt a much
+better exact one; the best two qualifying loads per pair are kept, and a
+pair at which nothing qualifies goes to the exact oracle. The oracle
+itself is run in a stop-early mode that returns its first incumbent
+beating the threshold by the same margin. The certifying sweep never uses
+either rung: a certificate is one uncapped exact sweep, exactly as
+above, so the ladder changes which columns arrive and how fast, and
+nothing about what may be claimed. What each rung contributes is
+measured, not assumed, in Section~\ref{sec:results}.
+
 \input{TikzPricingOracle}
 
 \subsection{Initial Columns}
 \label{sec:initcols}
 
 The search starts from the plainest possible pool: one maximally full
-truck per commodity and direction, obtained in the geometric case from
-a constructive \emph{grid layout} --- tile the floor with the
-commodity's stack type in its better orientation and fill each slot to
-its height, weight and crush limit --- and in the volumetric case by
-filling to capacity. No demand mixes, no diversification and no
+truck per commodity and direction, obtained in the geometric case by
+running the pricing oracle for that commodity alone to proof --- so the
+pool truck is the placeable maximum of the commodity, and the same
+number serves as its placeability cap below --- and in the volumetric
+case by filling to capacity. No demand mixes, no diversification and no
 reduced variants are seeded, so whatever the search then reaches, it
-reached by pricing, branching and construction. The single-commodity
+reached by pricing, branching and construction. This is a requirement
+of the method rather than a convenience: a pool assembled by hand
+contaminates every claim about what the search finds, and an earlier
+seeded pool was removed on that ground. The single-commodity
 pool guarantees that no direction is ever left without columns, and
 because these columns are shared they are offered to every period.
 
@@ -507,8 +530,21 @@ nothing to compensate it. Three regions partition the space:
   allocation, and this is where the second level goes.
 \item $X\le X^{\star}-1$ is the only region that can beat the incumbent
   outright --- ``is there a plan with fewer trucks?'' --- and is
-  therefore worth a certificate of its own.
+  therefore worth a certificate of its own. It is also the region the
+  tree constructs in \emph{first}: with the equality region on top of
+  the stack its Murty subtree can take the whole budget while a smaller
+  fleet is never asked for, which is what happened on a pure pool before
+  the order was changed (Table~\ref{tab:pool}).
 \end{itemize}
+A plan found \emph{inside} an inequality region, with total $X_{2}$,
+splits that region on its total exactly as the root was split ---
+$[\,\cdot,X_{2}-1]$, $\{X_{2}\}$ and $[X_{2}+1,\cdot\,]$ cover it ---
+and the equality piece starts a Murty chain of its own; level 1 is
+recursive. A construction that fails inside a region says only that the
+\emph{pool} cannot support that fleet, since step 2 is exact over the
+pool; the region is therefore priced under its own duals with a small
+share of the budget and constructed once more before it is given up,
+and a bound proved by that pricing prunes it.
 
 \paragraph{Level 2: the fleet vector, inside $X=X^{\star}$.}
 Fix an order on the pairs $(g,t)$ --- periods first, then direction.
@@ -559,16 +595,33 @@ the trucks afterwards.
   pool and the node is abandoned; a small slack means the integer
   solve ran out of time short of a clean solution, and the partitions
   built from it are still valid loads that step 4 may combine with the
-  pool.
+  pool. Under 3D loading the aggregate master also carries, per
+  direction, period and footprint, an \emph{integer} number of stacks
+  with the crush limit and the height budget imposed per stack and the
+  stacks' floor areas summed against $n_{gt}$ trailer floors
+  (Section~\ref{sec:geo3d}). The rows are necessary, since each truck's
+  own stack counts sum to a solution of them, and they let step 2 see
+  the ceiling a linear stack-area row cannot: without them it asked the
+  partition for a delivery that needed thirty stacks on a floor that
+  holds twenty-nine and paid a truck for it.
 \item \emph{Partition.} For each direction and period, the delivery
-  vector chosen in step 2 is split into \emph{exactly} $n_{gt}$ legal
-  trucks by a small MIP: integer parts summing to the vector, each
-  within the trailer's volume and payload and clearing the
-  full-truckload floor on the binding resource, ordered by weight to
-  break the symmetry among parts. If $n_{gt}$ parts cannot be formed,
-  $n_{gt}+1$ is tried, provided the region allows it. A timeout is not
-  a proof: only a model that comes back infeasible says the split is
-  impossible.
+  vector chosen in step 2 is \emph{covered} by $n_{gt}$ legal trucks
+  found by a small MIP: integer parts summing to \emph{at least} the
+  vector in every commodity, each within the trailer's volume and
+  payload and clearing the full-truckload floor on the binding resource,
+  ordered by weight to break the symmetry among parts, and minimising
+  the excess measured in volume, the resource the floor and the trailer
+  are measured in. A cover rather than an exact split, because step 2
+  chooses its flows over \emph{continuous} column weights, and a
+  fractional blend of legal loads need not be realisable as legal loads
+  --- a delivery vector can be one no number of full trucks carries
+  exactly, while two full trucks carry it with a few units to spare.
+  The cover is valid because every part is still a legal load and enters
+  step 4 as a column, not as a fixed dispatch; a plan that over-delivers
+  is feasible in the master, where the surplus is priced as holding. If
+  $n_{gt}$ parts cannot be formed, $n_{gt}+1$ is tried, provided the
+  region allows it. A timeout is not a proof: only a model that comes
+  back infeasible says the cover is impossible.
 \item \emph{Integer master over pool plus partitions.} The parts are
   added to the pool as columns and the integer master is solved over
   the enlarged pool, warm-started with the partition itself. Its
@@ -577,7 +630,7 @@ the trucks afterwards.
 
 \paragraph{Two generators, one pool.}
 Pricing returns extreme points of $\operatorname{conv}(P^{g})$; the
-construction returns exact partitions of a delivery vector, which are
+construction returns covers of a delivery vector, which are
 interior points that no dual vector reaches
 (Figure~\ref{fig:hull}). A column is a feasible load, and a node's
 constraints bound the multipliers $\lambda$, not the load, so a column
@@ -601,7 +654,14 @@ gone. At the end of the budget the regions still open are therefore
 swept --- filtered by their pool LP and certified where the filter
 allows --- and the global bound is the minimum over the certified
 bounds of the open regions, floored at the root bound and capped at
-the incumbent. Optimality is claimed \emph{only} when the root is
+the incumbent. Under 3D loading a region's certificate is taken, like
+the root's, from the volumetric relaxation with the region's fleet rows
+applied, which Proposition~\ref{prop:inclusion} covers: the rows bound
+the fleet vector, not the load model, so the volumetric master over the
+region bounds the 3D master over it. A geometric sweep of $2|T|$ calls
+at the pricing limit cannot prove anything inside a region's share of
+the budget and, on the runs of Section~\ref{sec:results}, bounded no
+region at all. Optimality is claimed \emph{only} when the root is
 certified, no region remains open, no restart has broken the
 partition, and the incumbent meets the global bound. None of the runs
 reported in Section \ref{sec:results} meets these conditions, and the
@@ -710,30 +770,37 @@ force --- and handed to the partition MIP as an upper bound before it
 solves. Without it a single-commodity dominance cut advances one unit
 per round, from the volumetric fill down towards the placeable count,
 at a placeability call and a partition re-solve each. The caps also
-measure the volumetric relaxation's optimism directly: on one instance
-it fills a truck with $272$ folded RTIs of a family of which $260$ can
-be placed.
+measure the volumetric relaxation's optimism directly: on
+$I\_16\_15\_2\_90\_k25$ the payload admits $57$ full RTIs of product
+$P_{1}$ in one truck and $32$ can be placed, because its $650$ mm
+container stacks four high under the roof and two high under the crush
+limit.
+% 57 = floor(24000 / 419.2) from instances_scale/I_16_15_2_90_k25.json (w_full of P1, pKw);
+% 32 = stats.caps["p|P1"] (proved) in results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json
 
 \paragraph{A stack relaxation inside the partition.}
 The partition MIP additionally carries, per truck and footprint, an
 integer number of stacks, with the crush limit and the height budget
 imposed per stack and the stacks' floor areas summed against the
-trailer floor. It is linear, valid --- every placeable load satisfies
-it --- and it is exactly the constraint the volumetric relaxation
-omits: a family whose RTIs are short enough for four layers by height
+trailer floor; summed over the $n_{gt}$ trucks of a period the same
+rows sit inside the aggregate master of step 2, with one integer count
+per footprint and period. It is valid --- every placeable load satisfies
+it, under the crush rule \eqref{eq:col-crush} that bounds the total
+weight of a stack --- and it is exactly the constraint the volumetric
+relaxation omits: a family whose RTIs are short enough for four layers by height
 but heavy enough for only two by the crush limit is credited by volume
 with twice its placeable count. The relaxation says nothing about the
 two-dimensional arrangement of the stacks, which the placeability test
 and the dominance cuts cover.
 
 \paragraph{The pool and the bound.}
-The starting pool is seeded without a solver: placeable pure trucks
-and their reductions, and demand-shaped fills that the shelf design
-places, every one of them verified. This is a requirement rather than
-an optimisation, since over pure trucks alone step 2 is a hard
-knapsack, and the volumetric fills of the single-commodity pool are
-themselves not placeable in general. The root bound is the certified
-value of the volumetric relaxation (Proposition~\ref{prop:inclusion});
-geometric pricing, when given a share of the root budget, supplies
-columns and nothing else. Section \ref{sec:results} reports what it
-supplies.
+The starting pool is the placeable single-commodity trucks of
+Section~\ref{sec:initcols} and nothing else; every other column comes
+from the pricing ladder or from the construction. On a catalogue where
+the crush limit binds, the restricted master over that pool is not even
+feasible --- no combination of pure trucks covers demand within the
+fleet --- and reaching feasibility is the heuristic rung's job
+(Table~\ref{tab:ladder}). The root bound is the certified value of the
+volumetric relaxation (Proposition~\ref{prop:inclusion}); geometric
+pricing, given a share of the root budget, supplies columns and nothing
+else. Section \ref{sec:results} reports what it supplies.

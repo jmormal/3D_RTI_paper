@@ -58,15 +58,17 @@
 \centering
 \small
 \caption{MATH-3D-SCPTOP on the size ladder, \textbf{every row on one
-commit} (\texttt{11db34b}), ten threads, a $20$ GB per-model cap and seed
-$0$, run sequentially. \emph{nodes} is the tree nodes opened,
+commit} (\texttt{73411b9}; the optimality proof of footnote~$^{b}$ is a
+separate run on \texttt{11db34b}), ten threads, a $20$ GB per-model cap
+and seed $0$, run sequentially. \emph{nodes} is the tree nodes opened,
 \emph{dropped} the regions left with no bound covering them, \emph{open}
 those still on the stack at the deadline; a region counted \emph{closed}
 carries a certified bound, which is not the same as being refuted (see
-Section~\ref{sec:results}). $\Delta$ is against the best previously
-recorded plan on that instance, at the same budget, threads and cap but a
-different commit --- so it is a comparison of two verified upper bounds,
-not a controlled experiment. All plans are verified truck by truck by
+Section~\ref{sec:results}). \emph{root} is the plan the construction
+returns before any node is popped and \emph{tree} the improvement the
+search then makes on it, both read from the same run's trace: this is the
+controlled measurement of what branching contributes, and it replaces a
+cross-commit comparison of two verified upper bounds, which is not one. All plans are verified truck by truck by
 code sharing nothing with the solver. The bound is the certified
 volumetric relaxation, valid for 3D by
 Proposition~\ref{prop:inclusion}; it is loose wherever the crush limit
@@ -76,15 +78,15 @@ there the volumetric relaxation itself solves to optimality at exactly
 the 3D plan's cost (footnote~$^{b}$).}
 \label{tab:3d-onecommit}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lrrlrrrrrrr}
+\begin{tabular}{lrrlrrrrrrrr}
 \toprule
-Instance & $z$ & trucks & verified & LB (cert.) & gap & $\Delta$ & nodes & dropped & open & wall / budget (s) \\
+Instance & $z$ & trucks & verified & LB (cert.) & gap & root ($t$) & tree & nodes & dropped & open & wall / budget (s) \\
 \midrule
-$I\_8\_5\_2\_90$        & 18\,796.96$^{b}$ & 12  & 12 / 12   & 18\,796.96$^{b}$ & \textbf{0 (optimal)} & $\pm0.00$ & 67 & 0 & 0  & 873 / 900 \\
-$I\_8\_10\_2\_90\_k25$  & 38\,855.34 & 26  & 26 / 26   & 38\,851.93$^{c}$ & $0.009\%$ & $-0.36$   & 68 & 0 & 35 & 883 / 900 \\
-$I\_12\_12\_2\_90\_k25$ & 52\,129.45 & 34  & 34 / 34   & 52\,105.2 & $0.046\%$ & $+6.42^{d}$ & 11 & 0 & 10 & 1\,761 / 1\,800 \\
-$I\_16\_15\_2\_90\_k25$ & 78\,549.14 & 54  & 54 / 54   & 68\,139.2$^{c}$ & $13.3\%^{e}$ & $-259.25$ & 1  & 0 & 2  & 1\,746 / 1\,800 \\
-$I\_24\_20\_2\_90\_k50$ & 230\,594.36 & 160 & 160 / 160 & 200\,013.4 & $15.3\%^{e}$ & \emph{no plan before} & 2 & 0 & 4 & 3\,492 / 3\,600 \\
+$I\_8\_5\_2\_90$        & 18\,796.96$^{b}$ & 12  & 12 / 12   & 18\,796.96$^{b}$ & \textbf{0 (optimal)} & 18\,796.96 ($140$ s) & $0.00\%$ & 67 & 0 & 0  & 873 / 900 \\
+$I\_8\_10\_2\_90\_k25$  & 38\,855.34 & 26  & 26 / 26   & 38\,851.9$^{c}$ & $0.009\%$ & 38\,865.30 ($136$ s) & $0.03\%$ & 68 & 0 & 35 & 883 / 900 \\
+$I\_12\_12\_2\_90\_k25$ & 52\,129.45 & 34  & 34 / 34   & 52\,105.2 & $0.046\%$ & 53\,195.84 ($459$ s) & $\mathbf{2.00\%}^{d}$ & 11 & 0 & 10 & 1\,761 / 1\,800 \\
+$I\_16\_15\_2\_90\_k25$ & 78\,549.14 & 54  & 54 / 54   & 68\,139.2$^{c}$ & $13.3\%^{e}$ & 78\,549.14 ($1\,181$ s) & $0.00\%$ & 1  & 0 & 2  & 1\,746 / 1\,800 \\
+$I\_24\_20\_2\_90\_k50$ & 230\,594.36 & 160 & 160 / 160 & 200\,013.4 & $13.3\%^{e}$ & 230\,594.36 ($1\,418$ s) & $0.00\%$ & 2 & 0 & 4 & 3\,492 / 3\,600 \\
 \bottomrule
 \end{tabular}}
 \begin{flushleft}\footnotesize
@@ -102,10 +104,14 @@ duals, the three regions its search could not refute --- failed, at
 $237$ s per region.
 $^{c}$ From the compact volumetric model's dual bound, tighter than the
 method's own certificate and valid for 3D by inclusion.
-$^{d}$ The one regression: the previously recorded plan on this instance
-is $52\,123.03$. The run was still improving when the wall came, and
-Section~\ref{sec:results} reports what the certification policy costs
-here.
+$^{d}$ This is where branching does the most work in the paper: the
+construction returns $53\,195.84$ at $459$ s and five node improvements
+take it to $52\,129.45$, a $2.00\%$ gain that reproduces under a second
+certification policy ($53\,248.76\rightarrow52\,127.89$). A run on an
+earlier revision reached $52\,123.03$, $0.012\%$ below this row; that is
+a comparison of two verified upper bounds across commits and we report it
+here rather than in the table, because it is not a controlled
+experiment.
 $^{e}$ Not an optimality gap. The volumetric bound is loose exactly where
 the crush limit halves the layer count, which is the regime these two
 instances were generated to expose.
@@ -113,10 +119,18 @@ instances were generated to expose.
 \end{table}
 
 % ---------------------------------------------------------------------------
+% SUPERSEDED FOR THE TREE COLUMNS by tab:3d-onecommit above, which is the
+% current method on one commit.  This table is kept because its COMPACT
+% columns are the head-to-head the paper needs and were never re-run; its
+% tree columns are earlier code revisions (4fe6dc6 / 9e33c68 / bdd39ca) and
+% are marked as such in the caption.
 \begin{table}[!htbp]
 \centering
 \small
-\caption{The compact 3D-SCPTOP model ($|L|=3$, Gurobi) against
+\caption{\textbf{Earlier code revisions} for the MATH-3D-SCPTOP columns,
+retained for the compact-model comparison, which has not been re-run; the
+current method is Table~\ref{tab:3d-onecommit} and its numbers differ.
+The compact 3D-SCPTOP model ($|L|=3$, Gurobi) against
 MATH-3D-SCPTOP on the size ladder in 3D. Both ran on the same machine with
 ten threads, a $20$ GB per-model memory cap and seed $0$. \textbf{The
 budgets differ on some rows}: the compact model had $1\,800$ s

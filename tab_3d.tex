@@ -21,7 +21,8 @@
 %   earlier tree rows (before-picture, cited in the text only): tree_3d_I_8_5_2_90_pure_ladder_tree2_900.json (bdd39ca),
 %                               tree_3d_I_12_12_2_90_k25_pure_ladder_1800.json (9e33c68)
 %   compact 3D, I_16_15_2_90_k25: results/compact_3d/compact3d_I_16_15_2_90_k25.json (commit bdd39ca)
-%   compact 3D, I_8_5_2_90:     results/compact_3d/compact3d_I_8_5_2_90.json        (commit 3bcf375)
+%   compact 3D, I_8_5_2_90:     results/compact_3d/compact3d_rerun_I_8_5_2_90.json  (commit 4fe6dc6, after the extraction fix 647d684;
+%                               the first run, compact3d_I_8_5_2_90.json on 3bcf375, has the same obj/bound/status and plan_verified False)
 %   compact 3D, I_8_10_2_90_k25: results/compact_3d/compact3d_I_8_10_2_90_k25.json  (commit 647d684)
 %   compact 3D, I_12_12_2_90_k25: results/compact_3d/compact3d_I_12_12_2_90_k25.json (commit bdd39ca)
 %   compact volumetric, I_8_10_2_90_k25:  results/compact_ref/compact_ref_I_8_10_2_90_k25.json
@@ -31,9 +32,7 @@
 %                               tree_3d_I_8_5_2_90_pure_cg0.15_900.json, tree_3d_I_8_5_2_90_pure_ladder_900.json
 %   ladder measurement:         results/fleet_tree_3d/ladder_measure_I_8_5_2_90.json,
 %                               ladder_measure_I_16_15_2_90_k25.json
-% Pending files (named in results/fleet_tree_3d/launchers/night7_chain.sh):
-%   results/compact_3d/compact3d_rerun_I_8_5_2_90.json  (compact 3D on I_8_5 after the extraction fix)
-%   no compact 3D run exists for I_24_20_2_90_k50 (nothing under results/compact_3d/ for it)
+% Not run: no compact 3D run exists for I_24_20_2_90_k50 (nothing under results/compact_3d/ for it).
 
 % ---------------------------------------------------------------------------
 \begin{table}[!htbp]
@@ -65,12 +64,11 @@ from the tighter of the two bounds and the cheaper of the two plans.}
 \cmidrule(lr){2-7}\cmidrule(lr){8-15}
 Instance & $z$ & trucks & LB & stop & RSS (GB) & verified & $z$ & trucks & LB (cert.) & gap & budget (s) & first hit (s) & nodes / open & verified & optimum in \\
 \midrule
-% compact: results/compact_3d/compact3d_I_8_5_2_90.json (obj 18816.13, bound 18795.757, TIME_LIMIT, peak_rss 3.80, leaked 0,
-%          plan_verified False: the 108 complaints are the layout-extraction defect fixed in commit 647d684, the cell stays
-%          pending until results/compact_3d/compact3d_rerun_I_8_5_2_90.json exists)
+% compact: results/compact_3d/compact3d_rerun_I_8_5_2_90.json (obj 18816.13, bound 18795.757, TIME_LIMIT, runtime 1800.0, peak_rss 3.80,
+%          leaked 0, plan_verified True, plan_placeable True, 12 placeable_loads, commit 4fe6dc6)
 % tree:    results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (incumbent 18796.96, 12, global_lb 18795.5396 valid,
 %          trace "140.2 root plan 18796.96", nodes 135, open_regions 4, pruned_bound 3, pruned_infeasible 1, regions_dropped 82, wall 779.6, plan_verified True)
-$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 3.8 & \pendingcell$^{a}$ & 18\,796.96 & 12 & 18\,795.54 & 0.0076\% & 900 & 140.2 & 135 / 4 & 12 / 12 & $[18\,795.76,\;18\,796.96]$ \\
+$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 3.8 & 12 / 12$^{a}$ & 18\,796.96 & 12 & 18\,795.54 & 0.0076\% & 900 & 140.2 & 135 / 4 & 12 / 12 & $[18\,795.76,\;18\,796.96]$ \\
 % compact: results/compact_3d/compact3d_I_8_10_2_90_k25.json (obj inf, bound 36458.753, TIME_LIMIT, peak_rss 6.12, n_vars 119424)
 % tree:    results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_900.json (38855.06, 26, vol_lb 38791.1376 proved,
 %          trace "535.9 ... NEW INCUMBENT 38855.06", nodes 39, open_regions 12)
@@ -92,12 +90,11 @@ $I\_24\_20\_2\_90\_k50$ & \multicolumn{6}{c}{not run} & \emph{no plan} & --- & 2
 \bottomrule
 \end{tabular}}
 \begin{flushleft}\footnotesize
-$^{a}$ The compact plan carries no phantom freight (\emph{leaked} $=0$) and
-is a feasible solution of the compact model; the verifier rejected the
-layouts extracted from it because the extraction stated under-filled slots
-against the designed layer count, a defect in the extraction (not in the
-model) fixed after this run. The cell is filled from the re-run. Its
-objective and bound are unaffected.
+$^{a}$ From the re-run of the compact model after a defect in the layout
+extraction was fixed; the first run returned the same objective, bound
+and stop condition, with no phantom freight (\emph{leaked} $=0$), but its
+extracted layouts stated under-filled slots against the designed layer
+count and failed the verifier. The re-run's twelve loads pass it.
 $^{b}$ The volumetric bound is loose on this catalogue, where the crush
 limit halves the layer count of the $R_{1}$ family; see the text. The
 LP-certified value is $68\,131.43$; the compact volumetric model's proven

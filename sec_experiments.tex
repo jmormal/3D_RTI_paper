@@ -280,8 +280,9 @@ MATH-3D-SCPTOP on three rungs of the ladder. On $I\_8\_5\_2\_90$, the
 one instance on which the compact model returns a plan, it has three
 configurations per direction, $67\,674$ variables and $92\,092$
 constraints, and stops on its $1\,800$ s time limit at $18\,816.13$ with
-a dual bound of $18\,795.76$, no phantom freight and a peak resident set
-of $3.8$ GB against the $20$ GB cap. The fleet tree, from the ten
+a dual bound of $18\,795.76$, no phantom freight, twelve loads that pass
+the independent verifier, and a peak resident set of $3.8$ GB against
+the $20$ GB cap. The fleet tree, from the ten
 single-commodity trucks and nothing else, reaches $18\,796.96$ with
 twelve verified trucks at $140.2$ s --- the root construction's plan,
 which $135$ nodes then fail to improve --- and its certified bound from
@@ -296,7 +297,7 @@ without a certificate; eleven trucks is neither found nor excluded. The
 same plan at the same second was returned by the run on the preceding
 commit, before region certificates were taken from the volumetric
 relaxation.
-% compact: results/compact_3d/compact3d_I_8_5_2_90.json (n_vars 67674, n_cons 92092, obj 18816.13, bound 18795.757, TIME_LIMIT, peak_rss_gb 3.80, leaked 0)
+% compact: results/compact_3d/compact3d_rerun_I_8_5_2_90.json (n_vars 67674, n_cons 92092, obj 18816.13, bound 18795.757, TIME_LIMIT, peak_rss_gb 3.80, leaked 0, plan_verified True)
 % tree: results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (trace "140.2 root plan 18796.96", "185.3 X<=11: no plan over the pool; priced +10 columns inside the region ... proved=False", nodes 135, global_lb 18795.5396 valid)
 % preceding commit: tree_3d_I_8_5_2_90_pure_ladder_tree2_900.json (18796.96 / 12 at 139.9 s, commit bdd39ca)
 

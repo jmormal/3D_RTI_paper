@@ -317,10 +317,15 @@ bounds at the stop, $36\,458.75$, $48\,516.86$ and $64\,053.23$, are
 valid but lie $6.0\%$, $6.9\%$ and $6.0\%$ below the certified
 Dantzig--Wolfe bounds of $38\,791.14$, $52\,105.25$ and $68\,131.43$.
 The reformulation therefore holds both sides at once on these rungs:
-the only feasible plans --- twenty-six verified trucks at $38\,855.06$
+the only feasible plans --- twenty-six verified trucks at $38\,859.44$
 in $900$ s, thirty-four at $52\,129.91$ in $1\,800$ s, fifty-four at
 $78\,808.39$ in $1\,800$ s --- and the better bounds, with certified
-gaps of $0.16\%$ and $0.047\%$ on the first two. The twelve- and
+gaps of $0.18\%$ and $0.047\%$ on the first two. On the ten-period
+instance the run on the commit preceding the final code, with the same
+knobs and cap, returned the better plan, $38\,855.06$: the head-to-head
+carries the final-code row so that its three rows share one commit,
+and the best verified plan on the instance is the earlier one, $0.011\%$
+below it. The twelve- and
 fifteen-period pairs are the equal-budget comparisons, $1\,800$ s on
 each side; on the ten-period pair the tree had half the compact model's
 time. No optimum is known on any of them: the intervals
@@ -335,7 +340,8 @@ not run at twenty periods.
 % compact: results/compact_3d/compact3d_I_8_10_2_90_k25.json (n_vars 119424, n_cons 164692, obj inf, bound 36458.753, TIME_LIMIT, peak_rss_gb 6.12, leaked 0)
 %          results/compact_3d/compact3d_I_12_12_2_90_k25.json (n_vars 200748, n_cons 256180, obj inf, bound 48516.860, TIME_LIMIT, peak_rss_gb 2.65, leaked 0)
 %          results/compact_3d/compact3d_I_16_15_2_90_k25.json (n_vars 322734, n_cons 393412, obj inf, bound 64053.225, TIME_LIMIT, peak_rss_gb 4.45, leaked 0)
-% tree:    results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_900.json (38855.06 / 26, vol_lb 38791.1376 proved)
+% tree:    results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json (38859.44 / 26, global_lb 38791.1376 valid; 0.18% = (38859.44-38791.14)/38859.44)
+%          results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_900.json (38855.06 / 26, commit 1d4ccbe; 0.011% = (38859.44-38855.06)/38855.06)
 %          results/fleet_tree_3d/tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_1800.json (52129.91 / 34, global_lb 52105.2467 valid)
 %          results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json (78808.39 / 54, vol_lb 68131.4266 proved)
 % 6.0% = (38791.14-36458.75)/38791.14; 6.9% = (52105.25-48516.86)/52105.25; 6.0% = (68131.43-64053.23)/68131.43;
@@ -353,16 +359,17 @@ volumetric reference on the same instance, the rows added last
 included, and it holds on all of them; Table~\ref{tab:3d-ladder}
 reports the pairs. On $I\_8\_10\_2\_90\_k25$ the compact volumetric model,
 given $3\,600$ s, stopped on its memory cap at $3\,243$ s with an
-incumbent of $38\,855.65$ and a dual bound of $38\,851.93$; the 3D plan,
-$38\,855.06$ in $900$ s on the harder problem, lies inside that interval,
-as it must, and the volumetric bound is in fact the tighter valid 3D
-bound on this instance, placing the 3D plan within $0.008\%$ of its
-optimum. Neither model proves anything here, and no optimum is claimed:
+incumbent of $38\,855.65$ and a dual bound of $38\,851.93$; the best 3D
+plan, $38\,855.06$ in $900$ s on the harder problem, lies inside that
+interval, as it must, and the volumetric bound is in fact the tighter
+valid 3D bound on this instance, placing that plan within $0.008\%$ of
+its optimum and the final-code plan of $38\,859.44$ within $0.019\%$. Neither model proves anything here, and no optimum is claimed:
 what the pair shows is that on this catalogue the geometry costs
 nothing measurable, and that the $0.16\%$ gap the tree reports is the
 looseness of its own certificate, not of its plan.
 % results/compact_ref/compact_ref_I_8_10_2_90_k25.json (status MEM_LIMIT, runtime 3243 s, obj 38855.65, bound 38851.9306, config time_limit 3600, soft_mem_gb 20, threads 10)
 % results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_900.json (38855.06); 0.008% = (38855.06-38851.93)/38855.06
+% results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json (38859.44); 0.019% = (38859.44-38851.93)/38859.44
 % the assertion is experiments/check_vol_dominance.py over every tree_3d_*.json with a verified plan
 
 \paragraph{When a volumetric capacity is adequate, and when it is not.}
@@ -478,8 +485,14 @@ hand-seeded reference, which ran at a different cap on an earlier
 commit and is not compared for time. The pure pool costs nothing here,
 and the reference it is measured against is the last hand-seeded number
 in the paper. What the tree then adds is bounded by what the root leaves
-it. On $I\_8\_10\_2\_90\_k25$ the root construction lands at $38\,860.96$
-at $138.7$ s and six Murty steps take it to $38\,855.06$ at $535.9$ s. On
+it. On $I\_8\_10\_2\_90\_k25$ the root construction lands at $38\,864.23$
+at $137.3$ s and three Murty improvements take it to $38\,859.44$ at
+$420.8$ s; the run on the preceding commit, from a root plan of
+$38\,860.96$, reached $38\,855.06$ at $535.9$ s, so on this instance the
+final code is $0.011\%$ worse, where on $I\_8\_5\_2\_90$ it is equal and
+on $I\_12\_12\_2\_90\_k25$ better; the tree's path depends on the
+regions it visits, and three same-knob pairs do not rank two
+tree orders. On
 $I\_12\_12\_2\_90\_k25$ the root construction lands at $53\,142.35$ with
 thirty-five trucks at $498$ s; the region $X\le34$, constructed in
 first, finds no plan over the pool and is priced, its piece $X\le33$ is
@@ -491,7 +504,8 @@ $52\,131.81$. On $I\_8\_5\_2\_90$ the root plan is already the best
 found. Pricing and branching are substitutes at very different prices,
 and the tree is the cheaper one where it has room.
 % tab:pool files as in tab_3d.tex; the thirty-stack diagnosis is the docstring of _add_aggregate_stack_area (src/rti3d/fleet_tree.py, commit bdd39ca) on I_8_5_2_90_3d_900_pure_ladder.log
-% tree_3d_I_8_10_2_90_k25_pure_ladder_900.json trace: "138.7 X==26: NEW INCUMBENT 38860.96" ... "535.9 ... NEW INCUMBENT 38855.06" (seven incumbents)
+% tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json trace: "137.3 root plan 38864.23", "195.2 ... 38860.53", "281.9 ... 38859.72", "420.8 ... NEW INCUMBENT 38859.44"
+% tree_3d_I_8_10_2_90_k25_pure_ladder_900.json (1d4ccbe) trace: "138.7 X==26: NEW INCUMBENT 38860.96" ... "535.9 ... NEW INCUMBENT 38855.06" (seven incumbents)
 % tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_1800.json trace: "498.3 root plan 53142.35 X=35", "1009.1 X<=34,X<=33: no plan in region", "1076.2 X<=34,X==34: NEW INCUMBENT 52141.41" ... "1515.3 ... NEW INCUMBENT 52129.91"
 % preceding commit: tree_3d_I_12_12_2_90_k25_pure_ladder_1800.json (52131.81 / 34, commit 9e33c68)
 
@@ -504,8 +518,8 @@ $18\,798.56$ after five iterations with the rung against $18\,796.66$
 without it, on a pool sixty percent larger, and the production runs
 reach the same plan and the same twelve trucks with or without it. On
 $I\_16\_15\_2\_90\_k25$ it is the difference between a feasible master
-and none. Inside the production runs it served $16$, $15$, $70$, $210$ and $268$
-of the $101$, $119$, $228$, $609$ and $938$ pricing calls without the
+and none. Inside the production runs it served $16$, $17$, $70$, $210$ and $268$
+of the $101$, $96$, $228$, $609$ and $938$ pricing calls without the
 exact oracle, and its share of the dispatched loads rises from none on
 the three smallest instances to thirty-eight of forty-nine and
 twenty-eight of forty-three on $I\_16\_15\_2\_90\_k25$; on
@@ -514,14 +528,15 @@ The certificate is never the rung's: the bound of every row is one
 uncapped exact sweep of the volumetric oracle.
 % ladder_measure_I_8_5_2_90.json: exact final_lp 18796.6558 (30 columns), ladder 18798.5613 (48 columns)
 % same plan with/without: tree_3d_I_8_5_2_90_pure_cg0.15_900.json and tree_3d_I_8_5_2_90_pure_ladder_900.json both 19682.36 / 13
-% stats.ladder calls / grasp_hits: 101/16 (vcert_900), 119/15, 228/70 (vcert_1800), 609/210, 938/268 (stk_3600); I_24_20 root trace "269 pairs served by GRASP"; dispatch origins as in tab_3d.tex
+% stats.ladder calls / grasp_hits: 101/16 (I_8_5 vcert_900), 96/17 (I_8_10 vcert_900), 228/70 (vcert_1800), 609/210, 938/268 (stk_3600); I_24_20 root trace "269 pairs served by GRASP"; dispatch origins as in tab_3d.tex
 
 \paragraph{Where the time goes in 3D.}
 It depends on whether the crush limit binds. On $I\_8\_10\_2\_90\_k25$
-the aggregate master of step 2 took $526$ s of a $900$ s run, root
-column generation $132$ s, the partitions $86$ s of which $81$ s were
-placeability calls, and the integer master $16$ s; the aggregate MIP is
-the scaling limit there, and it is shared with the volumetric method.
+the aggregate master of step 2 took $442$ s of a $775$ s run, root
+column generation $178$ s, the partitions $141$ s nearly all of them
+placeability calls, and the integer master under a second; the
+aggregate MIP is the scaling limit there, and it is shared with the
+volumetric method.
 On $I\_12\_12\_2\_90\_k25$ step 2 took $327$ s of a $1\,561$ s run and
 the partitions $594$ s, with $561$ s of the latter in placeability. On
 $I\_16\_15\_2\_90\_k25$ at $1\,800$ s step 2 took $4$ s and the
@@ -535,7 +550,7 @@ The constructive shelf design answered $1\,653$ of the $1\,682$
 successful placements on the $1\,800$ s run of $I\_16\_15\_2\_90\_k25$
 and the constraint programme the other $29$, together with the $307$
 proofs of infeasibility.
-% t_step2 / t_cg / t_partition / t_pack / t_ip: 525.9 / 131.9 / 85.7 / 80.5 / 16.2 (tree_3d_I_8_10_2_90_k25_pure_ladder_900.json);
+% t_step2 / t_cg / t_partition / t_pack / t_ip: 441.7 / 178.3 / 141.2 / 140.7 / 0.9, wall 774.6 (tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json);
 %   327.1 / 358.3 / 594.5 / 561.0 / 246.9, wall 1560.8 (tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_1800.json);
 %   420.0 / 518.9 / 1878.2 / 1737.3 / 221.1, wall 3060.2 (tree_3d_I_16_15_2_90_k25_pure_ladder_stk_3600.json);
 %   300.0 / 530.0 / 2223.7 / 1667.2 / 0.0, wall 3064.8 (tree_3d_I_24_20_2_90_k50_pure_ladder_stk_3600.json);
@@ -564,21 +579,30 @@ claims a proof. Two halves of that deserve to be stated separately. The
 certification mechanism works: on the final code, where a region's
 certificate is the volumetric relaxation with the region's fleet rows
 applied, $I\_8\_5\_2\_90$ pruned three regions on certified bounds and
-proved one infeasible, $I\_12\_12\_2\_90\_k25$ pruned two and proved three,
-and neither left a region unbounded; on the runs before it, whose
-region sweeps were geometric, five, four and fifteen regions were left
-without a bound. The search is not exhaustive: on the same two runs
-$82$ and $5$ regions were dropped without closure --- on
+proved one infeasible, $I\_8\_10\_2\_90\_k25$ pruned one,
+$I\_12\_12\_2\_90\_k25$ pruned two and proved three, and none of the
+three left a region unbounded; on the runs before it, whose region
+sweeps were geometric, five, four and fifteen regions were left without
+a bound. The search is not exhaustive: on the same three runs $82$,
+$10$ and $5$ regions were dropped without closure --- on
 $I\_8\_5\_2\_90$ fifty-three of them because the aggregate master of step
 2 was infeasible over the pool inside a Murty region, which says the
 pool cannot support that fleet vector and nothing about the region ---
-and $4$ and $9$ regions were still open when time ran out. A dropped
-region is covered by the root bound and by nothing tighter, so the
-\emph{proved} flag correctly refuses. What the tree did is documented
+and $4$, $7$ and $9$ regions were still open when time ran out. A
+dropped region is covered by the root bound and by nothing tighter, so
+the \emph{proved} flag correctly refuses. One consequence of the cheap
+certificate is visible in the clocks: the sweep of the open frontier,
+for which $15\%$ of the budget is reserved, now takes seconds, so each
+of the three runs stopped its search at $85\%$ of its budget --- $780$
+of $900$ s, $775$ of $900$ s and $1\,561$ of $1\,800$ s --- and the
+reserve went unused. That is a knob left at its earlier value, noted
+and not re-run. What the tree did is documented
 by the columns it built: the incumbents come from constructions inside
 regions the root never examined, and the gaps reported are gaps to a
 root certificate, not to an optimum. We report them as such.
-% final code: tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (pruned_bound 3, pruned_infeasible 1, regions_unbounded 0, regions_dropped 82, open_regions 4, proved False);
+% final code: tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (pruned_bound 3, pruned_infeasible 1, regions_unbounded 0, regions_dropped 82, open_regions 4, proved False, wall 779.6);
+%   tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json (pruned_bound 1, pruned_infeasible 0, regions_unbounded 0, regions_dropped 10, open_regions 7, wall 774.6);
+%   wall 1560.8 for the I_12_12 vcert row; frontier_share 0.15 in every config block
 %   tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_1800.json (pruned_bound 2, pruned_infeasible 3, regions_unbounded 0, regions_dropped 5, open_regions 9, proved False)
 % fifty-three: grep -c "infeasible over the pool" results/fleet_tree_3d/I_8_5_2_90_3d_900_pure_ladder_vcert.log = 53
 % before: regions_unbounded 5 / 4 / 15 in tree_3d_I_8_5_2_90_pure_ladder_tree2_900.json, tree_3d_I_8_10_2_90_k25_pure_ladder_900.json, tree_3d_I_12_12_2_90_k25_pure_ladder_1800.json

@@ -646,32 +646,51 @@ and not re-run; the offline certificate is the honest source.
 % gaps: 0.0076% (I_8_5, own bound), 0.17% / 0.010% (I_8_10, own / 38851.93), 0.034% (I_12_12); 0.0064% = (18796.96-18795.76)/18796.96
 
 \paragraph{What the tree does and does not deliver.}
-In every recorded 3D run the tree's global bound equals its root bound,
-and no run satisfied the conditions under which Algorithm~\ref{alg:bp3d}
-claims a proof. Two halves of that deserve to be stated separately. The
-certification mechanism works: on the final code, where a region's
-certificate is the volumetric relaxation with the region's fleet rows
-applied, $I\_8\_5\_2\_90$ pruned four regions on certified bounds and
-proved three infeasible, $I\_8\_10\_2\_90\_k25$ pruned one,
-$I\_12\_12\_2\_90\_k25$ pruned one and proved three, and one region in all
-was left unbounded; on the runs before it, whose region sweeps were
-geometric, five, four and fifteen regions were left without a bound. The
-search is not exhaustive: on the same three runs $86$, $18$ and $8$
-regions were dropped without closure --- on $I\_8\_5\_2\_90$ fifty-five
-of them because the aggregate master of step 2 was infeasible over the
-pool inside a Murty region, which says the pool cannot support that
-fleet vector and nothing about the region --- and $7$, $5$ and $11$
-regions were still open when time ran out. A dropped region is covered
-by the root bound and by nothing tighter, so the \emph{proved} flag
-correctly refuses. What the tree did is documented by the columns it
-built: the incumbents come from constructions inside regions the root
-never examined, and the gaps reported are gaps to a root certificate,
-not to an optimum. We report them as such.
-% final code: tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json (pruned_bound 4, pruned_infeasible 3, regions_unbounded 0, regions_dropped 86, open_regions 7);
-%   fifty-five: grep -c "infeasible over the pool" results/fleet_tree_3d/I_8_5_2_90_3d_900_pure_ladder_vcert_fs003.log = 55
-%   tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_fs003_900.json (pruned_bound 1, pruned_infeasible 0, regions_unbounded 0, regions_dropped 18, open_regions 5);
-%   tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_fs003_1800.json (pruned_bound 1, pruned_infeasible 3, regions_unbounded 1, regions_dropped 8, open_regions 11)
-% before: regions_unbounded 5 / 4 / 15 in tree_3d_I_8_5_2_90_pure_ladder_tree2_900.json, tree_3d_I_8_10_2_90_k25_pure_ladder_900.json, tree_3d_I_12_12_2_90_k25_pure_ladder_1800.json
+On the one-commit campaign of Table~\ref{tab:3d-onecommit} the tree
+leaves \emph{no region uncovered}: \emph{dropped} is zero on all five
+instances, against $86$, $18$ and $8$ on the previous revision. That is
+a real change and it is not the same as an exhaustive search, so we
+state the difference precisely. A region is \emph{closed} here when it
+carries a certified bound; it is \emph{refuted} only when that bound
+reaches the incumbent or the region is proved empty. Classifying every
+region $I\_8\_5\_2\_90$ popped: $24$ internal (split into disjoint,
+exhaustive children), $15$ leaves proved infeasible by certification,
+$12$ leaves whose fleet polytope is empty by arithmetic, $7$ leaves
+pruned on a certified bound --- and $3$ leaves that are neither. Those
+three fix the \emph{entire} fleet vector, so the tree has nothing left
+to branch on, and the construction that explored them is a primal
+heuristic. Three regions, therefore, stand between that run and an
+exhaustive search, and the run's \emph{proved} flag correctly refuses.
+
+We tried to close them and failed. Certifying each of the three under
+its own duals --- one exact sweep of $2|T|$ pricing calls, $237$ s
+apiece --- returned $18\,795.57$, $18\,795.54$ and $18\,795.54$ against
+an incumbent of $18\,796.96$, none of them proved. The reason is
+arithmetic rather than accidental: with the fleet fixed at twelve
+trucks, refuting a leaf needs a maximum reduced cost below roughly
+$0.12$ per column, while pricing on the same instance was still
+returning columns an order of magnitude below that. Meanwhile the
+volumetric relaxation of the same instance solves to proved optimality
+in $0.18$ s, at exactly the cost of the verified 3D plan, which settles
+the question the certification could not (Table~\ref{tab:3d-onecommit},
+footnote~$b$). We report that contrast as we found it: on this instance
+the bound the method needs is available from the relaxation and not from
+its own machinery.
+
+The tree's contribution is therefore uneven across the ladder and we do
+not average it away. At five and ten periods it opens $67$ and $68$
+nodes and prunes $7$ and $13$ regions on certified bounds. At twelve
+periods it opens $11$; at fifteen and twenty it opens $1$ and $2$, and
+on those two rows the plan is the root construction's --- the
+improvement of $0.33\%$ on $I\_16\_15\_2\_90\_k25$ and the first plan
+ever obtained on $I\_24\_20\_2\_90\_k50$ are the construction's results,
+not the search's. Finally, in every 3D run the global bound equals the
+root bound, because a region's certificate is taken from the volumetric
+relaxation and no such certificate can exceed the relaxation's optimum.
+Where that optimum coincides with the 3D optimum the method can prove
+optimality; where the crush limit binds and it does not, the residual
+gap is not closable by more search, and the crush-aware stack-count rows
+of Section~\ref{sec:geo3d} are what the bound would need.
 
 \paragraph{A volumetric capacity is not a conservative approximation.}
 The loads that SCPTOP dispatches are each submitted to a placeability

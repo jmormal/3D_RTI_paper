@@ -41,6 +41,78 @@
 % Not run: no compact 3D run exists for I_24_20_2_90_k50 (nothing under results/compact_3d/ for it).
 
 % ---------------------------------------------------------------------------
+% GENERATED-BY-HAND from the one-commit campaign of 2026-09-15.  Every row of
+% this table is commit 11db34b, ten threads, a 20 GB per-model cap and seed 0,
+% chained in one systemd unit so that no two rows shared the cores; each row's
+% env.started + wall precedes the next row's env.started, which is the
+% artefact rather than an assertion.  Sources:
+%   results/fleet_tree_3d/tree_3d_I_8_5_2_90_table_900.json        (18796.96 / 12, wall 873.1, nodes 67, dropped 0, open 0, pb 7, pi 27, first plan 140.2)
+%   results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_table_900.json   (38855.34 / 26, wall 883.1, nodes 68, dropped 0, open 35, pb 13, pi 3, last hit 590.7)
+%   results/fleet_tree_3d/tree_3d_I_12_12_2_90_k25_table_1800.json (52129.45 / 34, wall 1761.3, nodes 11, dropped 0, open 10, pb 1, pi 5, last hit 1648.5)
+%   results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_table_1800.json (78549.14 / 54, wall 1746.3, nodes 1, dropped 0, open 2, first plan 1180.9)
+%   results/fleet_tree_3d/tree_3d_I_24_20_2_90_k50_table_3600.json (230594.36 / 160, wall 3492.5, nodes 2, dropped 0, open 4, first plan 1418.2)
+%   results/compact_ref/compact_ref_I_8_5_2_90.json (volumetric OPTIMAL 18796.96 in 0.18 s -- the optimality proof)
+% Previous best per instance, for the delta column: 18796.96 (4fe6dc6),
+%   38855.70 (4fe6dc6), 52123.03 (4fe6dc6), 78808.39 (9e33c68), no plan (bdd39ca).
+\begin{table}[!htbp]
+\centering
+\small
+\caption{MATH-3D-SCPTOP on the size ladder, \textbf{every row on one
+commit} (\texttt{11db34b}), ten threads, a $20$ GB per-model cap and seed
+$0$, run sequentially. \emph{nodes} is the tree nodes opened,
+\emph{dropped} the regions left with no bound covering them, \emph{open}
+those still on the stack at the deadline; a region counted \emph{closed}
+carries a certified bound, which is not the same as being refuted (see
+Section~\ref{sec:results}). $\Delta$ is against the best previously
+recorded plan on that instance, at the same budget, threads and cap but a
+different commit --- so it is a comparison of two verified upper bounds,
+not a controlled experiment. All plans are verified truck by truck by
+code sharing nothing with the solver. The bound is the certified
+volumetric relaxation, valid for 3D by
+Proposition~\ref{prop:inclusion}; it is loose wherever the crush limit
+binds, so the gap on the last two rows is not an optimality gap.
+$I\_8\_5\_2\_90$ is the exception and is the paper's only proved optimum:
+there the volumetric relaxation itself solves to optimality at exactly
+the 3D plan's cost (footnote~$^{b}$).}
+\label{tab:3d-onecommit}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrlrrrrrrr}
+\toprule
+Instance & $z$ & trucks & verified & LB (cert.) & gap & $\Delta$ & nodes & dropped & open & wall / budget (s) \\
+\midrule
+$I\_8\_5\_2\_90$        & 18\,796.96$^{b}$ & 12  & 12 / 12   & 18\,796.96$^{b}$ & \textbf{0 (optimal)} & $\pm0.00$ & 67 & 0 & 0  & 873 / 900 \\
+$I\_8\_10\_2\_90\_k25$  & 38\,855.34 & 26  & 26 / 26   & 38\,851.93$^{c}$ & $0.009\%$ & $-0.36$   & 68 & 0 & 35 & 883 / 900 \\
+$I\_12\_12\_2\_90\_k25$ & 52\,129.45 & 34  & 34 / 34   & 52\,105.2 & $0.046\%$ & $+6.42^{d}$ & 11 & 0 & 10 & 1\,761 / 1\,800 \\
+$I\_16\_15\_2\_90\_k25$ & 78\,549.14 & 54  & 54 / 54   & 68\,139.2$^{c}$ & $13.3\%^{e}$ & $-259.25$ & 1  & 0 & 2  & 1\,746 / 1\,800 \\
+$I\_24\_20\_2\_90\_k50$ & 230\,594.36 & 160 & 160 / 160 & 200\,013.4 & $15.3\%^{e}$ & \emph{no plan before} & 2 & 0 & 4 & 3\,492 / 3\,600 \\
+\bottomrule
+\end{tabular}}
+\begin{flushleft}\footnotesize
+$^{b}$ The volumetric relaxation of this instance solves to proved
+optimality at $18\,796.96$ in $0.18$ s, and the verified 3D plan costs
+the same to machine precision. Every placeable load is volumetrically
+feasible, so $z^{\star}_{\mathrm{3D}}\ge z^{\star}_{\mathrm{vol}}$ and a
+feasible 3D plan attaining it is optimal. \emph{This proof does not come
+from the method}: no tree, no pricing, no geometric certification. It is
+available because on this catalogue the height-limited and crush-limited
+layer counts coincide, which is precisely the condition under which
+Section~\ref{sec:results} argues a volumetric capacity is adequate. The
+method's own attempt at the same proof --- certifying, under their own
+duals, the three regions its search could not refute --- failed, at
+$237$ s per region.
+$^{c}$ From the compact volumetric model's dual bound, tighter than the
+method's own certificate and valid for 3D by inclusion.
+$^{d}$ The one regression: the previously recorded plan on this instance
+is $52\,123.03$. The run was still improving when the wall came, and
+Section~\ref{sec:results} reports what the certification policy costs
+here.
+$^{e}$ Not an optimality gap. The volumetric bound is loose exactly where
+the crush limit halves the layer count, which is the regime these two
+instances were generated to expose.
+\end{flushleft}
+\end{table}
+
+% ---------------------------------------------------------------------------
 \begin{table}[!htbp]
 \centering
 \small

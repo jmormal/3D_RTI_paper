@@ -201,7 +201,10 @@ set of instances is generated with the same rules along two axes:
 $(|N|,|T|)\in\{(8,10),(12,12),(16,15),(24,20),(32,20)\}$, and the
 number of truckloads consumed per period, $2.5$, $5$ or $8$, which
 scales the fleet $K$ and with it the number of interchangeable trucks
-the compact model indexes. These instances have $|R|=2$ and $v=90$ and
+the compact model indexes. The suffix is that figure times ten and is
+\emph{not} $K$: $I\_8\_10\_2\_90\_k25$, $I\_12\_12\_2\_90\_k25$ and
+$I\_16\_15\_2\_90\_k25$ have $K=12$, and $I\_24\_20\_2\_90\_k50$ has
+$K=21$. These instances have $|R|=2$ and $v=90$ and
 are named $I\_|N|\_|T|\_2\_90\_k$ followed by ten times the truckloads
 per period. They stress different things: $|N|$ and $|T|$ grow the
 master and the number of pricing calls, while the fleet grows the
@@ -470,7 +473,7 @@ conclusions as the next step.
 % ladder_measure_I_16_15_2_90_k25.json: exact trace it0 lp 1.5508e8, final_lp 3.4049e7; ladder trace it1 79400.38, final_lp 76810.49
 % earlier rows: tree_3d_I_16_15_2_90_k25_thr10_fixed2.json (88255.57 / 62, seeded, 4 GB) and _thr10_holefix (89256.35 / 66), per results/fleet_tree_3d/STATE.md
 
-\paragraph{At twenty periods and five truckloads a period the primal does not scale.}
+\paragraph{At twenty periods and five truckloads a period ($K=21$) the primal does not scale.}
 On $I\_24\_20\_2\_90\_k50$ --- twenty-four products, twenty periods, a
 fleet of twenty-one --- the method returned \emph{no plan} in $3\,600$ s,
 and Table~\ref{tab:3d-ladder} records that as what it is, a measured

@@ -66,7 +66,13 @@ to that bound, and \emph{first hit} is the time at which the reported plan
 was found. \emph{verified} is the independent truck-by-truck check, and
 \emph{commit} the code revisions (compact / tree) each row ran on. No row
 is an optimum; the last column is the interval in which the optimum lies,
-from the tighter of the two bounds and the cheaper of the two plans.}
+from the cheaper of the two plans and from the tighter bound \emph{that
+is a bound on the problem}: the compact model restricts each direction to
+$|L|=3$ configurations a priori, so its dual bound bounds that restriction
+and not $z^{\star}$, and it is reported in its own column but never as an
+end of the interval. Where a compact \emph{volumetric} solve exists its
+dual bound is used instead, being valid for 3D by
+Proposition~\ref{prop:inclusion}.}
 \label{tab:3d-head}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrlrlrrrrrrrlll}
@@ -80,12 +86,12 @@ Instance & $z$ & trucks & LB & stop & RSS (GB) & verified & $z$ & trucks & LB (c
 % tree:    results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json (incumbent 18796.96, 12, global_lb 18795.5396 valid,
 %          trace "140.2 root plan 18798.39", "185.4 X==12: NEW INCUMBENT 18796.96", nodes 147, open_regions 7, pruned_bound 4, pruned_infeasible 3,
 %          regions_dropped 86, regions_unbounded 0, wall 890.2, plan_verified True)
-$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 3.8 & 12 / 12$^{a}$ & 18\,796.96 & 12 & 18\,795.54 & 0.0076\% & 900 & 185.4 & 147 / 7 & 12 / 12 & $[18\,795.76,\;18\,796.96]$ & 4fe6dc6 / 4fe6dc6 \\
+$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 3.8 & 12 / 12$^{a}$ & 18\,796.96 & 12 & 18\,795.54 & 0.0076\% & 900 & 185.4 & 147 / 7 & 12 / 12 & $[18\,795.54,\;18\,796.96]$ & 4fe6dc6 / 4fe6dc6 \\
 % compact: results/compact_3d/compact3d_I_8_10_2_90_k25.json (obj inf, bound 36458.753, TIME_LIMIT, peak_rss 6.12, n_vars 119424)
 % tree:    results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_fs003_900.json (38855.70, 26, global_lb 38791.1376 valid,
 %          trace "481.9 ... NEW INCUMBENT 38855.70", nodes 30, open_regions 5, pruned_bound 1, regions_dropped 18, wall 882.7);
 %          0.17% = (38855.70-38791.14)/38855.70; the 1d4ccbe row (38855.06 / 26 at 535.9 s) is 0.002% better
-$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time\_limit} & 6.1 & --- & 38\,855.70 & 26 & 38\,791.14 & 0.17\% & 900 & 481.9 & 30 / 5 & 26 / 26 & $[38\,791.14,\;38\,855.06]^{c}$ & 647d684 / 4fe6dc6 \\
+$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time\_limit} & 6.1 & --- & 38\,855.70 & 26 & 38\,791.14 & 0.17\% & 900 & 481.9 & 30 / 5 & 26 / 26 & $[38\,851.93,\;38\,855.06]^{c}$ & 647d684 / 4fe6dc6 \\
 % compact: results/compact_3d/compact3d_I_12_12_2_90_k25.json (obj inf, bound 48516.860, TIME_LIMIT, peak_rss 2.65, n_vars 200748)
 % tree:    results/fleet_tree_3d/tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_fs003_1800.json (52123.03, 34, global_lb 52105.2467 valid,
 %          trace "1691.9 ... NEW INCUMBENT 52123.03", nodes 17, open_regions 11, pruned_bound 1, pruned_infeasible 3, regions_dropped 8, wall 1770.3);
@@ -116,9 +122,10 @@ optimum on the same instance, $68\,139.17$, is also a valid 3D bound by
 inclusion (Table~\ref{tab:3d-ladder}) and is the lower end of the
 interval.
 $^{c}$ Upper end from the best verified plan on this instance,
-$38\,855.06$, returned by the run on the preceding commit with the same
-cap (Table~\ref{tab:3d-ladder}); the row's own plan is $0.002\%$ above
-it.
+$38\,855.06$ (Table~\ref{tab:3d-ladder}); lower end from the compact
+volumetric model's dual bound, $38\,851.93$, which is valid for the 3D
+problem by Proposition~\ref{prop:inclusion} and is tighter than the
+method's own certified $38\,791.14$.
 \end{flushleft}
 \end{table}
 

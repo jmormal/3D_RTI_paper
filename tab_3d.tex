@@ -58,41 +58,42 @@ its dual bound at that stop; \emph{none} means no feasible solution was
 found within the budget. The tree's LB is the certified bound of the
 volumetric relaxation (Proposition~\ref{prop:inclusion}), its \emph{gap} is
 to that bound, and \emph{first hit} is the time at which the reported plan
-was found. \emph{verified} is the independent truck-by-truck check. No row
+was found. \emph{verified} is the independent truck-by-truck check, and
+\emph{commit} the code revisions (compact / tree) each row ran on. No row
 is an optimum; the last column is the interval in which the optimum lies,
 from the tighter of the two bounds and the cheaper of the two plans.}
 \label{tab:3d-head}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lrrrlrlrrrrrrrll}
+\begin{tabular}{lrrrlrlrrrrrrrlll}
 \toprule
-& \multicolumn{6}{c}{compact 3D-SCPTOP, $1\,800$ s} & \multicolumn{8}{c}{MATH-3D-SCPTOP} & \\
+& \multicolumn{6}{c}{compact 3D-SCPTOP, $1\,800$ s} & \multicolumn{8}{c}{MATH-3D-SCPTOP} & & \\
 \cmidrule(lr){2-7}\cmidrule(lr){8-15}
-Instance & $z$ & trucks & LB & stop & RSS (GB) & verified & $z$ & trucks & LB (cert.) & gap & budget (s) & first hit (s) & nodes / open & verified & optimum in \\
+Instance & $z$ & trucks & LB & stop & RSS (GB) & verified & $z$ & trucks & LB (cert.) & gap & budget (s) & first hit (s) & nodes / open & verified & optimum in & commit \\
 \midrule
 % compact: results/compact_3d/compact3d_rerun_I_8_5_2_90.json (obj 18816.13, bound 18795.757, TIME_LIMIT, runtime 1800.0, peak_rss 3.80,
 %          leaked 0, plan_verified True, plan_placeable True, 12 placeable_loads, commit 4fe6dc6)
 % tree:    results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (incumbent 18796.96, 12, global_lb 18795.5396 valid,
 %          trace "140.2 root plan 18796.96", nodes 135, open_regions 4, pruned_bound 3, pruned_infeasible 1, regions_dropped 82, wall 779.6, plan_verified True)
-$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 3.8 & 12 / 12$^{a}$ & 18\,796.96 & 12 & 18\,795.54 & 0.0076\% & 900 & 140.2 & 135 / 4 & 12 / 12 & $[18\,795.76,\;18\,796.96]$ \\
+$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 3.8 & 12 / 12$^{a}$ & 18\,796.96 & 12 & 18\,795.54 & 0.0076\% & 900 & 140.2 & 135 / 4 & 12 / 12 & $[18\,795.76,\;18\,796.96]$ & 4fe6dc6 / 4fe6dc6 \\
 % compact: results/compact_3d/compact3d_I_8_10_2_90_k25.json (obj inf, bound 36458.753, TIME_LIMIT, peak_rss 6.12, n_vars 119424)
 % tree:    results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json (38859.44, 26, global_lb 38791.1376 valid,
 %          trace "420.8 ... NEW INCUMBENT 38859.44", nodes 18, open_regions 7, pruned_bound 1, regions_dropped 10, wall 774.6);
 %          0.18% = (38859.44-38791.14)/38859.44; the 1d4ccbe row (38855.06 / 26 at 535.9 s) is 0.011% better
-$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time\_limit} & 6.1 & --- & 38\,859.44 & 26 & 38\,791.14 & 0.18\% & 900 & 420.8 & 18 / 7 & 26 / 26 & $[38\,791.14,\;38\,855.06]^{c}$ \\
+$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time\_limit} & 6.1 & --- & 38\,859.44 & 26 & 38\,791.14 & 0.18\% & 900 & 420.8 & 18 / 7 & 26 / 26 & $[38\,791.14,\;38\,855.06]^{c}$ & 647d684 / 4fe6dc6 \\
 % compact: results/compact_3d/compact3d_I_12_12_2_90_k25.json (obj inf, bound 48516.860, TIME_LIMIT, peak_rss 2.65, n_vars 200748)
 % tree:    results/fleet_tree_3d/tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_1800.json (52129.91, 34, global_lb 52105.2467 valid,
 %          trace "1515.3 ... NEW INCUMBENT 52129.91", nodes 12, open_regions 9, pruned_bound 2, pruned_infeasible 3, regions_dropped 5, wall 1560.8)
-$I\_12\_12\_2\_90\_k25$ & \emph{none} & --- & 48\,516.86 & \textsc{time\_limit} & 2.7 & --- & 52\,129.91 & 34 & 52\,105.25 & 0.047\% & 1\,800 & 1\,515.3 & 12 / 9 & 34 / 34 & $[52\,105.25,\;52\,129.91]$ \\
+$I\_12\_12\_2\_90\_k25$ & \emph{none} & --- & 48\,516.86 & \textsc{time\_limit} & 2.7 & --- & 52\,129.91 & 34 & 52\,105.25 & 0.047\% & 1\,800 & 1\,515.3 & 12 / 9 & 34 / 34 & $[52\,105.25,\;52\,129.91]$ & bdd39ca / 4fe6dc6 \\
 % compact: results/compact_3d/compact3d_I_16_15_2_90_k25.json (obj inf, bound 64053.225, TIME_LIMIT, peak_rss 4.45, n_vars 322734, leaked 0)
 % tree:    results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json (78808.39, 54, vol_lb 68131.4266 proved,
 %          trace "1530.0 root plan 78808.39", nodes 0, open_regions 3, wall 1530.1); the gap is discussed in the text
-$I\_16\_15\_2\_90\_k25$ & \emph{none} & --- & 64\,053.23 & \textsc{time\_limit} & 4.5 & --- & 78\,808.39 & 54 & 68\,131.43$^{b}$ & 13.5\%$^{b}$ & 1\,800 & 1\,530.0 & 0 / 3 & 54 / 54 & $[68\,139.17,\;78\,808.39]$ \\
+$I\_16\_15\_2\_90\_k25$ & \emph{none} & --- & 64\,053.23 & \textsc{time\_limit} & 4.5 & --- & 78\,808.39 & 54 & 68\,131.43$^{b}$ & 13.5\%$^{b}$ & 1\,800 & 1\,530.0 & 0 / 3 & 54 / 54 & $[68\,139.17,\;78\,808.39]$ & bdd39ca / 9e33c68 \\
 % tree at 3600 s: results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_pure_ladder_stk_3600.json (78730.33, 53, vol_lb 68131.4266 proved,
 %          trace "1815.4 root plan 78730.33", nodes 1, open_regions 2, wall 3060.2); compact side is the 1800 s run of the row above
-$I\_16\_15\_2\_90\_k25$, $3\,600$ s & \multicolumn{6}{c}{as above ($1\,800$ s)} & 78\,730.33 & 53 & 68\,131.43$^{b}$ & 13.5\%$^{b}$ & 3\,600 & 1\,815.4 & 1 / 2 & 53 / 53 & $[68\,139.17,\;78\,730.33]$ \\
+$I\_16\_15\_2\_90\_k25$, $3\,600$ s & \multicolumn{6}{c}{as above ($1\,800$ s)} & 78\,730.33 & 53 & 68\,131.43$^{b}$ & 13.5\%$^{b}$ & 3\,600 & 1\,815.4 & 1 / 2 & 53 / 53 & $[68\,139.17,\;78\,730.33]$ & --- / bdd39ca \\
 % compact 3D on I_24_20_2_90_k50: not run (no file); tree: results/fleet_tree_3d/tree_3d_I_24_20_2_90_k50_pure_ladder_stk_3600.json
 %          (incumbent inf, trucks 0, vol_lb 200013.4123 proved, nodes 0, wall 3064.8, trace "3064.7 no root plan within the budget")
-$I\_24\_20\_2\_90\_k50$ & \multicolumn{6}{c}{not run} & \emph{no plan} & --- & 200\,013.41 & --- & 3\,600 & --- & 0 / 0 & --- & $[200\,013.41,\;\text{---}]$ \\
+$I\_24\_20\_2\_90\_k50$ & \multicolumn{6}{c}{not run} & \emph{no plan} & --- & 200\,013.41 & --- & 3\,600 & --- & 0 / 0 & --- & $[200\,013.41,\;\text{---}]$ & --- / bdd39ca \\
 \bottomrule
 \end{tabular}}
 \begin{flushleft}\footnotesize
@@ -210,8 +211,9 @@ stated number of iterations; on $I\_16\_15\_2\_90\_k25$ the pure-pool master
 is infeasible and the value is dominated by the big-$M$ artificials until
 the pool can cover demand. Bottom: the rung inside the production runs of
 Table~\ref{tab:3d-head}: pricing calls, calls the rung served without the
-exact oracle, columns it kept, exact-oracle calls, and the dispatched loads
-of the reported plan that are the rung's columns.}
+exact oracle, columns it kept, exact-oracle calls, and the dispatched trucks
+of the reported plan (weighted by dispatch count) that are the rung's
+columns.}
 \label{tab:ladder}
 \begin{tabular}{llrrrr}
 \toprule
@@ -228,18 +230,19 @@ $I\_16\_15\_2\_90\_k25$ & rung, then oracle & 1 & 79\,400.38 & 76 & 158.1 \\
 $I\_16\_15\_2\_90\_k25$ & rung, then oracle & 3 & 76\,810.49 & 104 & 237.9 \\
 \midrule
 \multicolumn{6}{l}{\emph{In the production runs (stats.ladder of the Table~\ref{tab:3d-head} files)}} \\
-Instance & calls & served by rung & kept & exact calls & rung loads in plan \\
+Instance & calls & served by rung & kept & exact calls & rung trucks in plan \\
 \midrule
-% tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json: ladder calls 101, grasp_hits 16, kept 30, cpsat_calls 85; dispatch origins: 12 rows, all part3d
+% rung trucks = sum of dispatch q over rows with origin "grasp", of the plan's trucks
+% tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json: ladder calls 101, grasp_hits 16, kept 30, cpsat_calls 85; rung trucks 0 of 12
 $I\_8\_5\_2\_90$ & 101 & 16 & 30 & 85 & 0 / 12 \\
-% tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json: calls 96, grasp_hits 17, kept 29, cpsat_calls 79; dispatch: 25 rows, 24 part3d + 1 single3d
-$I\_8\_10\_2\_90\_k25$ & 96 & 17 & 29 & 79 & 0 / 25 \\
-% tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_1800.json: calls 228, grasp_hits 70, kept 127, cpsat_calls 158; dispatch: 32 rows, 0 grasp
-$I\_12\_12\_2\_90\_k25$ & 228 & 70 & 127 & 158 & 0 / 32 \\
-% tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json: calls 609, grasp_hits 210, kept 364, cpsat_calls 399; dispatch: 49 rows, 38 grasp
-$I\_16\_15\_2\_90\_k25$, $1\,800$ s & 609 & 210 & 364 & 399 & 38 / 49 \\
-% tree_3d_I_16_15_2_90_k25_pure_ladder_stk_3600.json: calls 938, grasp_hits 268, kept 426, cpsat_calls 670; dispatch: 43 rows, 28 grasp
-$I\_16\_15\_2\_90\_k25$, $3\,600$ s & 938 & 268 & 426 & 670 & 28 / 43 \\
+% tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json: calls 96, grasp_hits 17, kept 29, cpsat_calls 79; rung trucks 0 of 26
+$I\_8\_10\_2\_90\_k25$ & 96 & 17 & 29 & 79 & 0 / 26 \\
+% tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_1800.json: calls 228, grasp_hits 70, kept 127, cpsat_calls 158; rung trucks 0 of 34
+$I\_12\_12\_2\_90\_k25$ & 228 & 70 & 127 & 158 & 0 / 34 \\
+% tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json: calls 609, grasp_hits 210, kept 364, cpsat_calls 399; rung trucks 41 of 54 (38 of 49 distinct loads)
+$I\_16\_15\_2\_90\_k25$, $1\,800$ s & 609 & 210 & 364 & 399 & 41 / 54 \\
+% tree_3d_I_16_15_2_90_k25_pure_ladder_stk_3600.json: calls 938, grasp_hits 268, kept 426, cpsat_calls 670; rung trucks 36 of 53 (28 of 43 distinct loads)
+$I\_16\_15\_2\_90\_k25$, $3\,600$ s & 938 & 268 & 426 & 670 & 36 / 53 \\
 % tree_3d_I_24_20_2_90_k50_pure_ladder_stk_3600.json: stats.ladder is empty (no plan); the root trace line reads
 %   "ladder: 269 pairs served by GRASP, 479 kept of 5719 qualified, 423 CP-SAT calls"; calls not recorded
 $I\_24\_20\_2\_90\_k50$ & --- & 269 & 479 & 423 & no plan \\

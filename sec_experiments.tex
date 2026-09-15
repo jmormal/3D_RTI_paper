@@ -22,8 +22,11 @@ volumetric benchmark and the compact models are solved with Gurobi
 with CP-SAT from OR-Tools 9.12. The 3D runs of
 Tables~\ref{tab:3d-head}--\ref{tab:ladder} and the compact references
 they are set against were made on one machine (Gurobi 12.0.1, Python
-3.12.3, ten solver threads), each from a recorded run that names its
-commit, and no other solver job shared the cores while they ran; the
+3.12.3, ten solver threads on a six-core, twelve-thread desktop, so
+the thread count over-subscribes the physical cores and is reported as
+the value actually used), each from a recorded run that names its
+commit. No other solver job shared the cores while any reported row ran,
+with one exception recorded in Table~\ref{tab:pool}'s notes; the
 machine of the regenerated campaign is recorded with each run and
 reported with its tables (\pending{host and core count of the
 regenerated campaign}).
@@ -37,6 +40,12 @@ the random \emph{seed}. Table~\ref{tab:protocol} states the values
 under which each stage of the study is run. A row whose configuration
 is not recorded is not reported: an earlier set of fleet-tree runs was
 discarded on exactly that ground, since nothing tied them to a budget.
+Two families of auxiliary files are exceptions and are labelled as such
+where they are used: the offline fleet-floor certificates
+(Table~\ref{tab:fleetfloor}) and the stand-alone ladder measurement
+(Table~\ref{tab:ladder}) record their own limits, threads and commit
+but not the memory cap or the seed, neither of which binds a
+single-threaded certification or a fixed-iteration measurement.
 
 \begin{table}[!htbp]
 \centering
@@ -46,12 +55,19 @@ run's own record, not from the script that launched it; the memory cap
 is Gurobi's per-model soft limit, at which a solve stops and keeps its
 incumbent and dual bound. The fleet tree divides its time limit
 between phases as described in Section~\ref{sec:branching}: in 3D,
-$15\%$ of the budget to root column generation, $15\%$ reserved for the
+$15\%$ of the budget to root column generation, $3\%$ reserved for the
 frontier sweep, placeability calls limited to $5$ s and pricing calls to
 $20$ s (eight CP-SAT workers each), the heuristic rung on with a $0.5\%$
-qualifying margin and the stop-early oracle, Murty depth $6$, and the
-region $X\le X^{\star}-1$ certified. On the final code the frontier
-reserve is $3\%$; the $15\%$ rows are kept in Table~\ref{tab:pool}. The $900$ s budget applies to
+qualifying margin and the stop-early oracle, an initial Murty depth of
+$6$, at most two cut-and-repack rounds per partition attempt, at most
+$15\%$ of the budget on the cheap volumetric region certificates, and
+the expensive geometric sweep only at the region $X\le X^{\star}-1$.
+The depth is initial rather than fixed: when the stack empties with
+budget left the cap rises by two and the leaves it had stopped at are
+re-opened, and when the search then exhausts, what remains of the budget
+goes to one exact geometric certification over the final pool, whose
+time is reported separately. Rows at a $15\%$ frontier reserve and a
+fixed depth are kept in Table~\ref{tab:pool} as the before-picture. The $900$ s budget applies to
 $I\_8\_5\_2\_90$ and $I\_8\_10\_2\_90\_k25$, $1\,800$ s to
 $I\_12\_12\_2\_90\_k25$ and $I\_16\_15\_2\_90\_k25$, and $3\,600$ s to
 the second $I\_16\_15\_2\_90\_k25$ row and to $I\_24\_20\_2\_90\_k50$.}
@@ -289,11 +305,19 @@ root plan at $18\,798.39$ at $140.2$ s and reaches $18\,796.96$ with
 twelve verified trucks at the first tree node, $185.4$ s, which $146$
 further nodes fail to improve; its certified bound from the volumetric
 relaxation is $18\,795.54$, a gap of $0.0076\%$. Neither
-is an optimum, and the row says how each stopped; together they
-establish that the optimum lies in $[18\,795.76,\,18\,796.96]$, so the
-tree's plan is within $0.0064\%$ of it, both methods agree on twelve
-trucks, and the compact model's bound is the tighter of the two by
-$0.22$. The region $X\le11$ was constructed in first and returned no
+is an optimum, and the row says how each stopped. The two do
+\emph{not} bracket the optimum, and the earlier revision of this section
+said they did. The compact model restricts each direction to
+$|L|=3$ loading configurations for the whole horizon, and that
+restriction is chosen a priori: nothing here computes an over-estimate
+of $|L|$, and Section~\ref{sec:model} states the equivalence only for
+an unrestricted $|L|$. A restriction's optimum is at or above the
+problem's, so its dual bound, $18\,795.76$, bounds the
+three-configuration model and not $z^{\star}$. What the pair
+establishes is that both methods agree on twelve trucks and that the
+reformulation's plan is $0.10\%$ cheaper; the interval that holds
+$z^{\star}$ is the method's own,
+$[18\,795.54,\,18\,796.96]$, a gap of $0.0076\%$. The region $X\le11$ was constructed in first and returned no
 plan over the pool, was priced under its own duals, and was left
 without a certificate inside the run; that eleven trucks is impossible
 is established offline (Table~\ref{tab:fleetfloor}). The same plan was

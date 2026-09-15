@@ -247,9 +247,11 @@ Instance & mode & iterations & LP & columns & wall (s) \\
 $I\_8\_5\_2\_90$ & exact oracle only & 5 & 18\,796.66 & 30 & 119.3 \\
 $I\_8\_5\_2\_90$ & rung, then oracle & 5 & 18\,798.56 & 48 & 126.4 \\
 % results/fleet_tree_3d/ladder_measure_I_16_15_2_90_k25.json: exact trace it0 1.5508e8, final_lp 3.4049e7, 60 columns, 231.5 s;
-%   ladder trace it0 1.5508e8, it1 79400.38, final_lp 76810.49, 104 columns, 237.9 s (3 iterations)
+%   ladder trace it0 1.5508e8 (pool 47, wall 78.9), it1 79400.38 (pool 76, wall 158.1),
+%   it2 78111.20, final_lp 76810.49, 104 columns, 237.9 s (3 iterations).  The LP printed on the
+%   one-iteration row is the value AFTER iteration 1, whose pool is 47 and whose wall is 78.9.
 $I\_16\_15\_2\_90\_k25$ & exact oracle only & 3 & $3.40\cdot10^{7}$ (infeasible) & 60 & 231.5 \\
-$I\_16\_15\_2\_90\_k25$ & rung, then oracle & 1 & 79\,400.38 & 76 & 158.1 \\
+$I\_16\_15\_2\_90\_k25$ & rung, then oracle & 1 & 79\,400.38 & 47 & 78.9 \\
 $I\_16\_15\_2\_90\_k25$ & rung, then oracle & 3 & 76\,810.49 & 104 & 237.9 \\
 \midrule
 \multicolumn{6}{l}{\emph{In the production runs (stats.ladder of the Table~\ref{tab:3d-head} files)}} \\

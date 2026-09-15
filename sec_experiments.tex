@@ -645,6 +645,23 @@ and not re-run; the offline certificate is the honest source.
 % results/fleet_tree_3d/fleet_floor.log; script experiments/certify_fleet_floor.py at commit dd5f039 (the gating fix is in that commit)
 % gaps: 0.0076% (I_8_5, own bound), 0.17% / 0.010% (I_8_10, own / 38851.93), 0.034% (I_12_12); 0.0064% = (18796.96-18795.76)/18796.96
 
+\paragraph{What the bounds rest on, stated once.}
+Three qualifications belong with the results rather than with the claims,
+and we state them here so that every number in this section is read
+correctly. First, a lower bound is reported only where a full pricing
+sweep has proved that no column prices out; where no such sweep
+completed, the value is the restricted master's and is an \emph{upper}
+bound on the master LP, never printed as a bound. Second, the one
+instance we report as solved to optimality is established by inclusion
+from an exactly solved relaxation, \emph{not} by the method's own
+certification: the method attempted the same proof on the same instance,
+certifying under their own duals the three regions its search could not
+refute, and failed at $237$ s per region. Third, the compact
+3D-SCPTOP model restricts each direction a priori to $|L|=3$ loading
+configurations, so its dual bound bounds that restriction and not the
+problem; we use its \emph{plan} as a comparator and never its bound as an
+end of an interval.
+
 \paragraph{What the tree does and does not deliver.}
 On the one-commit campaign of Table~\ref{tab:3d-onecommit} the tree
 leaves \emph{no region uncovered}: \emph{dropped} is zero on all five

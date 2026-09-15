@@ -692,6 +692,24 @@ optimality; where the crush limit binds and it does not, the residual
 gap is not closable by more search, and the crush-aware stack-count rows
 of Section~\ref{sec:geo3d} are what the bound would need.
 
+\paragraph{The decomposition's bound is tighter than the compact model's, and sooner.}
+On $I\_12\_12\_2\_90\_k25$ the reformulation certifies $52\,105.2$ after
+$26$ s of its run --- a full sweep in which every $(g,t)$ pair priced
+optimal and nothing priced out, over the volumetric relaxation and so
+valid for the 3D problem by Proposition~\ref{prop:inclusion}. The compact
+volumetric model on the same instance, given $600$ s, ten threads and a
+$20$ GB cap, stops at a dual bound of $51\,944.2$ with an incumbent of
+$52\,116.7$. The decomposition therefore produces the tighter bound, and
+produces it in a twentieth of the time; the comparison is between two
+bounds on the same relaxation, both valid, and the budgets are stated
+because they differ. The same solve also shows what the exactness of
+$I\_8\_5\_2\_90$ does not generalise: there the relaxation's optimum
+coincides with the 3D plan's cost, here its own incumbent already lies
+below the best 3D plan we have, so inclusion proves nothing at twelve
+periods.
+% results/fleet_tree_3d/tree_3d_I_12_12_2_90_k25_table_1800.json (vol_lb 52105.2467, vol_lb_proved true, trace "26.3 volumetric relaxation LB 52105.25 proved=True")
+% results/compact_ref/compact_ref_I_12_12_2_90_k25.json (bound 51944.2197, obj 52116.69, TIME_LIMIT at 600 s, 34 trucks, config threads 10 / soft_mem_gb 20 / seed 0)
+
 \paragraph{A volumetric capacity is not a conservative approximation.}
 The loads that SCPTOP dispatches are each submitted to a placeability
 proof. The share proved impossible to place, by instance factor, is

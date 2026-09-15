@@ -284,22 +284,25 @@ constraints, and stops on its $1\,800$ s time limit at $18\,816.13$ with
 a dual bound of $18\,795.76$, no phantom freight, twelve loads that pass
 the independent verifier, and a peak resident set of $3.8$ GB against
 the $20$ GB cap. The fleet tree, from the ten
-single-commodity trucks and nothing else, reaches $18\,796.96$ with
-twelve verified trucks at $140.2$ s --- the root construction's plan,
-which $135$ nodes then fail to improve --- and its certified bound from
-the volumetric relaxation is $18\,795.54$, a gap of $0.0076\%$. Neither
+single-commodity trucks and nothing else, constructs a twelve-truck
+root plan at $18\,798.39$ at $140.2$ s and reaches $18\,796.96$ with
+twelve verified trucks at the first tree node, $185.4$ s, which $146$
+further nodes fail to improve; its certified bound from the volumetric
+relaxation is $18\,795.54$, a gap of $0.0076\%$. Neither
 is an optimum, and the row says how each stopped; together they
 establish that the optimum lies in $[18\,795.76,\,18\,796.96]$, so the
 tree's plan is within $0.0064\%$ of it, both methods agree on twelve
 trucks, and the compact model's bound is the tighter of the two by
 $0.22$. The region $X\le11$ was constructed in first and returned no
 plan over the pool, was priced under its own duals, and was left
-without a certificate; eleven trucks is neither found nor excluded. The
-same plan at the same second was returned by the run on the preceding
-commit, before region certificates were taken from the volumetric
-relaxation.
+without a certificate inside the run; that eleven trucks is impossible
+is established offline (Table~\ref{tab:fleetfloor}). The same plan was
+returned by the run on the preceding commit, before region certificates
+were taken from the volumetric relaxation, and by the same code with the
+$15\%$ reserve (Table~\ref{tab:pool}).
 % compact: results/compact_3d/compact3d_rerun_I_8_5_2_90.json (n_vars 67674, n_cons 92092, obj 18816.13, bound 18795.757, TIME_LIMIT, peak_rss_gb 3.80, leaked 0, plan_verified True)
-% tree: results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (trace "140.2 root plan 18796.96", "185.3 X<=11: no plan over the pool; priced +10 columns inside the region ... proved=False", nodes 135, global_lb 18795.5396 valid)
+% tree: results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json (trace "140.2 root plan 18798.39 X=12", "185.4 X==12: NEW INCUMBENT 18796.96", nodes 147, global_lb 18795.5396 valid)
+% fs 0.15 row: tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (18796.96 / 12 at 140.2 s; "185.3 X<=11: no plan over the pool; priced +10 columns ... proved=False")
 % preceding commit: tree_3d_I_8_5_2_90_pure_ladder_tree2_900.json (18796.96 / 12 at 139.9 s, commit bdd39ca)
 
 \paragraph{From ten periods on the compact model returns nothing.}
@@ -336,7 +339,7 @@ $[38\,791.14,\,38\,855.06]$ and $[52\,105.25,\,52\,123.03]$ come from the
 reformulation alone, and the compact model contributes nothing to them.
 Read as a progression the ladder is short but clear: at five periods the
 compact model closes to $0.11\%$ of its own bound and loses to a plan
-the tree had in hand thirteen times sooner; from ten periods on it
+the tree had in hand nearly ten times sooner; from ten periods on it
 returns nothing. Four rungs are four rungs, and we do not generalise
 from them beyond the instance sizes they cover; the compact 3D model was
 not run at twenty periods.
@@ -349,7 +352,7 @@ not run at twenty periods.
 %          results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_pure_ladder_1800.json (78808.39 / 54, vol_lb 68131.4266 proved)
 % 6.0% = (38791.14-36458.75)/38791.14; 6.9% = (52105.25-48516.86)/52105.25; 6.0% = (68131.43-64053.23)/68131.43;
 % relative to the compact bounds: 6.40%, 7.40%, 6.37%;
-% 0.11% = compact gap 0.00108 on I_8_5; thirteen = 1800/140.2
+% 0.11% = compact gap 0.00108 on I_8_5; nearly ten = 1800/185.4 = 9.7
 
 \paragraph{The volumetric model as a cross-check.}
 Every placeable load is volumetrically feasible and every column clears
@@ -505,15 +508,15 @@ $52\,123.03$ at $1\,692$ s. The same code with the $15\%$ reserve
 instance: its root plan had thirty-five trucks, the region $X\le34$
 returned a thirty-four-truck plan and was split on it, its piece
 $X\le33$ was priced and given up, and its piece $X=34$ carried the
-incumbent to $52\,129.91$. On $I\_8\_5\_2\_90$ the root plan is already
-the best found. Pricing and branching are substitutes at very different
+incumbent to $52\,129.91$. On $I\_8\_5\_2\_90$ the first tree node
+returns the best plan found. Pricing and branching are substitutes at very different
 prices, and the tree is the cheaper one where it has room. The frontier
 reserve itself is the one knob changed on the final code: with region
 certificates from the volumetric relaxation the sweep takes seconds, so
 at $15\%$ the search stopped at $780$ and $775$ of $900$ s and $1\,561$
 of $1\,800$ s with the reserve unused, and at $3\%$ the same code
 returns $38\,855.70$ and $52\,123.03$ against $38\,859.44$ and
-$52\,129.91$.
+$52\,129.91$, and $18\,796.96$ again on $I\_8\_5\_2\_90$.
 % tab:pool files as in tab_3d.tex; the thirty-stack diagnosis is the docstring of _add_aggregate_stack_area (src/rti3d/fleet_tree.py, commit bdd39ca) on I_8_5_2_90_3d_900_pure_ladder.log
 % results/fleet_tree_3d/I_8_10_2_90_k25_3d_900_pure_ladder.log (1d4ccbe): "[136.8s] root plan 38863.47 X=26", "[138.7s] X==26: NEW INCUMBENT 38860.96" (first tree node) ... "535.9 ... NEW INCUMBENT 38855.06"
 % results/fleet_tree_3d/I_12_12_2_90_k25_3d_1800_pure_ladder_vcert.log: "[678.6s] X<=34: plan 53807.86 (no improvement)", "[888.9s] X<=34,X<=33: no plan over the pool; priced +8 columns", "[1009.1s] X<=34,X<=33: no plan in region", "[1076.2s] X<=34,X==34: NEW INCUMBENT 52141.41"
@@ -621,23 +624,24 @@ and no run satisfied the conditions under which Algorithm~\ref{alg:bp3d}
 claims a proof. Two halves of that deserve to be stated separately. The
 certification mechanism works: on the final code, where a region's
 certificate is the volumetric relaxation with the region's fleet rows
-applied, $I\_8\_5\_2\_90$ pruned three regions on certified bounds and
-proved one infeasible, $I\_8\_10\_2\_90\_k25$ pruned one,
+applied, $I\_8\_5\_2\_90$ pruned four regions on certified bounds and
+proved three infeasible, $I\_8\_10\_2\_90\_k25$ pruned one,
 $I\_12\_12\_2\_90\_k25$ pruned one and proved three, and one region in all
 was left unbounded; on the runs before it, whose region sweeps were
 geometric, five, four and fifteen regions were left without a bound. The
-search is not exhaustive: on the same three runs $82$, $18$ and $8$
-regions were dropped without closure --- on $I\_8\_5\_2\_90$ fifty-three
+search is not exhaustive: on the same three runs $86$, $18$ and $8$
+regions were dropped without closure --- on $I\_8\_5\_2\_90$ fifty-five
 of them because the aggregate master of step 2 was infeasible over the
 pool inside a Murty region, which says the pool cannot support that
-fleet vector and nothing about the region --- and $4$, $5$ and $11$
+fleet vector and nothing about the region --- and $7$, $5$ and $11$
 regions were still open when time ran out. A dropped region is covered
 by the root bound and by nothing tighter, so the \emph{proved} flag
 correctly refuses. What the tree did is documented by the columns it
 built: the incumbents come from constructions inside regions the root
 never examined, and the gaps reported are gaps to a root certificate,
 not to an optimum. We report them as such.
-% final code: tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json [frontier share 0.15; replace by the fs003 file when it lands] (pruned_bound 3, pruned_infeasible 1, regions_unbounded 0, regions_dropped 82, open_regions 4);
+% final code: tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json (pruned_bound 4, pruned_infeasible 3, regions_unbounded 0, regions_dropped 86, open_regions 7);
+%   fifty-five: grep -c "infeasible over the pool" results/fleet_tree_3d/I_8_5_2_90_3d_900_pure_ladder_vcert_fs003.log = 55
 %   tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_fs003_900.json (pruned_bound 1, pruned_infeasible 0, regions_unbounded 0, regions_dropped 18, open_regions 5);
 %   tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_fs003_1800.json (pruned_bound 1, pruned_infeasible 3, regions_unbounded 1, regions_dropped 8, open_regions 11)
 % before: regions_unbounded 5 / 4 / 15 in tree_3d_I_8_5_2_90_pure_ladder_tree2_900.json, tree_3d_I_8_10_2_90_k25_pure_ladder_900.json, tree_3d_I_12_12_2_90_k25_pure_ladder_1800.json

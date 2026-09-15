@@ -12,7 +12,8 @@
 % the caption says so.
 %
 % Source files:
-%   tree,    I_8_5_2_90:        results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json   (commit 4fe6dc6, final code)
+%   tree,    I_8_5_2_90:        results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json (commit 4fe6dc6, frontier share 0.03; head-to-head)
+%                               results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (commit 4fe6dc6, frontier share 0.15; pool table)
 %   tree,    I_8_10_2_90_k25:   results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_fs003_900.json (commit 4fe6dc6, frontier share 0.03; head-to-head)
 %                               results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json (commit 4fe6dc6, frontier share 0.15; pool table)
 %                               results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_900.json (commit 1d4ccbe, same knobs and cap, the best
@@ -76,9 +77,10 @@ Instance & $z$ & trucks & LB & stop & RSS (GB) & verified & $z$ & trucks & LB (c
 \midrule
 % compact: results/compact_3d/compact3d_rerun_I_8_5_2_90.json (obj 18816.13, bound 18795.757, TIME_LIMIT, runtime 1800.0, peak_rss 3.80,
 %          leaked 0, plan_verified True, plan_placeable True, 12 placeable_loads, commit 4fe6dc6)
-% tree:    results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (incumbent 18796.96, 12, global_lb 18795.5396 valid,
-%          trace "140.2 root plan 18796.96", nodes 135, open_regions 4, pruned_bound 3, pruned_infeasible 1, regions_dropped 82, wall 779.6, plan_verified True)
-$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 3.8 & 12 / 12$^{a}$ & 18\,796.96 & 12 & 18\,795.54 & 0.0076\% & 900 & 140.2 & 135 / 4 & 12 / 12 & $[18\,795.76,\;18\,796.96]$ & 4fe6dc6 / 4fe6dc6 \\
+% tree:    results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json (incumbent 18796.96, 12, global_lb 18795.5396 valid,
+%          trace "140.2 root plan 18798.39", "185.4 X==12: NEW INCUMBENT 18796.96", nodes 147, open_regions 7, pruned_bound 4, pruned_infeasible 3,
+%          regions_dropped 86, regions_unbounded 0, wall 890.2, plan_verified True)
+$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time\_limit} & 3.8 & 12 / 12$^{a}$ & 18\,796.96 & 12 & 18\,795.54 & 0.0076\% & 900 & 185.4 & 147 / 7 & 12 / 12 & $[18\,795.76,\;18\,796.96]$ & 4fe6dc6 / 4fe6dc6 \\
 % compact: results/compact_3d/compact3d_I_8_10_2_90_k25.json (obj inf, bound 36458.753, TIME_LIMIT, peak_rss 6.12, n_vars 119424)
 % tree:    results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_fs003_900.json (38855.70, 26, global_lb 38791.1376 valid,
 %          trace "481.9 ... NEW INCUMBENT 38855.70", nodes 30, open_regions 5, pruned_bound 1, regions_dropped 18, wall 882.7);
@@ -203,8 +205,8 @@ $I\_8\_5\_2\_90$ & pure & yes & no & $X=X^{\star}$ first & 15\% & 20 & 19\,682.3
 $I\_8\_5\_2\_90$ & pure & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 18\,796.96 & 12 & 139.9 & 900 & 170 / 5 & 18\,795.54 \\
 % results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (as above plus volumetric region certificates, commit 4fe6dc6; 18796.96 / 12 at 140.2 s, 135 nodes, 4 open, wall 779.6)
 $I\_8\_5\_2\_90$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 18\,796.96 & 12 & 140.2 & 900 & 135 / 4 & 18\,795.54 \\
-% results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json: pending until the file lands (night chain, ~09:20)
-$I\_8\_5\_2\_90$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 3\% & 20 & \pendingcell & \pendingcell & \pendingcell & 900 & \pendingcell & 18\,795.54 \\
+% results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json (18796.96 / 12 at 185.4 s, 147 nodes / 7 open, wall 890.2, frontier_share 0.03)
+$I\_8\_5\_2\_90$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 3\% & 20 & 18\,796.96 & 12 & 185.4 & 900 & 147 / 7 & 18\,795.54 \\
 \midrule
 % results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json (38859.44 / 26 at 420.8 s, 18 nodes / 7 open, wall 774.6, frontier_share 0.15)
 $I\_8\_10\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 38\,859.44 & 26 & 420.8 & 900 & 18 / 7 & 38\,791.14 \\
@@ -254,8 +256,8 @@ $I\_16\_15\_2\_90\_k25$ & rung, then oracle & 3 & 76\,810.49 & 104 & 237.9 \\
 Instance & calls & served by rung & kept & exact calls & rung trucks in plan \\
 \midrule
 % rung trucks = sum of dispatch q over rows with origin "grasp", of the plan's trucks
-% tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json: ladder calls 101, grasp_hits 16, kept 30, cpsat_calls 85; rung trucks 0 of 12
-$I\_8\_5\_2\_90$ & 101 & 16 & 30 & 85 & 0 / 12 \\
+% tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json: ladder calls 95, grasp_hits 12, kept 22, cpsat_calls 83; rung trucks 0 of 12
+$I\_8\_5\_2\_90$ & 95 & 12 & 22 & 83 & 0 / 12 \\
 % tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_fs003_900.json: calls 110, grasp_hits 16, kept 28, cpsat_calls 94; rung trucks 0 of 26
 $I\_8\_10\_2\_90\_k25$ & 110 & 16 & 28 & 94 & 0 / 26 \\
 % tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_fs003_1800.json: calls 214, grasp_hits 66, kept 122, cpsat_calls 148; rung trucks 0 of 34

@@ -645,6 +645,49 @@ and not re-run; the offline certificate is the honest source.
 % results/fleet_tree_3d/fleet_floor.log; script experiments/certify_fleet_floor.py at commit dd5f039 (the gating fix is in that commit)
 % gaps: 0.0076% (I_8_5, own bound), 0.17% / 0.010% (I_8_10, own / 38851.93), 0.034% (I_12_12); 0.0064% = (18796.96-18795.76)/18796.96
 
+\paragraph{The abstraction fails in proportion to how much it over-credits a truck.}
+Section~\ref{sec:geo3d} attributes the failure of a volumetric capacity to
+the divergence between a container family's height-limited and
+crush-limited layer counts. That is one of two causes, and on its own it
+predicts poorly. Over eighteen generated instances --- the benchmark
+generator's, with product weights scaled to move the dose and nothing else
+altered, so footprints, heights, demands and seeds are held fixed --- the
+share of a volumetric plan's own dispatched loads that a placeability
+proof rejects correlates at only $0.42$ with that layer ratio. It
+correlates at $\mathbf{0.87}$ with the \emph{over-credit}
+\[
+  \theta \;=\; \frac{\min\!\bigl(\Gamma_{K}/\mathrm{vol}_{c},\;
+                      pK^{w}/w_{c}\bigr)}
+       {\text{floor slots}\times\min(\text{height layers},\text{crush layers})},
+\]
+the ratio of what a volumetric capacity credits a truck with to what
+physically fits. The second cause is the floor: a footprint that tiles a
+$13\,600\times2\,400$ trailer badly loses capacity that no layer-count
+argument sees, and tiling efficiency correlates at $-0.68$ independently.
+
+The curve in $\theta$ is monotone and has a threshold exactly where the
+definition puts it:
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+over-credit $\theta$ & loads proved unplaceable & instances \\
+\midrule
+$\le 0.89$      & $0.0\%$   & 3 \\
+$0.91$--$1.10$  & $12.5$--$71.4\%$ (transition) & 7 \\
+$1.20$--$1.40$  & $85.0\%$  & 5 \\
+$1.40$--$1.60$  & $90.9\%$  & 1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Below $\theta=1$ the model credits a truck with no more than fits and not
+one dispatched load is unplaceable; above it the share rises to $96\%$.
+The practical value is that $\theta$ is computable from the catalogue and
+the trailer alone, with no model solved: a planner can tell before
+building anything what fraction of a volumetric plan will fail on the
+dock.
+
 \paragraph{What volumetric planning costs, constructed rather than estimated.}
 The placeability census establishes that a volumetric plan's loads
 frequently cannot be placed; it does not say what that costs. To answer

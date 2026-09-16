@@ -645,6 +645,48 @@ and not re-run; the offline certificate is the honest source.
 % results/fleet_tree_3d/fleet_floor.log; script experiments/certify_fleet_floor.py at commit dd5f039 (the gating fix is in that commit)
 % gaps: 0.0076% (I_8_5, own bound), 0.17% / 0.010% (I_8_10, own / 38851.93), 0.034% (I_12_12); 0.0064% = (18796.96-18795.76)/18796.96
 
+\paragraph{What volumetric planning costs, constructed rather than estimated.}
+The placeability census establishes that a volumetric plan's loads
+frequently cannot be placed; it does not say what that costs. To answer
+that we repair each volumetric plan into an executable one: every load the
+oracle places is kept, and every load it \emph{proves} unplaceable is
+split into the fewest legal full trucks carrying the same freight, by the
+same partition MIP and pack witness the method itself uses. Every
+resulting truck is verified. The freight and the periods are unchanged, so
+the repair is priced exactly as $z_{\mathrm{vol}}+c_K\cdot(\text{extra
+trucks})$ and the comparison with the method's plan is like for like.
+
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+Instance & volumetric & repaired & method & repaired cost & method cost \\
+\midrule
+$I\_8\_5\_2\_90$        & 12  & 13  & \textbf{12}  & 19\,796.96  & \textbf{18\,796.96} \\
+$I\_8\_10\_2\_90\_k25$  & 26  & 28  & \textbf{26}  & 40\,855.65  & \textbf{38\,855.34} \\
+$I\_12\_12\_2\_90\_k25$ & 34  & 38  & \textbf{34}  & 56\,116.69  & \textbf{52\,129.45} \\
+$I\_16\_15\_2\_90\_k25$ & 45  & \textbf{86}  & \textbf{54}  & 109\,139.17 & \textbf{78\,549.14} \\
+$I\_24\_20\_2\_90\_k50$ & 137 & \textbf{256} & \textbf{160} & 319\,266.21 & \textbf{230\,594.36} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+No split failed, no repaired truck failed verification, and one load in
+the whole set was left undecided. On the two instances where the crush
+limit binds the method uses $37.2\%$ and $37.5\%$ fewer trucks and costs
+$28.0\%$ and $27.8\%$ less than the repaired volumetric plan --- figures
+that agree to within half a point across instances of very different size,
+which is what one expects of a structural mechanism rather than an
+instance-specific accident.
+
+Two qualifications. The repaired plan is a \emph{baseline}, not a bound:
+on $I\_8\_5\_2\_90$ it needs $13$ trucks where $12$ is the proven optimum,
+because repairing a fixed assignment of freight to trucks is not the same
+as planning afresh. And on $I\_12\_12\_2\_90\_k25$ the ordering is
+$z_{\mathrm{vol}}=52\,116.69<z_{\mathrm{method}}=52\,129.45<
+z_{\mathrm{repaired}}=56\,116.69$: the volumetric value is cheaper on
+paper by $0.02\%$, unreachable in practice, and the method lands within
+$0.02\%$ of it while being executable.
+
 \paragraph{What the bounds rest on, stated once.}
 Three qualifications belong with the results rather than with the claims,
 and we state them here so that every number in this section is read

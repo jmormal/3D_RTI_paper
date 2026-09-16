@@ -681,8 +681,13 @@ $1.40$--$1.60$  & $90.9\%$  & 1 \\
 \end{tabular}
 \end{center}
 
-Below $\theta=1$ the model credits a truck with no more than fits and not
-one dispatched load is unplaceable; above it the share rises to $96\%$.
+At $\theta\le0.89$ no dispatched load is unplaceable in any of the three
+instances; from $\theta\ge1.20$ the share is $85$--$96\%$. Between those
+lies a transition band, $\theta\in[0.91,1.10]$, whose seven instances span
+$12.5$--$71.4\%$: the ordering is clear at the ends and the band is wide,
+so $\theta$ should be read as a strong indicator and not as a sharp
+threshold. Sixteen of the eighteen instances fall in the bins shown; two
+lie between them.
 The practical value is that $\theta$ is computable from the catalogue and
 the trailer alone, with no model solved: a planner can tell before
 building anything what fraction of a volumetric plan will fail on the
@@ -695,9 +700,16 @@ that we repair each volumetric plan into an executable one: every load the
 oracle places is kept, and every load it \emph{proves} unplaceable is
 split into the fewest legal full trucks carrying the same freight, by the
 same partition MIP and pack witness the method itself uses. Every
-resulting truck is verified. The freight and the periods are unchanged, so
-the repair is priced exactly as $z_{\mathrm{vol}}+c_K\cdot(\text{extra
-trucks})$ and the comparison with the method's plan is like for like.
+resulting truck is verified. The splitting MIP produces a \emph{cover}
+rather than an exact partition, so a repaired period may ship a few units
+more than the volumetric plan dispatched; we price only the extra trucks,
+$z_{\mathrm{vol}}+c_K\cdot(\text{extra trucks})$, which therefore
+\emph{understates} the repaired plan's true cost and is conservative for
+the comparison below. The repair is also load-local --- each unplaceable
+load is split where it stands, with no consolidation across loads or
+periods --- so it bounds the cost of volumetric planning from one side
+only. A planner who re-planned each period's flows would do better, and
+the reformulation itself is such a re-planning.
 
 \begin{center}\small
 \begin{tabular}{lrrrrr}

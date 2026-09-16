@@ -708,8 +708,37 @@ $z_{\mathrm{vol}}+c_K\cdot(\text{extra trucks})$, which therefore
 the comparison below. The repair is also load-local --- each unplaceable
 load is split where it stands, with no consolidation across loads or
 periods --- so it bounds the cost of volumetric planning from one side
-only. A planner who re-planned each period's flows would do better, and
-the reformulation itself is such a re-planning.
+only. A planner who re-planned each period's flows would do better, and we
+measure how much: keeping the volumetric plan's delivery quantities
+unchanged and re-packing each period with the same partition-and-pack
+machinery the method uses gives the \emph{competent} repair.
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+ & $I\_16\_15\_2\_90\_k25$ & $I\_24\_20\_2\_90\_k50$ \\
+\midrule
+volumetric plan (not executable)      & 45  & 137 \\
+repaired load by load                 & 86  & 256 \\
+\textbf{re-packed, quantities kept}   & \textbf{74} & \textbf{212} \\
+\textbf{the reformulation} (which also chooses $Q$) & \textbf{54} & \textbf{160} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Consolidation is worth twelve trucks on the first instance and
+forty-four on the second, so the load-local figure overstates what a
+competent planner would need and we do not use it as the comparison.
+Against the re-packed baseline the reformulation still uses $27.0\%$ and
+$24.5\%$ fewer trucks and costs $19.1\%$ and $16.2\%$ less, with no pair
+left unpacked and no truck failing verification in either case. The
+difference between $74$ and $54$ is what optimising the delivery
+quantities against the geometry buys, over and above packing the same
+quantities well.
+
+The re-pack solves a cover, so it ships $80$ and $137$ units beyond
+requirement; pricing only its trucks therefore \emph{understates} its
+cost, and the margins above are if anything conservative.
 
 \begin{center}\small
 \begin{tabular}{lrrrrr}

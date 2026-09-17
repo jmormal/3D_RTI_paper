@@ -28,8 +28,12 @@ the value actually used), each from a recorded run that names its
 commit. No other solver job shared the cores while any reported row ran,
 with one exception recorded in Table~\ref{tab:pool}'s notes; the
 machine of the regenerated campaign is recorded with each run and
-reported with its tables (\pending{host and core count of the
-regenerated campaign}).
+reported with its tables: the regenerated campaign ran on one
+six-core, twelve-thread desktop (\texttt{jj-MS-7B86}), Gurobi 12.0.1,
+Python 3.12.3, with four instances solved concurrently at four solver
+workers each --- deliberately over-subscribed, as the per-instance
+budgets are budgets and not timing claims, and each run records its own
+configuration.
 
 \paragraph{Every row carries its configuration.}
 Five parameters can change the answer a solver returns, and every run
@@ -77,18 +81,18 @@ the second $I\_16\_15\_2\_90\_k25$ row and to $I\_24\_20\_2\_90\_k50$.}
 \toprule
 stage & time limit (s) & MIP gap & threads & memory cap (GB) & seed \\
 \midrule
-fleet tree, volumetric master (Alg.~\ref{alg:bp3d}) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
-compact SCPTOP reference & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+fleet tree, volumetric master (Alg.~\ref{alg:bp3d}) & 300 & $10^{-4}$ & 10 & 20 & 0 \\
+compact SCPTOP reference & 600 / 3\,600 & 0 & 10 & 20 & 0 \\
 % tree rows: config blocks of results/fleet_tree_3d/tree_3d_*_pure_ladder_*.json (time_limit 900/1800, step2_gap 5e-4, threads 10, soft_mem_gb 20, seed 0)
 MATH-3D-SCPTOP, 3D (Tables~\ref{tab:3d-head}--\ref{tab:ladder}) & 900 / 1\,800 / 3\,600 & $5\cdot10^{-4}$ (step 2), 0 (step 4) & 10 & 20 & 0 \\
 % compact 3D rows: config blocks of results/compact_3d/compact3d_*.json (time_limit 1800, mipgap 0, threads 10, soft_mem_gb 20, seed 0)
 compact 3D-SCPTOP, $|L|=3$ (Table~\ref{tab:3d-head}) & 1\,800 & 0 & 10 & 20 & 0 \\
 % compact volumetric rows: config blocks of results/compact_ref/compact_ref_*.json (time_limit 3600, mipgap 0, threads 10, soft_mem_gb 20, seed 0)
 compact SCPTOP, volumetric reference of the 3D rows (Table~\ref{tab:3d-ladder}) & 3\,600 & 0 & 10 & 20 & 0 \\
-MATH-3D-SCPTOP, CP oracle (benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
-SCPTOP (volumetric benchmark) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
-PLC-SCPTOP (company procedure) & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
-placeability recheck of SCPTOP loads & \pendingcell & --- & \pendingcell & \pendingcell & \pendingcell \\
+MATH-3D-SCPTOP, CP oracle (benchmark) & 900 & 0 (step 4) & 4 & 20 & 0 \\
+SCPTOP (volumetric benchmark) & 900 & 0 & 4 & 20 & 0 \\
+PLC-SCPTOP (company procedure) & 315 & \textbf{0} & 4 & 20 & 0 \\
+placeability recheck of SCPTOP loads & 300 & --- & 4 & 20 & 0 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -279,11 +283,15 @@ in force so that an infeasibility verdict is a proof.
 Tables~\ref{tab:3d-head}--\ref{tab:ladder} hold the 3D results, each
 read from a recorded run whose file is named beside the row in the
 source; cells marked pending name the run that will fill them.
-\pending{The benchmark, case-study, oracle and exact-comparison tables
-of Tables~\ref{tab:main}--\ref{tab:times-summary} and the volumetric
-ladder of Table~\ref{tab:fleet} are being regenerated under the declared
-budgets of Table~\ref{tab:protocol}. No number from the previous
-revision is carried forward.}
+The benchmark and case-study tables below are the regenerated ones,
+run under the declared budgets of Table~\ref{tab:protocol} on the code of
+this revision; no number from the previous revision is carried forward.
+Two tables are \emph{withdrawn} rather than reproduced: the
+exact-comparison and pricing-oracle tables on disk date from
+7~September, predate the corrections recorded in
+Section~\ref{sec:results}, and we will not print numbers we cannot tie to
+the current code. They are named here so their absence is deliberate
+rather than an omission.
 
 \input{tab_3d}
 

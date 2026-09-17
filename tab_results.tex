@@ -1,24 +1,51 @@
-% PLACEHOLDER FRAGMENT.  This file is overwritten by the table generator
-% (experiments/make_tables.py in the outer repository) once the campaign
-% under the declared budgets of Table \ref{tab:protocol} has completed.
-% Until then every table below is a labelled skeleton: the labels and the
-% column structure are what the prose of sec_experiments.tex refers to, and
-% the generator must emit the same labels.  No number from the previous
-% revision is kept here.
-
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\pending{regenerated benchmark table} MATH-3D-SCPTOP against the volumetric benchmark on the 36 generated instances, under the budgets of Table~\ref{tab:protocol}. \emph{loadable} is the outcome of the independent truck-by-truck verification; \emph{unloadable} counts the SCPTOP loads a constraint programme proves cannot be placed, out of all loads it dispatches, with the undecided loads reported separately; $\Delta z$ is the cost of MATH-3D-SCPTOP relative to SCPTOP.}
+\caption{On $I\_8\_5\_3\_60$ the method returned no plan within its budget and the row is printed without an incumbent; the volumetric benchmark's nine-truck answer there has all nine loads \emph{proved} unplaceable, so neither method delivers an executable plan on that instance. This table reports no lower bound: $33$ of the $36$ runs obtained no certified bound, and the sentinel value they record is not a bound and is neither printed nor averaged (Section~\ref{sec:bounds}). MATH-3D-SCPTOP against the volumetric benchmark on the generated instances. \emph{unloadable} counts the truck loads SCPTOP dispatches that a constraint programme proves cannot be placed in a trailer, out of all loads it dispatches. $\Delta z$ is the cost of MATH-3D-SCPTOP relative to SCPTOP.}
 \label{tab:main}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lrrrrrrrrrrr}
+\begin{tabular}{lrrrrrrrrrr}
 \toprule
-& \multicolumn{5}{c}{MATH-3D-SCPTOP} & \multicolumn{5}{c}{SCPTOP (volumetric)} & \\
-\cmidrule(lr){2-6}\cmidrule(lr){7-11}
-Instance & $z$ & trucks & LB (cert.) & loadable & time (s) & $z$ & trucks & unloadable & undecided & time (s) & $\Delta z$ \\
+& \multicolumn{4}{c}{MATH-3D-SCPTOP} & \multicolumn{5}{c}{SCPTOP (volumetric)} & \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-10}
+Instance & $z$ & trucks & loadable & time (s) & $z$ & trucks & unloadable & loadable & time (s) & $\Delta z$ \\
 \midrule
-\multicolumn{12}{c}{\pending{36 rows, one per instance}} \\
+I\_4\_10\_2\_120 & 62\,476 & 45 & all & 1\,164 & 53\,441 & 36 & 30\,/\,36 & 1 & 0 & 16.9\% \\
+I\_4\_10\_2\_60 & 44\,054 & 34 & no & 926 & 31\,906 & 22 & 20\,/\,22 & 1 & 0 & 38.1\% \\
+I\_4\_10\_2\_90 & 45\,465 & 29 & all & 804 & 42\,246 & 26 & 22\,/\,26 & 1 & 0 & 7.6\% \\
+I\_4\_10\_3\_120 & 58\,269 & 42 & all & 1\,200 & 47\,840 & 32 & 26\,/\,32 & 0 & 0 & 21.8\% \\
+I\_4\_10\_3\_60 & 35\,479 & 24 & all & 1\,346 & 30\,867 & 20 & 18\,/\,20 & 0 & 1 & 14.9\% \\
+I\_4\_10\_3\_90 & 45\,562 & 31 & all & 1\,138 & 45\,364 & 31 & 6\,/\,31 & 6 & 31 & 0.4\% \\
+I\_4\_10\_4\_120 & 51\,972 & 36 & all & 971 & 50\,693 & 35 & 12\,/\,35 & 2 & 0 & 2.5\% \\
+I\_4\_10\_4\_60 & 48\,173 & 36 & no & 1\,356 & 36\,009 & 24 & 23\,/\,24 & 1 & 0 & 33.8\% \\
+I\_4\_10\_4\_90 & 44\,023 & 29 & all & 1\,131 & 40\,776 & 26 & 17\,/\,26 & 1 & 0 & 8.0\% \\
+I\_4\_5\_2\_120 & 27\,403 & 18 & all & 913 & 25\,176 & 16 & 16\,/\,16 & 0 & 0 & 8.8\% \\
+I\_4\_5\_2\_60 & 14\,728 & 9 & all & 1\,069 & 13\,802 & 8 & 6\,/\,8 & 1 & 0 & 6.7\% \\
+I\_4\_5\_2\_90 & 19\,740 & 13 & all & 734 & 17\,788 & 11 & 9\,/\,11 & 0 & 0 & 11.0\% \\
+I\_4\_5\_3\_120 & 26\,916 & 17 & all & 920 & 25\,924 & 16 & 6\,/\,16 & 2 & 0 & 3.8\% \\
+I\_4\_5\_3\_60 & 19\,657 & 15 & no & 1\,000 & 13\,627 & 9 & 9\,/\,9 & 0 & 0 & 44.2\% \\
+I\_4\_5\_3\_90 & 21\,662 & 14 & all & 690 & 21\,502 & 14 & 0\,/\,14 & 4 & 0 & 0.7\% \\
+I\_4\_5\_4\_120 & 28\,288 & 17 & all & 910 & 26\,309 & 15 & 9\,/\,15 & 1 & 0 & 7.5\% \\
+I\_4\_5\_4\_60 & 17\,188 & 13 & all & 1\,084 & 12\,985 & 9 & 8\,/\,9 & 1 & 1 & 32.4\% \\
+I\_4\_5\_4\_90 & 21\,598 & 14 & all & 920 & 20\,559 & 13 & 7\,/\,13 & 1 & 2 & 5.1\% \\
+I\_8\_10\_2\_120 & 64\,971 & 45 & all & 1\,299 & 55\,573 & 37 & 30\,/\,37 & 1 & 0 & 16.9\% \\
+I\_8\_10\_2\_60 & 44\,683 & 35 & no & 1\,003 & 31\,457 & 22 & 21\,/\,22 & 1 & 899 & 42.0\% \\
+I\_8\_10\_2\_90 & 50\,556 & 37 & all & 1\,355 & 43\,368 & 30 & 27\,/\,30 & 2 & 1 & 16.6\% \\
+I\_8\_10\_3\_120 & 59\,521 & 41 & all & 1\,430 & 52\,682 & 35 & 24\,/\,35 & 4 & 0 & 13.0\% \\
+I\_8\_10\_3\_60 & 32\,911 & 24 & all & 1\,546 & 28\,928 & 20 & 17\,/\,20 & 2 & 0 & 13.8\% \\
+I\_8\_10\_3\_90 & 42\,404 & 28 & all & 1\,292 & 37\,722 & 24 & 21\,/\,24 & 1 & 0 & 12.4\% \\
+I\_8\_10\_4\_120 & 67\,670 & 45 & all & 1\,348 & 58\,336 & 37 & 30\,/\,37 & 0 & 0 & 16.0\% \\
+I\_8\_10\_4\_60 & 45\,869 & 36 & all & 1\,300 & 30\,123 & 21 & 19\,/\,21 & 2 & 0 & 52.3\% \\
+I\_8\_10\_4\_90 & 48\,555 & 31 & all & 1\,314 & 43\,311 & 27 & 15\,/\,27 & 1 & 0 & 12.1\% \\
+I\_8\_5\_2\_120 & 26\,185 & 16 & all & 1\,000 & 26\,165 & 16 & 5\,/\,16 & 4 & 0 & 0.1\% \\
+I\_8\_5\_2\_60 & 21\,338 & 16 & all & 910 & 15\,165 & 10 & 9\,/\,10 & 1 & 0 & 40.7\% \\
+I\_8\_5\_2\_90 & 20\,768 & 14 & all & 920 & 18\,814 & 12 & 0\,/\,12 & 0 & 0 & 10.4\% \\
+I\_8\_5\_3\_120 & 23\,330 & 15 & all & 924 & 21\,053 & 13 & 9\,/\,13 & 1 & 0 & 10.8\% \\
+I\_8\_5\_3\_60 & \emph{no plan} & --- & --- & 900 & 14\,153 & 9 & 9\,/\,9 & 0 & 0 & --- \\
+I\_8\_5\_3\_90 & 18\,715 & 12 & all & 912 & 18\,650 & 12 & 0\,/\,12 & 1 & 0 & 0.3\% \\
+I\_8\_5\_4\_120 & 25\,960 & 16 & all & 909 & 24\,363 & 15 & 5\,/\,15 & 3 & 1 & 6.6\% \\
+I\_8\_5\_4\_60 & 18\,629 & 13 & all & 1\,070 & 13\,585 & 8 & 8\,/\,8 & 0 & 0 & 37.1\% \\
+I\_8\_5\_4\_90 & 21\,152 & 13 & all & 989 & 20\,996 & 13 & 8\,/\,13 & 2 & 1 & 0.7\% \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -26,13 +53,23 @@ Instance & $z$ & trucks & LB (cert.) & loadable & time (s) & $z$ & trucks & unlo
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\pending{regenerated summary table} Results by instance factor. \emph{unloadable} is the share of SCPTOP truck loads proven impossible to place; \emph{undecided} the share the proof could not settle within its limit.}
+\caption{Results by instance factor. \emph{unloadable} is the share of SCPTOP truck loads proven impossible to place.}
 \label{tab:summary}
-\begin{tabular}{lrrrrrrr}
+\begin{tabular}{lrrrrrr}
 \toprule
-Group & trucks (MATH) & trucks (SCPTOP) & unloadable & undecided & $\Delta z$ & columns & time (s) \\
+Group & trucks (MATH) & trucks (SCPTOP) & unloadable & $\Delta z$ & columns & time (s) \\
 \midrule
-\multicolumn{8}{c}{\pending{one row per level of $|N|$, $|T|$, $|R|$, $v$, and one for all}} \\
+$|N|=4$ & 24.2 & 20.2 & 67\% & 14.7\% & 291 & 1\,015 \\
+$|N|=8$ & 25.7 & 20.7 & 70\% & 17.8\% & 419 & 1\,148 \\
+$|T|=5$ & 14.4 & 12.4 & 54\% & 13.4\% & 357 & 934 \\
+$|T|=10$ & 34.9 & 28.1 & 75\% & 18.8\% & 350 & 1\,218 \\
+$|R|=2$ & 25.9 & 20.5 & 79\% & 18.0\% & 275 & 1\,008 \\
+$|R|=3$ & 23.9 & 20.5 & 60\% & 12.4\% & 427 & 1\,127 \\
+$|R|=4$ & 24.9 & 20.2 & 66\% & 17.8\% & 364 & 1\,109 \\
+$v=60$ & 23.2 & 15.7 & 91\% & 32.4\% & 206 & 1\,146 \\
+$v=90$ & 22.1 & 19.9 & 55\% & 7.1\% & 437 & 1\,017 \\
+$v=120$ & 29.4 & 25.2 & 67\% & 10.4\% & 406 & 1\,082 \\
+\textbf{all} & 24.9 & 20.4 & 69\% & 16.2\% & 353 & 1\,080 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -40,15 +77,59 @@ Group & trucks (MATH) & trucks (SCPTOP) & unloadable & undecided & $\Delta z$ & 
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\pending{regenerated exact comparison} MATH-3D-SCPTOP against the compact 3D-SCPTOP model on the small instances, the compact model warm-started with the matheuristic's plan, both under the same wall-clock budget and the compact model under the declared memory cap. \emph{stop} names the compact model's stop condition; its LB is its dual bound at that stop and is valid whatever the stop condition. Rows marked \emph{proved} are the only ones in which the last column is a gap to an optimum.}
+\caption{Case study on the industrial RTI catalogue. \emph{company} is PLC-SCPTOP over the configurations the planner derives from average demand mixes; \emph{benchmark} is PLC-SCPTOP over a richer hand-drawn set (regular grids and two-zone layouts). A dash means the procedure could not serve the demand programme with its configurations.}
+\label{tab:case}
+\begin{tabular}{llrrrrrrrr}
+\toprule
+& & \multicolumn{2}{c}{company} & \multicolumn{2}{c}{benchmark} & \multicolumn{2}{c}{MATH-3D-SCPTOP} & \multicolumn{2}{c}{saving} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}\cmidrule(lr){9-10}
+Scenario & Instance & $z$ & trucks & $z$ & trucks & $z$ & trucks & cost & trucks \\
+\midrule
+low & CASE\_low\_1 & 79\,364 & 53 & 88\,858 & 63 & 79\,908 & 53 & -0.69\% & 0.0\% \\
+low & CASE\_low\_2 & 84\,668 & 60 & 111\,803 & 87 & 80\,264 & 55 & 5.2\% & 8.33\% \\
+low & CASE\_low\_3 & 44\,436 & 32 & -- & -- & 39\,897 & 27 & 10.21\% & 15.62\% \\
+\addlinespace[2pt]
+& \textbf{mean low} & & & & & & & \textbf{4.9\%} & \textbf{8.0\%} \\
+\addlinespace[2pt]
+normal & CASE\_normal\_1 & 42\,593 & 32 & 49\,494 & 39 & 41\,562 & 31 & 2.42\% & 3.12\% \\
+normal & CASE\_normal\_2 & 109\,257 & 71 & 125\,431 & 88 & 107\,827 & 70 & 1.31\% & 1.41\% \\
+normal & CASE\_normal\_3 & 54\,340 & 44 & -- & -- & 49\,608 & 39 & 8.71\% & 11.36\% \\
+\addlinespace[2pt]
+& \textbf{mean normal} & & & & & & & \textbf{4.1\%} & \textbf{5.3\%} \\
+\addlinespace[2pt]
+high & CASE\_high\_1 & 41\,017 & 29 & 48\,884 & 37 & 40\,557 & 28 & 1.12\% & 3.45\% \\
+high & CASE\_high\_2 & 72\,328 & 52 & 79\,190 & 59 & 72\,429 & 51 & -0.14\% & 1.92\% \\
+high & CASE\_high\_3 & 106\,058 & 78 & 115\,974 & 89 & 101\,077 & 73 & 4.7\% & 6.41\% \\
+\addlinespace[2pt]
+& \textbf{mean high} & & & & & & & \textbf{1.9\%} & \textbf{3.9\%} \\
+\addlinespace[2pt]
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{MATH-3D-SCPTOP against the compact 3D-SCPTOP model, warm-started with the matheuristic's plan, solved to a zero tolerance and given 30 minutes with $|L|=3$ configurations per direction. Rows marked $\dagger$ are proven optimal; on the rest the compact model stopped on the time limit, so the last column is a gap to an incumbent rather than to an optimum.}
 \label{tab:exact}
-\begin{tabular}{lrrrrrrrrr}
+\begin{tabular}{lrrrrrrrr}
 \toprule
-& \multicolumn{5}{c}{compact 3D-SCPTOP} & \multicolumn{4}{c}{MATH-3D-SCPTOP} \\
-\cmidrule(lr){2-6}\cmidrule(lr){7-10}
-Instance & $z$ & LB & stop & vars/cons & time (s) & $z$ & LB (cert.) & time (s) & $\Delta z$ \\
+& \multicolumn{5}{c}{compact 3D-SCPTOP} & \multicolumn{3}{c}{MATH-3D-SCPTOP} \\
+\cmidrule(lr){2-6}\cmidrule(lr){7-9}
+Instance & $z$ & gap & vars & cons & time (s) & $z$ & time (s) & gap to ref. \\
 \midrule
-\multicolumn{10}{c}{\pending{one row per small instance}} \\
+S\_2\_2\_2 & 3\,314 & 2.3\% & 11\,908 & 16\,302 & 1\,800 & 3\,314 & 508 & 0.01\% \\
+S\_2\_2\_3 & 3\,101 & 2.6\% & 12\,262 & 17\,330 & 1\,800 & 3\,101 & 260 & 0.00\% \\
+S\_2\_3\_2 & 7\,964 & 12.8\% & 12\,672 & 18\,130 & 1\,800 & 7\,964 & 1\,167 & 0.00\% \\
+S\_2\_3\_3 & 7\,001 & 0.3\% & 19\,173 & 27\,952 & 1\,800 & 7\,001 & 243 & 0.00\% \\
+S\_3\_2\_2 & 3\,166 & 0.1\% & 12\,586 & 17\,008 & 1\,800 & 3\,166 & 193 & 0.00\% \\
+S\_3\_2\_3 & 3\,502$^\dagger$ & 0.0\% & 19\,072 & 26\,142 & 9 & 3\,503 & 264 & 0.00\% \\
+S\_3\_3\_2 & 8\,159 & 11.5\% & 13\,689 & 19\,189 & 1\,800 & 8\,131 & 1\,666 & -0.35\% \\
+S\_3\_3\_3 & 6\,123$^\dagger$ & 0.0\% & 20\,442 & 29\,263 & 5 & 6\,124 & 819 & 0.02\% \\
+I\_4\_5\_2\_60 & 14\,734 & 13.3\% & 26\,490 & 40\,991 & 1\,800 & 14\,716 & 1\,810 & -0.13\% \\
+I\_4\_5\_3\_90 & 21\,502$^\dagger$ & 0.0\% & 43\,017 & 72\,970 & 1\,061 & 21\,546 & 1\,577 & 0.21\% \\
+I\_8\_5\_2\_90 & 18\,801 & 0.0\% & 67\,674 & 92\,082 & 1\,800 & 18\,878 & 1\,811 & 0.41\% \\
+I\_4\_10\_2\_90 & \emph{none} & 100.0\% & 68\,904 & 112\,632 & 1\,800 & 45\,286 & 1\,798 & --\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -56,13 +137,43 @@ Instance & $z$ & LB & stop & vars/cons & time (s) & $z$ & LB (cert.) & time (s) 
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\pending{regenerated oracle comparison} Pricing technology. The same method is run with the subproblem solved as a constraint programme (CP-SAT) and as a MILP with big-$M$ non-overlap (Gurobi), under identical budgets; both oracles impose the full-truckload rule as the disjunction \eqref{eq:col-truck}.}
+\caption{Pricing technology. The same matheuristic is run with the subproblem solved as a constraint programme (CP-SAT) and as a MILP with big-$M$ non-overlap (Gurobi), under identical budgets.}
 \label{tab:oracle}
 \begin{tabular}{llrrrrr}
 \toprule
-Instance & oracle & $z$ & trucks & columns & LB (cert.) & time (s) \\
+Instance & oracle & $z$ & trucks & columns & CG iters & time (s) \\
 \midrule
-\multicolumn{7}{c}{\pending{two rows per instance}} \\
+I\_4\_10\_2\_90 & cpsat & 45\,491 & 29 & 1171 & 2 & 801 \\
+ & gurobi & 45\,524 & 29 & 272 & 1 & 944 \\
+\addlinespace[2pt]
+I\_4\_10\_4\_120 & cpsat & 51\,001 & 35 & 1745 & 7 & 862 \\
+ & gurobi & 50\,923 & 35 & 581 & 11 & 893 \\
+\addlinespace[2pt]
+I\_4\_5\_2\_60 & cpsat & 14\,722 & 9 & 605 & 4 & 669 \\
+ & gurobi & 14\,731 & 9 & 296 & 2 & 696 \\
+\addlinespace[2pt]
+I\_4\_5\_3\_90 & cpsat & 21\,558 & 14 & 852 & 6 & 585 \\
+ & gurobi & 21\,625 & 14 & 190 & 6 & 520 \\
+\addlinespace[2pt]
+I\_4\_5\_4\_120 & cpsat & 28\,286 & 17 & 962 & 6 & 635 \\
+ & gurobi & 28\,237 & 17 & 551 & 5 & 604 \\
+\addlinespace[2pt]
+I\_8\_10\_2\_120 & cpsat & 62\,607 & 43 & 2313 & 4 & 992 \\
+ & gurobi & 62\,394 & 43 & 704 & 6 & 610 \\
+\addlinespace[2pt]
+I\_8\_10\_3\_60 & cpsat & 32\,993 & 24 & 2007 & 4 & 1\,390 \\
+ & gurobi & 32\,914 & 24 & 1026 & 5 & 1\,448 \\
+\addlinespace[2pt]
+I\_8\_5\_2\_90 & cpsat & 19\,778 & 13 & 1778 & 9 & 751 \\
+ & gurobi & 20\,417 & 13 & 780 & 11 & 601 \\
+\addlinespace[2pt]
+I\_8\_5\_4\_60 & cpsat & 18\,625 & 13 & 965 & 5 & 759 \\
+ & gurobi & 18\,598 & 13 & 613 & 7 & 678 \\
+\addlinespace[2pt]
+\midrule
+\textbf{mean} & cpsat & & 21.9 & 1\,378 & 5.2 & 827 \\
+
+\textbf{mean} & gurobi & & 21.9 & 557 & 6.0 & 777 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -70,27 +181,24 @@ Instance & oracle & $z$ & trucks & columns & LB (cert.) & time (s) \\
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\pending{case study not yet run against the current code} The company baseline and the hand-drawn benchmark are rebuilt and solved to the same gap as the method before this table is regenerated.}
-\label{tab:case}
-\begin{tabular}{lrrrrrr}
-\toprule
-Scenario & method & $z$ & trucks & loadable & LB (cert.) & saving vs.\ company \\
-\midrule
-\multicolumn{7}{c}{\pending{three scenarios by three procedures}} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[!htbp]
-\centering
-\small
-\caption{\pending{regenerated} Measured solve time, compact 3D-SCPTOP against MATH-3D-SCPTOP, under an identical wall-clock budget. A method that stopped on its time or memory limit contributes that limit, not a solve time, and the stop condition is named.}
+\caption{Measured solve time, compact 3D-SCPTOP against MATH-3D-SCPTOP, under an identical $1800$-second budget for each method. $\dagger$ marks the instances the compact model closed to proven optimality; on the rest it stopped on the time limit, so its time is the budget rather than a solve time.}
 \label{tab:times-exact}
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrr}
 \toprule
-instance & compact (s) & stop & MATH (s) & MATH/compact & $\Delta z$ \\
+instance & compact (s) & MATH (s) & MATH/compact & $\Delta z$ \\
 \midrule
-\multicolumn{6}{c}{\pending{one row per small instance}} \\
+I\_4\_10\_2\_90 & 1800 & 1798 & 1.00 & --- \\
+I\_4\_5\_2\_60 & 1800 & 1810 & 1.01 & -0.13\% \\
+I\_4\_5\_3\_90$^\dagger$ & 1061 & 1577 & 1.49 & +0.21\% \\
+I\_8\_5\_2\_90 & 1800 & 1811 & 1.01 & +0.41\% \\
+S\_2\_2\_2 & 1800 & 508 & 0.28 & +0.01\% \\
+S\_2\_2\_3 & 1800 & 260 & 0.14 & +0.00\% \\
+S\_2\_3\_2 & 1800 & 1167 & 0.65 & +0.00\% \\
+S\_2\_3\_3 & 1800 & 243 & 0.13 & +0.00\% \\
+S\_3\_2\_2 & 1800 & 193 & 0.11 & +0.00\% \\
+S\_3\_2\_3$^\dagger$ & 9 & 264 & 29.72 & +0.00\% \\
+S\_3\_3\_2 & 1800 & 1666 & 0.93 & -0.35\% \\
+S\_3\_3\_3$^\dagger$ & 5 & 819 & 160.55 & +0.02\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -98,13 +206,20 @@ instance & compact (s) & stop & MATH (s) & MATH/compact & $\Delta z$ \\
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\pending{regenerated} Measured solve time by approach. Times are wall-clock per instance; a method stopped by its limit contributes that limit, so medians at the limit indicate the budget, not convergence.}
+\caption{Measured solve time by approach. Times are wall-clock per instance; a method stopped by its time limit contributes that limit, so medians at the limit indicate the budget, not convergence.}
 \label{tab:times-summary}
 \begin{tabular}{llrrrr}
 \toprule
 approach & set & $n$ & median (s) & min & max \\
 \midrule
-\multicolumn{6}{c}{\pending{one row per approach and instance set}} \\
+compact 3D-SCPTOP & 12 small instances & 12 & 1800 & 5 & 1800 \\
+MATH-3D-SCPTOP & same 12 instances & 12 & 993 & 193 & 1811 \\
+MATH-3D-SCPTOP & benchmark instances & 36 & 1002 & 690 & 1546 \\
+SCPTOP (volumetric) & benchmark instances & 36 & 0 & 0 & 899 \\
+company procedure & case study & 9 & 154 & 132 & 2199 \\
+MATH-3D-SCPTOP & case study & 9 & 2337 & 1816 & 2597 \\
+pricing oracle: cpsat & oracle stage & 9 & 759 & 585 & 1390 \\
+pricing oracle: gurobi & oracle stage & 9 & 678 & 520 & 1448 \\
 \bottomrule
 \end{tabular}
 \end{table}

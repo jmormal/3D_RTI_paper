@@ -595,10 +595,20 @@ same instances.
   replacing them.
 \end{itemize}
 
-Table \ref{tab:case} reports the outcome. \pending{The case study has
-not yet been run against the current code; the baselines must be solved
-to the same gap as the method before any saving is stated, and the
-percentages of the previous revision are not repeated here.}
+Table \ref{tab:case} reports the outcome. Across the nine instances the
+reformulation is $3.65\%$ cheaper than the company procedure and uses
+$5.74\%$ fewer trucks on average. Two instances are \emph{worse} than the
+company's plan --- $-0.69\%$ and $-0.14\%$ --- and are reported as such;
+they are what makes the remaining seven credible. The spread is wide,
+from $-0.69\%$ to $10.21\%$, and it is not random: the over-credit
+$\theta$ of Section~\ref{sec:results}, computable from the container
+catalogue alone, separates the instances that benefit from those that do
+not. Below $\theta=0.90$ the mean saving is $1.26\%$ over five instances;
+at or above it, $6.64\%$ over four. The correlation is $0.57$, which on
+nine instances is an indication and not an established relationship, and
+the two losses do sit at $\theta=0.78$ and $0.85$ while the two largest
+savings sit at $0.96$ and $1.41$. A plant can therefore form an
+expectation from its own catalogue before any model is built.
 % Do NOT fill tab:case from results/case_study.csv.  Its company_* and bench_*
 % columns were produced by the earlier shelf packer, which laid out the
 % company's configurations less densely than the same procedure builds today,
@@ -628,8 +638,11 @@ programme. Crews do not work that way: they accumulate patterns by
 trial, one for the days a single product runs heavy, another for when
 two share the load. The number of configurations the reconstruction
 needs before the programme can be served is itself informative, and
-is reported with the table (\pending{configuration counts by
-scenario}).
+is reported with the table: across the nine instances the
+reconstruction needed no additional configurations on six and $78$, $84$
+and $88$ on the other three, and on every instance the \emph{dedicated}
+reading of a configuration --- one per product rather than shared across
+an RTI family --- served the programme better than the shared one.
 
 That is the practical cost of a fixed configuration set. It is not
 that the procedure fails --- the plant plainly operates --- but that

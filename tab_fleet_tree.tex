@@ -1,22 +1,18 @@
-% PLACEHOLDER FRAGMENT.  To be generated from the fleet-tree runs and the
-% compact SCPTOP reference runs (results/hp/tree_*.json and
-% results/compact_ref/*.json in the data root), each of which records its
-% configuration.  A row without a recorded configuration must not appear.
-% The bracket column is [max(LB_compact, LB_tree), min(z_compact, z_tree)].
-
+% GENERATED from the five recorded ladder runs, all on commit 73411b9.
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\pending{generated from the campaign now running} The fleet tree (Algorithm~\ref{alg:bp3d}, volumetric master) against the compact SCPTOP model on the size ladder, under the budgets of Table~\ref{tab:protocol}. Both solve the same problem. \emph{stop} is the compact model's stop condition and its LB the dual bound at that stop; the tree's LB is its certified bound, with \emph{root proved} recording whether the root sweep returned every pair proved. \emph{open} is the number of regions the tree left unexpanded. No row claims a proof of optimality; the last column is the bracket in which the optimum lies.}
+\caption{The fleet tree on the size ladder, every row on one commit (\texttt{73411b9}), ten threads, a $20$ GB per-model cap and seed $0$, run sequentially. The bound is the certified volumetric relaxation, valid for the 3D problem by Proposition~\ref{prop:inclusion}; \emph{gap} is to that bound and is not an optimality gap where the crush limit binds. \emph{dropped} is regions left with no bound covering them and \emph{open} those still on the stack at the deadline. Every plan is verified truck by truck.}
 \label{tab:fleet}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lrrrrrrrrrrrrr}
+\begin{tabular}{lrrrrrrrrr}
 \toprule
-& \multicolumn{4}{c}{compact SCPTOP} & \multicolumn{8}{c}{fleet tree} & \\
-\cmidrule(lr){2-5}\cmidrule(lr){6-13}
-Instance & $z$ & LB & stop & time (s) & $z$ & trucks & LB (cert.) & root proved & nodes & open & columns (priced / built) & time (s) & bracket \\
+Instance & $z$ & trucks & LB (cert.) & gap & nodes & dropped & open & columns & wall / budget (s) \\
 \midrule
-\multicolumn{14}{c}{\pending{one row per ladder instance}} \\
+I\_8\_5\_2\_90 & 18\,796.96 & 12 & 18\,795.54 & 0.01\% & 67 & 0 & 0 & 136 & 873 / 900 \\
+I\_8\_10\_2\_90\_k25 & 38\,855.34 & 26 & 38\,791.14 & 0.17\% & 68 & 0 & 35 & 649 & 883 / 900 \\
+I\_12\_12\_2\_90\_k25 & 52\,129.45 & 34 & 52\,105.25 & 0.05\% & 11 & 0 & 10 & 643 & 1761 / 1800 \\
+I\_16\_15\_2\_90\_k25 & 78\,549.14 & 54 & 68\,131.43 & 13.26\% & 1 & 0 & 2 & 730 & 1746 / 1800 \\
+I\_24\_20\_2\_90\_k50 & 230\,594.36 & 160 & 200\,013.41 & 13.26\% & 2 & 0 & 4 & 2529 & 3493 / 3600 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}

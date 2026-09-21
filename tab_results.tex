@@ -59,50 +59,17 @@ I\_8\_5\_4\_90 & 21\,152 & 13 & all & 989 & 20\,996 & 13 & 8\,/\,13 & 2 & 1 & 0.
 \toprule
 Group & trucks (MATH) & trucks (SCPTOP) & unloadable & $\Delta z$ & columns & time (s) \\
 \midrule
-$|N|=4$ & 24.2 & 20.2 & 67\% & 14.7\% & 291 & 1\,015 \\
-$|N|=8$ & 25.7 & 20.7 & 70\% & 17.8\% & 419 & 1\,148 \\
-$|T|=5$ & 14.4 & 12.4 & 54\% & 13.4\% & 357 & 934 \\
-$|T|=10$ & 34.9 & 28.1 & 75\% & 18.8\% & 350 & 1\,218 \\
-$|R|=2$ & 25.9 & 20.5 & 79\% & 18.0\% & 275 & 1\,008 \\
-$|R|=3$ & 23.9 & 20.5 & 60\% & 12.4\% & 427 & 1\,127 \\
-$|R|=4$ & 24.9 & 20.2 & 66\% & 17.8\% & 364 & 1\,109 \\
-$v=60$ & 23.2 & 15.7 & 91\% & 32.4\% & 206 & 1\,146 \\
+$|N|=4$ & 23.4 & 20.5 & 62\% & 9.9\% & 325 & 1\,000 \\
+$|N|=8$ & 25.1 & 20.6 & 69\% & 16.2\% & 435 & 1\,157 \\
+$|T|=5$ & 14.4 & 12.6 & 52\% & 11.4\% & 375 & 930 \\
+$|T|=10$ & 34.9 & 29.1 & 72\% & 15.0\% & 388 & 1\,243 \\
+$|R|=2$ & 24.2 & 20.2 & 76\% & 13.6\% & 308 & 1\,017 \\
+$|R|=3$ & 24.8 & 21.7 & 59\% & 9.2\% & 463 & 1\,140 \\
+$|R|=4$ & 23.9 & 19.9 & 63\% & 16.4\% & 374 & 1\,086 \\
+$v=60$ & 19.3 & 13.7 & 89\% & 28.3\% & 245 & 1\,189 \\
 $v=90$ & 22.1 & 19.9 & 55\% & 7.1\% & 437 & 1\,017 \\
 $v=120$ & 29.4 & 25.2 & 67\% & 10.4\% & 406 & 1\,082 \\
-\textbf{all} & 24.9 & 20.4 & 69\% & 16.2\% & 353 & 1\,080 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[!htbp]
-\centering
-\small
-\caption{Case study on the industrial RTI catalogue. \emph{company} is PLC-SCPTOP over the configurations the planner derives from average demand mixes; \emph{benchmark} is PLC-SCPTOP over a richer hand-drawn set (regular grids and two-zone layouts). A dash means the procedure could not serve the demand programme with its configurations.}
-\label{tab:case}
-\begin{tabular}{llrrrrrrrr}
-\toprule
-& & \multicolumn{2}{c}{company} & \multicolumn{2}{c}{benchmark} & \multicolumn{2}{c}{MATH-3D-SCPTOP} & \multicolumn{2}{c}{saving} \\
-\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}\cmidrule(lr){9-10}
-Scenario & Instance & $z$ & trucks & $z$ & trucks & $z$ & trucks & cost & trucks \\
-\midrule
-low & CASE\_low\_1 & 79\,364 & 53 & 88\,858 & 63 & 79\,908 & 53 & -0.69\% & 0.0\% \\
-low & CASE\_low\_2 & 84\,668 & 60 & 111\,803 & 87 & 80\,264 & 55 & 5.2\% & 8.33\% \\
-low & CASE\_low\_3 & 44\,436 & 32 & -- & -- & 39\,897 & 27 & 10.21\% & 15.62\% \\
-\addlinespace[2pt]
-& \textbf{mean low} & & & & & & & \textbf{4.9\%} & \textbf{8.0\%} \\
-\addlinespace[2pt]
-normal & CASE\_normal\_1 & 42\,593 & 32 & 49\,494 & 39 & 41\,562 & 31 & 2.42\% & 3.12\% \\
-normal & CASE\_normal\_2 & 109\,257 & 71 & 125\,431 & 88 & 107\,827 & 70 & 1.31\% & 1.41\% \\
-normal & CASE\_normal\_3 & 54\,340 & 44 & -- & -- & 49\,608 & 39 & 8.71\% & 11.36\% \\
-\addlinespace[2pt]
-& \textbf{mean normal} & & & & & & & \textbf{4.1\%} & \textbf{5.3\%} \\
-\addlinespace[2pt]
-high & CASE\_high\_1 & 41\,017 & 29 & 48\,884 & 37 & 40\,557 & 28 & 1.12\% & 3.45\% \\
-high & CASE\_high\_2 & 72\,328 & 52 & 79\,190 & 59 & 72\,429 & 51 & -0.14\% & 1.92\% \\
-high & CASE\_high\_3 & 106\,058 & 78 & 115\,974 & 89 & 101\,077 & 73 & 4.7\% & 6.41\% \\
-\addlinespace[2pt]
-& \textbf{mean high} & & & & & & & \textbf{1.9\%} & \textbf{3.9\%} \\
-\addlinespace[2pt]
+\textbf{all} & 24.3 & 20.6 & 66\% & 13.2\% & 381 & 1\,081 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -174,6 +141,18 @@ I\_8\_5\_4\_60 & cpsat & 18\,625 & 13 & 965 & 5 & 759 \\
 \textbf{mean} & cpsat & & 21.9 & 1\,378 & 5.2 & 827 \\
 
 \textbf{mean} & gurobi & & 21.9 & 557 & 6.0 & 777 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{\textbf{Pending: the case study has not been run against the current code.} The company baseline is rebuilt and this table is regenerated when that stage completes.}
+\label{tab:case}
+\begin{tabular}{l}
+\toprule
+[case study pending] \\
 \bottomrule
 \end{tabular}
 \end{table}

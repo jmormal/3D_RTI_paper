@@ -56,9 +56,9 @@ There are two main dimensions of procurement transport problems according to the
 \subsection{Procurement Transport with RTIs}
 Some models further integrate the procurement and delivery of RTIs into the procurement transport literature. In this sense, RTIs are procured to the supplier, who loads the items and sends them to customer. We extend the SC definitions previously defined to contemplate the RTIs management strategies.
 
-\pending{The citation opening this paragraph is missing from the source and
-could not be identified from the bibliography; the paragraph is left in place
-and must not be typeset until it is supplied.}
+% TODO(author): the citation opening the next paragraph is missing from the
+% source and could not be identified from the bibliography.  The paragraph
+% must not be submitted until it is supplied.
 Model a food closed-loop supply chain network design problem incorporating returnable transport items (RTIs), product perishability, facility location and demand uncertainty. A two-stage non-linear chance-constrained programming model minimizes fixed facility, production, transport, inventory holding and RTI costs while ensuring a target service level. It’s linearized via sample average approximation and distribution-free methods to capture forward RTI-based shipments and reverse flows for reuse. To solve large instances, an improved Lagrangian relaxation algorithm decomposes facility-location and flow decisions, outperforming CPLEX on solution quality and speed.
 
 
@@ -595,20 +595,7 @@ same instances.
   replacing them.
 \end{itemize}
 
-Table \ref{tab:case} reports the outcome. Across the nine instances the
-reformulation is $3.65\%$ cheaper than the company procedure and uses
-$5.74\%$ fewer trucks on average. Two instances are \emph{worse} than the
-company's plan --- $-0.69\%$ and $-0.14\%$ --- and are reported as such;
-they are what makes the remaining seven credible. The spread is wide,
-from $-0.69\%$ to $10.21\%$, and it is not random: the over-credit
-$\theta$ of Section~\ref{sec:results}, computable from the container
-catalogue alone, separates the instances that benefit from those that do
-not. Below $\theta=0.90$ the mean saving is $1.26\%$ over five instances;
-at or above it, $6.64\%$ over four. The correlation is $0.57$, which on
-nine instances is an indication and not an established relationship, and
-the two losses do sit at $\theta=0.78$ and $0.85$ while the two largest
-savings sit at $0.96$ and $1.41$. A plant can therefore form an
-expectation from its own catalogue before any model is built.
+Table \ref{tab:case} reports the outcome. The table is not yet regenerated on the current code: the file on disk dates from an earlier revision whose configurations were built by a less dense shelf packer, which makes the company baseline artificially poor and any saving over it overstated. No percentage from it is quoted here.
 % Do NOT fill tab:case from results/case_study.csv.  Its company_* and bench_*
 % columns were produced by the earlier shelf packer, which laid out the
 % company's configurations less densely than the same procedure builds today,

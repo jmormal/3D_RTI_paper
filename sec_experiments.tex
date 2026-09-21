@@ -90,7 +90,7 @@ compact 3D-SCPTOP, $|L|=3$ (Table~\ref{tab:3d-head}) & 1\,800 & 0 & 10 & 20 & 0 
 % compact volumetric rows: config blocks of results/compact_ref/compact_ref_*.json (time_limit 3600, mipgap 0, threads 10, soft_mem_gb 20, seed 0)
 compact SCPTOP, volumetric reference of the 3D rows (Table~\ref{tab:3d-ladder}) & 3\,600 & 0 & 10 & 20 & 0 \\
 MATH-3D-SCPTOP, CP oracle (benchmark) & 900 & 0 (step 4) & 4 & 20 & 0 \\
-SCPTOP (volumetric benchmark) & 900 & 0 & 4 & 20 & 0 \\
+SCPTOP (volumetric benchmark) & 900 & $0.02$ & 4 & 20 & 0 \\
 PLC-SCPTOP (company procedure) & 315 & \textbf{0} & 4 & 20 & 0 \\
 placeability recheck of SCPTOP loads & 300 & --- & 4 & 20 & 0 \\
 \bottomrule
@@ -282,22 +282,26 @@ in force so that an infeasibility verdict is a proof.
 
 Tables~\ref{tab:3d-head}--\ref{tab:ladder} hold the 3D results, each
 read from a recorded run whose file is named beside the row in the
-source; cells marked pending name the run that will fill them.
+source.
 The benchmark and case-study tables below are the regenerated ones,
 run under the declared budgets of Table~\ref{tab:protocol} on the code of
 this revision; no number from the previous revision is carried forward.
-Two tables are \emph{withdrawn} rather than reproduced: the
-exact-comparison and pricing-oracle tables on disk date from
-7~September, predate the corrections recorded in
-Section~\ref{sec:results}, and we will not print numbers we cannot tie to
-the current code. They are named here so their absence is deliberate
-rather than an omission.
+The exact-comparison and pricing-oracle tables
+(Tables~\ref{tab:exact} and~\ref{tab:oracle}) are printed from data
+recorded on 7~September, which predates the corrections listed in
+Section~\ref{sec:results}. They are retained because the comparisons they
+make are unaffected by those corrections --- neither involves the
+geometric pricing path or the shelf packer --- but their rows carry that
+date and are not on the commit the rest of this section reports.
 
 \input{tab_3d}
 
 \input{tab_results}
 
-\input{tab_fleet_tree}
+% tab_fleet_tree removed: it was captioned as the VOLUMETRIC fleet tree but
+% its rows were the 3D runs of tab:3d-onecommit, i.e. the same five numbers
+% under a second and wrong heading.  The volumetric ladder has not been
+% re-run on the current code; when it is, it comes back with its own rows.
 
 % ---------------------------------------------------------------
 \subsection{Discussion}
@@ -618,8 +622,9 @@ $I\_8\_10\_2\_90\_k25$, $I\_16\_15\_2\_90\_k50$, $I\_24\_20\_2\_90\_k50$
 and $I\_24\_20\_2\_90\_k80$, keeping an incumbent and a dual bound in
 each case. The volumetric fleet-tree rows on those instances predate the
 recording of a configuration with every run and are not reported;
-Table~\ref{tab:fleet} is regenerated from runs that carry one, and no
-bracket is quoted until it is.
+The volumetric ladder is not tabulated here: the runs that would fill it
+predate the recording of a configuration with every run, and it has not
+been re-run on the current code, so no bracket is quoted.
 % results/compact_ref/compact_ref_I_16_15_2_90_k25.json OPTIMAL; compact_ref_I_8_10_2_90_k25.json, _I_16_15_2_90_k50.json, _I_24_20_2_90_k50.json, _I_24_20_2_90_k80.json MEM_LIMIT (config time_limit 3600, threads 10, soft_mem_gb 20)
 % results/hp/tree_I_*.json carry no config block (report-results: provenance unknown), hence not tabulated
 
@@ -779,6 +784,22 @@ z_{\mathrm{repaired}}=56\,116.69$: the volumetric value is cheaper on
 paper by $0.02\%$, unreachable in practice, and the method lands within
 $0.02\%$ of it while being executable.
 
+\paragraph{Four plans that do not satisfy the utilisation floor.}
+On four of the thirty-six benchmark instances --- $I\_4\_10\_2\_60$,
+$I\_4\_10\_4\_60$, $I\_4\_5\_3\_60$ and $I\_8\_10\_2\_60$ --- the returned
+plan contains a truck below the minimum utilisation $\alpha=0.55$, with
+least-filled trucks at $0.550$, $0.541$, $0.544$ and $0.414$. The
+verifier marks those plans \emph{no} in Table~\ref{tab:main} and they are
+excluded from the aggregate means of Table~\ref{tab:summary}; the
+exclusion is stated rather than silent, and the four rows remain in the
+per-instance table so the failure is visible. Three of the four miss by
+less than a hundredth and are plausibly the scaled arithmetic of the
+full-truckload rule at its boundary; the fourth, at $0.414$, is not, and
+we report it as an open defect of the primal on the coarsest volumetric
+granularity rather than as rounding. All four instances have $v=60$, the
+granularity at which RTIs are largest and a single container is the
+largest fraction of a trailer.
+
 \paragraph{What the bounds rest on, stated once.}
 Three qualifications belong with the results rather than with the claims,
 and we state them here so that every number in this section is read
@@ -889,7 +910,7 @@ reported with the table.
 \paragraph{Against the procedure in use.}
 The case study of Section~\ref{sec:case} compares the same machinery
 against the company's average-mix configurations and against a richer
-hand-drawn set. Its table is pending regeneration with the current
+hand-drawn set. Its table has not yet been regenerated with the current
 code and with the baselines solved to the same gap as the method, and
 no percentage from the previous revision is repeated here: the
 company's configurations in the existing file were laid out by an

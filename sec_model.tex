@@ -69,17 +69,18 @@ folded RTIs on a supplier-bound truck. Table
     $ae_{rt}$      & Pipeline arrivals of folded RTIs of type $r$ at $s$ in $t\in\{1,\dots,lt\}$.\\
     $ss_{gnt}$     & Coverage stock of $n$ at $g$ in $t$ (full RTIs).\\
     $sse_{gtr}$    & Coverage stock of folded RTIs $r$ at $g$ in $t$.\\
-    $w_{n}$        & Weight of a full RTI carrying product $n$.\\
-    $w^{\mathrm{f}}_{r}$ & Weight of a folded RTI of type $r$.\\
+    $w_{n}$        & Weight of a full RTI carrying product $n$; $w_{n}>0$.\\
+    $w^{\mathrm{f}}_{r}$ & Weight of a folded RTI of type $r$; $w^{\mathrm{f}}_{r}>0$.\\
     $pK^{w}$       & Truck payload.\\
     $W^{\max}$     & Per-stack crush-limit weight cap: the \emph{total} weight of one stack, summed over all its layers, not the weight borne by its bottom RTI alone.\\
     $pK,qK,rK$     & Truck floor length, floor width, and inner height.\\
     $\Gamma_K$     & Truck volume, $\Gamma_K=pK\cdot qK\cdot rK$.\\
     $\alpha$       & Minimum truck utilisation, required on whichever of volume or payload binds ($0<\alpha\le 1$).\\
     $p_{h},q_{h}$  & Footprint length and width of stack type $h$.\\
-    $r_{gr}$       & Height of one RTI of type $r$ at node $g$ (full at $p$, folded at $s$).\\
-    $\gamma_{gr}$  & Volume of one RTI of type $r$ in direction $g$.\\
-    $n_{hr}$       & RTIs of type $r\in R(h)$ per layer of stack type $h$.\\
+    $r_{gr}$       & Height of one RTI of type $r$ at node $g$ (full at $p$, folded at $s$); $r_{gr}>0$.\\
+    $a_{r}$        & Footprint area of one RTI of type $r$; $a_{r}>0$.\\
+    $\gamma_{gr}$  & Volume of one RTI of type $r$ in direction $g$, $\gamma_{gr}=a_{r}\,r_{gr}$.\\
+    $n_{hr}$       & RTIs of type $r\in R(h)$ per layer of stack type $h$; one layer tiles the footprint, $n_{hr}a_{r}=p_{h}q_{h}$.\\
     $\omega_{gr}$  & Weight per RTI used by the layer-capacity form of the
                      utilisation floor: $\omega_{sr}=w^{\mathrm{f}}_{r}$ and
                      $\omega_{pr}=\max_{n\in M(r)}w_{n}$.\\
@@ -329,10 +330,14 @@ constants only weakens the linear relaxation.
 Full-truckload transport requires a dispatched truck to be full, but a
 truck can be full in two different ways: it may run out of space or it
 may run out of payload. Imposing the requirement on volume alone is not
-a conservative simplification, it is an infeasible one --- filling a
-fraction $\alpha$ of a $97.9$~m$^{3}$ trailer with RTIs at
-$590$~kg/m$^{3}$ weighs $27.4$~t against a $24$~t cap, so no truck is
-dispatchable at all and the instance is empty. Summing the two ratios
+a conservative simplification, it is an infeasible one --- filling the
+fraction $\alpha=0.55$ of a $97.92$~m$^{3}$ trailer
+($13\,600\times2\,400\times3\,000$~mm) with freight at $579$~kg/m$^{3}$
+weighs $31.2$~t against a $24$~t cap, so no truck is dispatchable at all
+and the instance is empty. That density is not a worst case: it is
+Container~4 of the industrial catalogue of Section \ref{sec:case}
+($500$~kg of payload in $1\,200\times800\times900$~mm, tare excluded),
+and seven of the catalogue's fifteen types are denser still. Summing the two ratios
 instead is the opposite error: it accepts a truck that is $35\%$ full
 by volume and $20\%$ by weight, which is full by neither. We therefore
 require a dispatched truck to reach a fraction $\alpha$ of
@@ -358,12 +363,20 @@ carries, with each commodity's own weight:
     \label{sb:eq:utilw-s}
 \end{align}
 At $Y_{gkt}=0$ both rows of a direction are vacuous; at $Y_{gkt}=1$
-exactly one is active and the other is implied, so each pair is the
-disjunction ``full by volume \emph{or} full by payload''.
+exactly one is active and the other has a right-hand side of zero and is
+vacuous too, so each pair is the disjunction ``full by volume
+\emph{or} full by payload''.
 
 The same disjunction can be written on the layer \emph{capacity} the
 truck's stacks provide rather than on the load they receive, and in
-that form it is a valid tightening:
+that form it is a valid tightening. It is gated on the dispatch
+$Y_{gkt}$ and not on the configuration $Z_{gkt}$, because it is a
+dispatched truck that must be full: a configured, undispatched truck
+carries nothing by
+\eqref{fix:slot-link}--\eqref{fix:empty-link} and demanding that its
+unused layers be full would be a condition on no freight. The
+distinction disappears in Section \ref{sec:math}, where the two
+binaries are identified.
 \begin{align}
 \sum_{h\in H}\sum_{r\in R(h)}
     \gamma_{gr}\,n_{hr}\,\overline{L}_{ghktr}
@@ -481,9 +494,13 @@ restriction an implementation is tempted into, and the one solved in
 Section \ref{sec:results} --- the capacity rows are written on the
 shared layout while the payload row is written on the truck, so load
 can be charged to a layout that no truck selected and
-\eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} count it as delivered. Gating
-the load on the dispatch is what rules that out, and it is the form in
-which an implementation has to carry it.
+\eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} count it as delivered. What
+rules that out is gating the load on the truck's \emph{selection of the
+layout it carries}. Here the two coincide, because a truck's layout is
+its own, which is why \eqref{fix:slot-link}--\eqref{fix:empty-link} may
+be written on $Y_{gkt}$; in the shared-catalogue restriction they must
+be written on the layout-selection variable instead, and a gate on the
+dispatch alone would leave the leak open.
 
 The payload is a property of the truck:
 \begin{align}
@@ -539,7 +556,7 @@ dispatching $m$ trucks in a period still appears $m!$ times in the
 search, which is the difficulty Section \ref{sec:math} removes by
 aggregation rather than by a row.
 
-Three properties of the data are assumed throughout. The cardinality of
+Five properties of the data are assumed throughout. The cardinality of
 $I$ is a modelling parameter, and an upper bound that eliminates
 provably unused slot variables without cutting any feasible layout is
 \begin{equation}
@@ -553,9 +570,31 @@ stack type; it serves as a tight preprocessing limit on $|I|$. The
 product-to-RTI map is a partition --- each product travels in exactly
 one RTI type, so $\rho$ is well defined and the families $M(r)$ are
 disjoint --- and every RTI type carries at least one product, so no
-$M(r)$ is empty. Finally $lt\ge1$: a shipment never arrives in the
-period it leaves, which is what the lagged terms of
+$M(r)$ is empty. The lead time satisfies $lt\ge1$: a shipment never
+arrives in the period it leaves, which is what the lagged terms of
 \eqref{sb:eq:inv-plant-main} and \eqref{sb:eq:inve-sup-main} require.
+All weights and heights are strictly positive, $w_{n}>0$,
+$w^{\mathrm{f}}_{r}>0$ and $r_{gr}>0$; this is what makes
+$\bar u^{V}_{n}$ and $\bar u^{\mathrm{e}}_{r}$ well defined, what lets
+\eqref{sb:eq:height} force $L_{gihktr}=0$ at an empty slot, and what
+makes \eqref{sb:eq:truck-w-plant}--\eqref{sb:eq:truck-w-sup} empty a
+truck that is not dispatched.
+
+Finally, the footprint geometry is consistent: one layer of stack type
+$h$ tiles its footprint with RTIs of the type it carries,
+$n_{hr}a_{r}=p_{h}q_{h}$ for every $h\in H$ and $r\in R(h)$, and the
+volume charged to an RTI is its bounding box, $\gamma_{gr}=a_{r}r_{gr}$.
+\emph{This is a departure}: the base formulation leaves $p_{h}$,
+$q_{h}$, $n_{hr}$ and $\gamma_{gr}$ as four independent data items, and
+without a relation between them the volume a layer occupies and the
+volume its stack type reserves on the floor are unrelated numbers. Two
+later arguments need the relation --- the inclusion of the 3D column
+set in the volumetric one (Proposition \ref{prop:inclusion}) and the
+floor-area inequality \eqref{bp:PP-areacut} that the pricing oracles
+carry --- and both are false without it. It costs nothing here: the
+instances of Section \ref{sec:instances} and the industrial catalogue
+of Section \ref{sec:case} both build one stack type per distinct RTI
+footprint, so $n_{hr}=1$ and the relation is an identity.
 
 % --------------------------
 % Domains
@@ -575,7 +614,9 @@ period it leaves, which is what the lagged terms of
 % --------------------------
 \paragraph{Three decisions, and the alternatives they reject.}
 Three of the rows above admit a tempting alternative that is wrong, and
-each is argued where it occurs rather than left to the reader. (i) The
+each is argued where it occurs rather than left to the reader. A
+fourth departure, on the data rather than on a row, is the footprint
+consistency assumed in Section \ref{sb:sec:symm}. (i) The
 utilisation floor is imposed on the load carried
 \eqref{sb:eq:util-p}--\eqref{sb:eq:utilw-s} and not on the layer
 capacity designed \eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap}; the
@@ -591,7 +632,3 @@ reformulation of Section \ref{sec:math} does not need, and Section
 \ref{sec:pp} deletes $Y$ from the pricing problem on an argument stated
 there.
 
-
-% =====================================================================
-%           S E C T I O N   4 . X   (M A T H E U R I S T I C)
-% =====================================================================

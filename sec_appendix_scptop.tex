@@ -18,10 +18,15 @@ objective. It differs in exactly one place --- where 3D-SCPTOP asks whether the
 RTIs can be stacked and placed on the trailer floor, SCPTOP asks only whether
 their volumes sum to less than the trailer's.
 
-Let $Y_{gkt}\in\{0,1\}$ indicate that truck $k$ is used in direction $g$ in
-period $t$, and let $Q^{k}_{nt}$ and $Q^{k}_{rt}$ be the full RTIs of product
-$n$, respectively the folded RTIs of type $r$, that it carries. All remaining
-notation is that of Table \ref{tab:sb-Nomenclature}.
+The notation is that of Section \ref{sec:model}: $Y_{gkt}\in\{0,1\}$ indicates
+that truck $k$ is dispatched in direction $g$ in period $t$, and
+$\overline{V}_{knt}$ and $V^{\mathrm{e}}_{krt}$ are the full RTIs of product
+$n$, respectively the folded RTIs of type $r$, that it carries --- here
+decision variables in their own right, since SCPTOP has no slots to aggregate
+\eqref{sb:eq:agg-Vk} over. The aggregates
+$\overline{V}_{nt}$ and $\overline{V^{\mathrm{e}}}_{rt}$ are
+\eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} as before. All remaining notation is
+that of Table \ref{tab:sb-Nomenclature}.
 
 \begin{align}
 \text{Min } z
@@ -31,27 +36,27 @@ notation is that of Table \ref{tab:sb-Nomenclature}.
 \end{align}
 subject to, for all $k\in K$ and $t\in T$,
 \begin{align}
-\sum_{n\in N}\gamma_{p\rho(n)}Q^{k}_{nt} &\le \Gamma_{K}\,Y_{pkt},
- & \sum_{r\in R}\gamma_{sr}Q^{k}_{rt} &\le \Gamma_{K}\,Y_{skt}
+\sum_{n\in N}\gamma_{p\rho(n)}\overline{V}_{knt} &\le \Gamma_{K}\,Y_{pkt},
+ & \sum_{r\in R}\gamma_{sr}V^{\mathrm{e}}_{krt} &\le \Gamma_{K}\,Y_{skt}
  \label{eq:A-vol}\\
-\sum_{n\in N}w_{n}Q^{k}_{nt} &\le pK^{w}Y_{pkt},
- & \sum_{r\in R}w^{\mathrm{f}}_{r}Q^{k}_{rt} &\le pK^{w}Y_{skt}
+\sum_{n\in N}w_{n}\overline{V}_{knt} &\le pK^{w}Y_{pkt},
+ & \sum_{r\in R}w^{\mathrm{f}}_{r}V^{\mathrm{e}}_{krt} &\le pK^{w}Y_{skt}
  \label{eq:A-weight}
 \end{align}
 together with the full-truckload floor on the binding resource, imposed exactly
 as in \eqref{eq:col-truck}: a dispatched truck must reach a fraction $\alpha$
 of \emph{either} the trailer volume or the payload,
 \begin{align}
-\sum_{n}\gamma_{p\rho(n)}Q^{k}_{nt} \;\ge\; \alpha\Gamma_{K}\bigl(Y_{pkt}-1+\theta_{kt}\bigr),
+\sum_{n}\gamma_{p\rho(n)}\overline{V}_{knt} \;\ge\; \alpha\Gamma_{K}\bigl(Y_{pkt}-1+\theta_{pkt}\bigr),
 \qquad
-\sum_{n}w_{n}Q^{k}_{nt} \;\ge\; \alpha\,pK^{w}\bigl(Y_{pkt}-\theta_{kt}\bigr),
+\sum_{n}w_{n}\overline{V}_{knt} \;\ge\; \alpha\,pK^{w}\bigl(Y_{pkt}-\theta_{pkt}\bigr),
 \label{eq:A-ftl}
 \end{align}
-with $\theta_{kt}\in\{0,1\}$ and the supplier direction analogous. The flows
-aggregate as $Q_{nt}=\sum_{k}Q^{k}_{nt}$ and $Q_{rt}=\sum_{k}Q^{k}_{rt}$, and
-the inventory balances, coverage stock and domains are those of
-\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety}, unchanged. The
-truck-symmetry row \eqref{sb:eq:sym-truck} is carried here as well, for
+with $\theta_{gkt}\in\{0,1\}$ and the supplier direction analogous. The
+inventory balances, coverage stock and domains are those of
+\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty}, unchanged, and they
+read the same two aggregates. The
+truck-symmetry row \eqref{dec:sym-truck} is carried here as well, for
 the same reason and with the same limited effect: the trucks of a
 direction and period are anonymous in both models, and ordering their
 \emph{use} leaves the assignment of loads among the used trucks free.

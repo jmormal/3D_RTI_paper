@@ -14,438 +14,515 @@ weight bound than a worst-case-per-RTI-type abstraction, while
 eliminating vertical-stability constraints altogether, since stacks
 are self-supporting by construction.
 
+The model is written over \emph{trucks}. A dispatched truck designs its
+own layout: the stack types, orientations, positions and layer
+compositions of its slots are variables of that truck and of that
+period, and the load it carries is assigned to those slots in the same
+period. There is no catalogue of loading configurations, and no
+variable that assigns a truck to an entry of one. This is a modelling
+decision and not a presentational one, and it is the decision Section
+\ref{sec:math} rests on: every row below carries either the triple
+$(g,k,t)$ or none of it, so the model is block-angular over
+$G\times K\times T$ and the pricing problem of the Dantzig--Wolfe
+reformulation is obtained by deleting that quantifier and nothing else.
+Section \ref{sec:decomp} performs exactly that deletion, row by row.
+
 \paragraph{Notational conventions.}
 Throughout this section, $g\in G=\{s,p\}$ indexes nodes (supplier and
 plant), $n\in N$ products, $r\in R$ RTI types, $h\in H$ stack types,
-$i,j\in I$ stack-slot positions within a loading configuration,
-$l\in L$ loading configurations, $k\in K$ trucks and $t\in T$ planning
-periods. Variables whose direction is determined by definition omit
-the $g$ subscript: $V_{klnt}$ and $V^:w{\mathrm{slot}}_{kilnt}$ denote
-full-RTI loads on plant-bound trucks, and $V^{\mathrm{e}}_{klrt}$
-denotes folded-RTI loads on supplier-bound trucks. Table
+$i,j\in I$ stack-slot positions on a truck floor, $k\in K$ trucks and
+$t\in T$ planning periods. Each product travels in exactly one RTI
+type, written $\rho(n)$, and $M(r)=\{n\in N:\rho(n)=r\}$ is the family
+of products that RTI type $r$ carries. Variables whose direction is
+determined by definition omit the $g$ subscript: $V_{kint}$ denotes
+full RTIs in slot $i$ of a plant-bound truck, and $V^{\mathrm{e}}_{krt}$
+folded RTIs on a supplier-bound truck. Table
 \ref{tab:sb-Nomenclature} collects the complete nomenclature.
 
 % -----------------------------------------------------------
-\begin{longtable}[hbt!]{|p{0.14\textwidth}|p{0.82\textwidth}|}
-    \caption{Nomenclature of 3D-SCPTOP (stack-based reformulation)}
+\begin{longtable}[hbt!]{|p{0.15\textwidth}|p{0.79\textwidth}|}
+    \caption{Nomenclature of 3D-SCPTOP (truck-indexed stack-based formulation)}
     \label{tab:sb-Nomenclature}\\
     \hline
     \multicolumn{2}{|l|}{\textbf{Indices and sets}}\\\hline
-    $G$            & Supplier and plant nodes, $G=\{s,p\}$.\\
-    $N$            & Products, $n=1,\dots,N$.\\
-    $R$            & RTI types, $r=1,\dots,R$.\\
-    $H$            & Stack types, $h=1,\dots,H$.\\
-    $I$            & Stack-slot indices within a loading configuration, $i=1,\dots,|I|$ (see eq. \ref{sb:sec:symm}).\\
-    $L$            & Loading configurations, $l=1,\dots,L$.\\
-    $K$            & Trucks, $k=1,\dots,K$.\\
-    $T$            & Planning periods, $t=1,\dots,T$.\\
-    $M(r)$         & Products carried by RTI type $r$, $M(r)\subseteq N$.\\
+    $G$            & Supplier and plant nodes, $G=\{s,p\}$; $g=s$ is the folded
+                     direction (plant to supplier), $g=p$ the full one.\\
+    $N$            & Products, $n=1,\dots,|N|$.\\
+    $R$            & RTI types, $r=1,\dots,|R|$.\\
+    $H$            & Stack types, $h=1,\dots,|H|$.\\
+    $I$            & Stack-slot indices on a truck floor, $i=1,\dots,|I|$ (see
+                     \eqref{sb:eq:Ibound}).\\
+    $K$            & Trucks available per direction and period, $k=1,\dots,|K|$.\\
+    $T$            & Planning periods, $t=1,\dots,|T|$.\\
+    $\rho(n)$      & The RTI type in which product $n$ travels.\\
+    $M(r)$         & Products carried by RTI type $r$, $M(r)=\{n:\rho(n)=r\}\subseteq N$.\\
     $R(h)$         & RTI types compatible with stack type $h$, $R(h)\subseteq R$.\\
     \hline
     \multicolumn{2}{|l|}{\textbf{Parameters}}\\\hline
-    $cK$           & Cost of using a truck.\\
-    $lt$           & Lead transport time between plant and supplier (and vice versa).\\
+    $cK$           & Cost of dispatching one truck.\\
+    $lt$           & Lead transport time between plant and supplier (and vice versa), $lt\ge1$.\\
     $i_{gn}$       & Initial inventory of $n\in N$ at $g\in G$ (full RTIs).\\
     $ie_{gr}$      & Initial inventory of folded RTIs $r\in R$ at $g\in G$.\\
-    $ic_{gn}$      & Inventory cost of $n\in N$ at $g\in G$.\\
-    $d_{gnt}$      & Production plan for $n\in N$ at $g\in G$ in $t\in T$.\\
-    $q_{nt}$       & Initial arrivals of full RTIs of product $n$ at $p$ in $t\in\{1,\dots,lt\}$.\\
-    $q_{rt}$       & Initial arrivals of folded RTIs of type $r$ at $s$ in $t\in\{1,\dots,lt\}$.\\
-    $ss_{gnt}$     & Security stock of $n$ at $g$ in $t$ (full RTIs).\\
-    $ss_{gtr}$     & Security stock of folded RTIs $r$ at $g$ in $t$.\\
+    $ic_{gn}$      & Inventory holding cost of $n\in N$ at $g\in G$.\\
+    $d_{gnt}$      & Production plan for $n\in N$ at $g\in G$ in $t\in T$: filled at $s$, consumed at $p$.\\
+    $a_{nt}$       & Pipeline arrivals of full RTIs of product $n$ at $p$ in $t\in\{1,\dots,lt\}$.\\
+    $ae_{rt}$      & Pipeline arrivals of folded RTIs of type $r$ at $s$ in $t\in\{1,\dots,lt\}$.\\
+    $ss_{gnt}$     & Coverage stock of $n$ at $g$ in $t$ (full RTIs).\\
+    $sse_{gtr}$    & Coverage stock of folded RTIs $r$ at $g$ in $t$.\\
     $w_{n}$        & Weight of a full RTI carrying product $n$.\\
     $w^{\mathrm{f}}_{r}$ & Weight of a folded RTI of type $r$.\\
-    $pK^{w}$       & Maximum truck weight capacity.\\
+    $pK^{w}$       & Truck payload.\\
     $W^{\max}$     & Per-stack crush-limit weight cap: the \emph{total} weight of one stack, summed over all its layers, not the weight borne by its bottom RTI alone.\\
-    $pK,qK,rK$     & Truck length, width, and height.\\
+    $pK,qK,rK$     & Truck floor length, floor width, and inner height.\\
     $\Gamma_K$     & Truck volume, $\Gamma_K=pK\cdot qK\cdot rK$.\\
     $\alpha$       & Minimum truck utilisation, required on whichever of volume or payload binds ($0<\alpha\le 1$).\\
     $p_{h},q_{h}$  & Footprint length and width of stack type $h$.\\
     $r_{gr}$       & Height of one RTI of type $r$ at node $g$ (full at $p$, folded at $s$).\\
-    $\gamma_{gr}$  & Volume of one RTI of type $r$ at node $g$.\\
+    $\gamma_{gr}$  & Volume of one RTI of type $r$ in direction $g$.\\
     $n_{hr}$       & RTIs of type $r\in R(h)$ per layer of stack type $h$.\\
-    $M$            & A sufficiently large constant.\\
+    $\omega_{gr}$  & Weight per RTI used by the layer-capacity form of the
+                     utilisation floor: $\omega_{sr}=w^{\mathrm{f}}_{r}$ and
+                     $\omega_{pr}=\max_{n\in M(r)}w_{n}$.\\
+    $\lambda^{K},\lambda^{I}$ & Weights of the transport and inventory objectives; both $1$ throughout this paper.\\
+    $M^{x},M^{y}$  & Big-$M$ constants of the non-overlap rows, $M^{x}=pK$ and $M^{y}=qK$.\\
+    $\bar u^{V}_{n}$ & Most full RTIs of $n$ one stack can carry, $\bar u^{V}_{n}=\lfloor W^{\max}/w_{n}\rfloor$.\\
+    $\bar u^{\mathrm{e}}_{r}$ & Most folded RTIs of $r$ one truck can carry, $\bar u^{\mathrm{e}}_{r}=\lfloor pK^{w}/w^{\mathrm{f}}_{r}\rfloor$.\\
     \hline
-    \multicolumn{2}{|l|}{\textbf{Decision variables -- LC level}}\\\hline
-    $Z_{gl}$         & $\in\{0,1\}$. Equals $1$ iff LC $l$ is active in direction $g$.\\
-    $\theta_{gl}$    & $\in\{0,1\}$. Selects which resource the \emph{design-time} utilisation floor is applied to: volume if $1$, payload if $0$.\\
-    $X_{gihl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ of LC $l$ is of stack type $h$ in direction $g$.\\
-    $L_{gihlr}$      & $\in\mathbb{Z}_{\ge 0}$. Number of layers of RTI type $r\in R(h)$ in slot $i$ of LC $l$ in direction $g$.\\
-    $LX_{gihl}$      & $\in\{0,1\}$. Equals $1$ iff stack $h$'s length is along the $x$-axis in slot $i$.\\
-    $LY_{gihl}$      & $\in\{0,1\}$. Equals $1$ iff stack $h$'s length is along the $y$-axis in slot $i$.\\
-    $PX_{gil},PY_{gil}$ & $\ge 0$. Bottom-left coordinates of slot $i$ in LC $l$ in direction $g$.\\
-    $A_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is to the left of slot $j$ in LC $l$.\\
-    $B_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is to the right of slot $j$ in LC $l$.\\
-    $C_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is behind slot $j$ in LC $l$.\\
-    $D_{gijl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ is in front of slot $j$ in LC $l$.\\
+    \multicolumn{2}{|l|}{\textbf{Decision variables -- the truck and its layout}}\\\hline
+    $Z_{gkt}$        & $\in\{0,1\}$. Equals $1$ iff truck $k$ of direction $g$ in period $t$ is configured, i.e.\ carries a layout.\\
+    $Y_{gkt}$        & $\in\{0,1\}$. Equals $1$ iff truck $k$ is dispatched in direction $g$ in period $t$.\\
+    $\theta_{gkt}$   & $\in\{0,1\}$. Selects the resource on which the utilisation floor of that truck is required: volume if $1$, payload if $0$.\\
+    $X_{gihkt}$      & $\in\{0,1\}$. Equals $1$ iff slot $i$ of that truck holds a stack of type $h$.\\
+    $L_{gihktr}$     & $\in\mathbb{Z}_{\ge 0}$. Layers of RTI type $r\in R(h)$ in slot $i$ of that truck.\\
+    $LX_{gihkt}$     & $\in\{0,1\}$. Equals $1$ iff stack $h$'s length lies along the $x$-axis in slot $i$.\\
+    $LY_{gihkt}$     & $\in\{0,1\}$. Equals $1$ iff stack $h$'s length lies along the $y$-axis in slot $i$.\\
+    $PX_{gikt},PY_{gikt}$ & $\ge 0$. Bottom-left coordinates of slot $i$ on the truck floor.\\
+    $A_{gijkt}$      & $\in\{0,1\}$. Equals $1$ iff slot $i$ is to the left of slot $j$.\\
+    $B_{gijkt}$      & $\in\{0,1\}$. Equals $1$ iff slot $i$ is to the right of slot $j$.\\
+    $C_{gijkt}$      & $\in\{0,1\}$. Equals $1$ iff slot $i$ is behind slot $j$.\\
+    $D_{gijkt}$      & $\in\{0,1\}$. Equals $1$ iff slot $i$ is in front of slot $j$.\\
     \hline
-    \multicolumn{2}{|l|}{\textbf{Decision variables -- runtime level}}\\\hline
-    $Y_{gkt}$        & $\in\{0,1\}$. Equals $1$ iff truck $k$ is used in direction $g$ in period $t$.\\
-    $Y_{gklt}$       & $\in\{0,1\}$. Equals $1$ iff truck $k$ uses LC $l$ in direction $g$ in period $t$.\\
-    $\theta^{p}_{klt},\theta^{s}_{klt}$ & $\in\{0,1\}$. Select which resource the \emph{runtime} utilisation floor of truck $k$ under LC $l$ in period $t$ is applied to: volume if $1$, payload if $0$.\\
-    $V_{klnt}$       & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ on plant-bound truck $k$ using LC $l$ in period $t$.\\
-    $V^{\mathrm{slot}}_{kilnt}$ & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ in slot $i$ of plant-bound truck $k$ using LC $l$ in period $t$.\\
-    $V^{\mathrm{e}}_{klrt}$ & $\in\mathbb{Z}_{\ge 0}$. Folded RTIs of type $r$ on supplier-bound truck $k$ using LC $l$ in period $t$.\\
+    \multicolumn{2}{|l|}{\textbf{Decision variables -- load and inventory}}\\\hline
+    $V_{kint}$       & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ in slot $i$ of plant-bound truck $k$ in period $t$.\\
+    $V^{\mathrm{e}}_{krt}$ & $\in\mathbb{Z}_{\ge 0}$. Folded RTIs of type $r$ on supplier-bound truck $k$ in period $t$.\\
     $I_{gnt}$        & $\in\mathbb{Z}_{\ge 0}$. End-of-period inventory of $n$ at $g$ in $t$ (full RTIs).\\
     $Ie_{gtr}$       & $\in\mathbb{Z}_{\ge 0}$. End-of-period inventory of folded RTIs $r$ at $g$ in $t$.\\
-    $Q_{nt}$         & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ in transit to the plant in $t$.\\
-    $Q_{rt}$         & $\in\mathbb{Z}_{\ge 0}$. Folded RTIs of type $r$ in transit to the supplier in $t$.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Derived quantities} (abbreviations, not constraints; see \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-L})}\\\hline
+    $\overline{V}_{nt}$ & Full RTIs of $n$ delivered to the plant in $t$.\\
+    $\overline{V^{\mathrm{e}}}_{rt}$ & Folded RTIs of $r$ returned to the supplier in $t$.\\
+    $\overline{V}_{knt}$ & Full RTIs of $n$ on plant-bound truck $k$ in $t$.\\
+    $\widehat{X}_{gikt}$ & Equals $1$ iff slot $i$ of that truck is used.\\
+    $\overline{L}_{ghktr}$ & Layers of RTI type $r$ under stack type $h$ on that truck, over all slots.\\
     \hline
 \end{longtable}
 
 % --------------------------
+% Derived quantities
+% --------------------------
+\subsection*{Derived quantities}
+
+Five sums recur, and naming them is what keeps the model readable and
+what makes its structure visible. They are \emph{abbreviations}, not
+constraints: each is a linear expression in the decision variables
+above, substituted wherever it appears.
+\begin{align}
+\overline{V}_{nt}&=\sum_{k\in K}\sum_{i\in I} V_{kint}
+    &&\forall n\in N,\; t\in T
+    \label{sb:eq:agg-V}\\
+\overline{V^{\mathrm{e}}}_{rt}&=\sum_{k\in K} V^{\mathrm{e}}_{krt}
+    &&\forall r\in R,\; t\in T
+    \label{sb:eq:agg-Ve}\\
+\overline{V}_{knt}&=\sum_{i\in I} V_{kint}
+    &&\forall k\in K,\; n\in N,\; t\in T
+    \label{sb:eq:agg-Vk}\\
+\widehat{X}_{gikt}&=\sum_{h\in H} X_{gihkt}
+    &&\forall g\in G,\; i\in I,\; k\in K,\; t\in T
+    \label{sb:eq:agg-X}\\
+\overline{L}_{ghktr}&=\sum_{i\in I} L_{gihktr}
+    &&\forall g\in G,\; h\in H,\; k\in K,\; t\in T,\; r\in R(h)
+    \label{sb:eq:agg-L}
+\end{align}
+
+The first two are the hinge of the whole paper. The inventory block
+reads $\overline{V}_{nt}$ and $\overline{V^{\mathrm{e}}}_{rt}$ and
+nothing else about the trucks: it does not see which truck carried
+what, nor how the load was placed. Every other row of the model carries
+a single $(g,k,t)$. The entire coupling between the transport block and
+the loading block is therefore the two sums
+\eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} together with the fact that
+there are at most $|K|$ trucks per direction and period --- which is
+why the master of Section \ref{sec:mp} needs exactly two definition
+rows and one count row, and why
+\eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} reappear there as the only
+place a column's image enters.
+
+% --------------------------
 % Objective
 % --------------------------
-\subsection*{Objective}
+\subsection*{Objectives}
 
+The model has two objectives, transport cost and inventory holding
+cost:
+\begin{align}
+\min\; z^{K} &= \sum_{g\in G}\sum_{k\in K}\sum_{t\in T} cK\cdot Y_{gkt}
+    \label{sb:eq:obj-zK}\\
+\min\; z^{I} &= \sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn}\cdot I_{gnt}
+    \label{sb:eq:obj-zI}
+\end{align}
+and they are solved scalarised,
 \begin{equation}
-\text{Min } z
-= \sum_{g\in G}\sum_{k\in K}\sum_{t\in T} cK\cdot Y_{gkt}
-+ \sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn}\cdot I_{gnt}
+\min\;\; \lambda^{K} z^{K}+\lambda^{I} z^{I},
 \label{sb:eq:obj}
 \end{equation}
+with $\lambda^{K}=\lambda^{I}=1$ in every run reported in Section
+\ref{sec:results}, so that the reported cost is transport plus holding
+cost in the same money. Transport cost counts \emph{dispatches}: a
+truck that is configured but not dispatched costs nothing, and no term
+of \eqref{sb:eq:obj-zK}--\eqref{sb:eq:obj-zI} charges for a layout.
 
 % --------------------------
-% Inventory balance (unchanged from the original)
+% Inventory balance
 % --------------------------
 \subsection*{Inventory and flow balance}
 
-The inventory balance block is structurally identical to the original
-formulation. For completeness it is reproduced below.
-
+Full RTIs arrive at the plant $lt$ periods after they are dispatched;
+inventory itself accumulates one period at a time, and only the arrival
+is delayed. For the plant,
 \begin{align}
-I_{pnt}  &=I_{p,n,t-lt}-d_{pnt}+Q_{n,t-lt}
+I_{pnt}  &=I_{p,n,t-1}-d_{pnt}+\overline{V}_{n,t-lt}
     &&\forall n\in N,\; t\ge lt+1
     \label{sb:eq:inv-plant-main}\\
-I_{pnt}  &=I_{p,n,t-1}-d_{pnt}+q_{nt}
+I_{pnt}  &=I_{p,n,t-1}-d_{pnt}+a_{nt}
     &&\forall n\in N,\; t\in\{2,\dots,lt\}
     \label{sb:eq:inv-plant-transient}\\
-I_{pnt}  &=i_{pn}-d_{pnt}+q_{nt}
+I_{pnt}  &=i_{pn}-d_{pnt}+a_{nt}
     &&\forall n\in N,\; t=1
     \label{sb:eq:inv-plant-init}\\
-Ie_{ptr} &=Ie_{p,t-1,r}+\sum_{n\in M(r)} d_{pnt}-Q_{rt}
+Ie_{ptr} &=Ie_{p,t-1,r}+\sum_{n\in M(r)} d_{pnt}-\overline{V^{\mathrm{e}}}_{rt}
     &&\forall r\in R,\; t\ge 2
     \label{sb:eq:inve-plant}\\
-Ie_{ptr} &=ie_{pr}+\sum_{n\in M(r)} d_{pnt}-Q_{rt}
+Ie_{ptr} &=ie_{pr}+\sum_{n\in M(r)} d_{pnt}-\overline{V^{\mathrm{e}}}_{rt}
     &&\forall r\in R,\; t=1
     \label{sb:eq:inve-plant-init}
 \end{align}
-
+Consuming a full RTI at the plant produces a folded one in the same
+period, which is why the plant's folded balance is driven by $d_{pnt}$;
+the folded RTIs leave on the same day they are shipped, so
+$\overline{V^{\mathrm{e}}}_{rt}$ enters \eqref{sb:eq:inve-plant}
+undelayed and arrives at the supplier $lt$ periods later. For the
+supplier,
 \begin{align}
-I_{snt}  &=I_{s,n,t-1}+d_{snt}-Q_{nt}
+I_{snt}  &=I_{s,n,t-1}+d_{snt}-\overline{V}_{nt}
     &&\forall n\in N,\; t\ge 2
     \label{sb:eq:inv-sup-main}\\
-I_{snt}  &=i_{sn}+d_{snt}-Q_{nt}
+I_{snt}  &=i_{sn}+d_{snt}-\overline{V}_{nt}
     &&\forall n\in N,\; t=1
     \label{sb:eq:inv-sup-init}\\
-Ie_{str} &=Ie_{s,t-lt,r}+Q_{r,t-lt}-\sum_{n\in M(r)} d_{snt}
+Ie_{str} &=Ie_{s,t-1,r}+\overline{V^{\mathrm{e}}}_{r,t-lt}-\sum_{n\in M(r)} d_{snt}
     &&\forall r\in R,\; t\ge lt+1
     \label{sb:eq:inve-sup-main}\\
-Ie_{str} &=Ie_{s,t-1,r}+q_{rt}-\sum_{n\in M(r)} d_{snt}
+Ie_{str} &=Ie_{s,t-1,r}+ae_{rt}-\sum_{n\in M(r)} d_{snt}
     &&\forall r\in R,\; t\in\{2,\dots,lt\}
     \label{sb:eq:inve-sup-transient}\\
-Ie_{str} &=ie_{sr}+q_{rt}-\sum_{n\in M(r)} d_{snt}
+Ie_{str} &=ie_{sr}+ae_{rt}-\sum_{n\in M(r)} d_{snt}
     &&\forall r\in R,\; t=1
     \label{sb:eq:inve-sup-init}
 \end{align}
+Coverage stock is enforced at both nodes and on both kinds of stock:
+\begin{align}
+I_{gnt}&\ge ss_{gnt}
+    &&\forall g\in G,\; n\in N,\; t\in T
+    \label{sb:eq:safety-full}\\
+Ie_{gtr}&\ge sse_{gtr}
+    &&\forall g\in G,\; r\in R,\; t\in T
+    \label{sb:eq:safety-empty}
+\end{align}
 
-\begin{equation}
-I_{gnt}\ge ss_{gnt}, \qquad Ie_{gtr}\ge ss_{gtr}
-\qquad \forall g\in G,\; n\in N,\; r\in R,\; t\in T
-\label{sb:eq:safety}
-\end{equation}
+These are the only rows of the model that couple two trucks, two
+periods or two directions, and they do it only through
+\eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve}.
 
 % --------------------------
 % Stack packing block
 % --------------------------
-\subsection*{Stack packing constraints}
+\subsection*{The layout of a truck}
 
-Exactly one stack type can be assigned to a slot, and only if its LC
-is active:
+Everything from here to \eqref{sb:eq:stack-w-sup} is written for one
+truck: one direction $g$, one truck index $k$, one period $t$. At most
+one stack type occupies a slot, and only a configured truck has slots:
 \begin{equation}
-\sum_{h\in H} X_{gihl}\;\le\;Z_{gl}
-\qquad \forall g\in G,\; i\in I,\; l\in L.
+\widehat{X}_{gikt}\;\le\;Z_{gkt}
+\qquad \forall g\in G,\; i\in I,\; k\in K,\; t\in T.
 \label{sb:eq:slot-active}
 \end{equation}
 
 The stack occupying slot $i$ is oriented either with its length along
 the $x$-axis or along the $y$-axis:
 \begin{equation}
-LX_{gihl}+LY_{gihl}\;=\;X_{gihl}
-\qquad \forall g\in G,\; h\in H,\; i\in I,\; l\in L.
+LX_{gihkt}+LY_{gihkt}\;=\;X_{gihkt}
+\qquad \forall g\in G,\; h\in H,\; i\in I,\; k\in K,\; t\in T.
 \label{sb:eq:orient}
 \end{equation}
 
 The total stack height cannot exceed the truck height. The following
-constraint also forces $L_{gihlr}=0$ whenever $X_{gihl}=0$, since
+constraint also forces $L_{gihktr}=0$ whenever $X_{gihkt}=0$, since
 $r_{gr}>0$:
 \begin{equation}
-\sum_{r\in R(h)} r_{gr}\,L_{gihlr}\;\le\;rK\cdot X_{gihl}
-\qquad \forall g\in G,\; h\in H,\; i\in I,\; l\in L.
+\sum_{r\in R(h)} r_{gr}\,L_{gihktr}\;\le\;rK\cdot X_{gihkt}
+\qquad \forall g\in G,\; h\in H,\; i\in I,\; k\in K,\; t\in T.
 \label{sb:eq:height}
 \end{equation}
 
-Slots must not overlap. For each pair $i\ne j$ in LC $l$:
+Slots must not overlap. For each pair $i<j$ of slots of the same truck,
+with $\forall g\in G,\;k\in K,\;t\in T$ understood throughout:
 \begin{align}
-PX_{gil}+\sum_{h\in H}\bigl(p_{h}LX_{gihl}+q_{h}LY_{gihl}\bigr)
-    &\le PX_{gjl}+M(1-A_{gijl})
+PX_{gikt}+\sum_{h\in H}\bigl(p_{h}LX_{gihkt}+q_{h}LY_{gihkt}\bigr)
+    &\le PX_{gjkt}+M^{x}(1-A_{gijkt})
     \label{sb:eq:nonov-x1}\\
-PX_{gjl}+\sum_{h\in H}\bigl(p_{h}LX_{gjhl}+q_{h}LY_{gjhl}\bigr)
-    &\le PX_{gil}+M(1-B_{gijl})
+PX_{gjkt}+\sum_{h\in H}\bigl(p_{h}LX_{gjhkt}+q_{h}LY_{gjhkt}\bigr)
+    &\le PX_{gikt}+M^{x}(1-B_{gijkt})
     \label{sb:eq:nonov-x2}\\
-PY_{gil}+\sum_{h\in H}\bigl(q_{h}LX_{gihl}+p_{h}LY_{gihl}\bigr)
-    &\le PY_{gjl}+M(1-C_{gijl})
+PY_{gikt}+\sum_{h\in H}\bigl(q_{h}LX_{gihkt}+p_{h}LY_{gihkt}\bigr)
+    &\le PY_{gjkt}+M^{y}(1-C_{gijkt})
     \label{sb:eq:nonov-y1}\\
-PY_{gjl}+\sum_{h\in H}\bigl(q_{h}LX_{gjhl}+p_{h}LY_{gjhl}\bigr)
-    &\le PY_{gil}+M(1-D_{gijl})
+PY_{gjkt}+\sum_{h\in H}\bigl(q_{h}LX_{gjhkt}+p_{h}LY_{gjhkt}\bigr)
+    &\le PY_{gikt}+M^{y}(1-D_{gijkt})
     \label{sb:eq:nonov-y2}
 \end{align}
 with the cover constraint ensuring that whenever both slots are used
 at least one relative-position variable is active:
 \begin{equation}
-A_{gijl}+B_{gijl}+C_{gijl}+D_{gijl}
-\;\ge\;\sum_{h}X_{gihl}+\sum_{h}X_{gjhl}-1
-\qquad \forall g,\,l,\,i\ne j.
+A_{gijkt}+B_{gijkt}+C_{gijkt}+D_{gijkt}
+\;\ge\;\widehat{X}_{gikt}+\widehat{X}_{gjkt}-1
+\qquad \forall g,\,k,\,t,\,i<j.
 \label{sb:eq:cover}
 \end{equation}
 
 Containment in the truck floor:
 \begin{align}
-PX_{gil}+\sum_{h\in H}\bigl(p_{h}LX_{gihl}+q_{h}LY_{gihl}\bigr)
-    &\le pK+M\bigl(1-\textstyle\sum_{h} X_{gihl}\bigr)
-    &&\forall g,i,l,
+PX_{gikt}+\sum_{h\in H}\bigl(p_{h}LX_{gihkt}+q_{h}LY_{gihkt}\bigr)
+    &\le pK
+    &&\forall g,i,k,t,
     \label{sb:eq:cont-x}\\
-PY_{gil}+\sum_{h\in H}\bigl(q_{h}LX_{gihl}+p_{h}LY_{gihl}\bigr)
-    &\le qK+M\bigl(1-\textstyle\sum_{h} X_{gihl}\bigr)
-    &&\forall g,i,l.
+PY_{gikt}+\sum_{h\in H}\bigl(q_{h}LX_{gihkt}+p_{h}LY_{gihkt}\bigr)
+    &\le qK
+    &&\forall g,i,k,t.
     \label{sb:eq:cont-y}
 \end{align}
-
-Minimum truck utilisation. Full-truckload transport requires a
-dispatched truck to be full, but a truck can be full in two different
-ways: it may run out of space or it may run out of payload. Imposing
-the requirement on volume alone is not a conservative simplification,
-it is an infeasible one --- filling a fraction $\alpha$ of a
-$97.9$~m$^{3}$ trailer with RTIs at $590$~kg/m$^{3}$ weighs $27.4$~t
-against a $24$~t cap, so no truck is dispatchable at all and the
-instance is empty. Summing the two ratios instead is the opposite
-error: it accepts a truck that is $35\%$ full by volume and $20\%$ by
-weight, which is full by neither. We therefore require a truck to
-reach a fraction $\alpha$ of \emph{either} resource, using a binary
-$\theta_{gl}$ to select which one binds:
-\begin{align}
-\sum_{i\in I}\sum_{h\in H}\sum_{r\in R(h)}
-    \gamma_{gr}\,n_{hr}\,L_{gihlr}
-&\;\ge\;\alpha\,\Gamma_K\bigl(Z_{gl}-1+\theta_{gl}\bigr)
-\label{sb:eq:util}\\
-\sum_{i\in I}\sum_{h\in H}\sum_{r\in R(h)}
-    \omega_{gr}\,n_{hr}\,L_{gihlr}
-&\;\ge\;\alpha\,pK^{w}\bigl(Z_{gl}-\theta_{gl}\bigr)
-\qquad \forall g\in G,\; l\in L,
-\label{sb:eq:utilw}
-\end{align}
-with $\omega_{gr}=w^{\mathrm{f}}_{r}$ in the supplier direction and
-$\omega_{pr}=\max_{n\in M(r)}w_{n}$ in the plant direction. The
-\emph{heaviest} product the family can carry is the right coefficient
-here, and the reason is that
-\eqref{sb:eq:util}--\eqref{sb:eq:utilw} is a \emph{design-time}
-requirement on a configuration that does not yet know which products
-will ride in its stacks: what it has to assert is that \emph{some}
-loading of this design fills a truck, which is a necessary condition
-for the design to be usable, and the product-exact condition is
-imposed separately on each dispatched truck by
-\eqref{sb:eq:util-run-p}--\eqref{sb:eq:utilw-run-s} below. With the
-family \emph{minimum} the row would instead assert that \emph{every}
-product assignment fills the truck --- strictly stronger than the
-runtime rule --- and would cut off configurations the model is
-otherwise free to use, so that the formulation reports an optimum above
-the true one. The same principle governs the crush cap
-\eqref{sb:eq:stack-w-plant}, which is why that row is written on the
-mix actually loaded. A per-load row must use the load's own product
-weights; only a design-time row may use a family bound, and then only
-the bound that keeps it necessary rather than sufficient.
-
-% --------------------------
-% Truck -- LC linking and runtime loading
-% --------------------------
-\subsection*{Truck--LC linking and runtime loading}
-
-A truck uses at most one LC in a period, and can only use an active
-LC:
-\begin{align}
-\sum_{l\in L} Y_{gklt}&=Y_{gkt}
-    &&\forall g,k,t
-    \label{sb:eq:one-lc}\\
-Y_{gklt}&\le Z_{gl}
-    &&\forall g,k,l,t
-    \label{sb:eq:lc-active}
-\end{align}
-
-For plant-bound trucks, full RTIs of type $r$ loaded in slot $i$ cannot
-exceed the layer capacity of the stack placed in that slot; products
-sharing the same RTI type partition that slot-capacity:
-\begin{equation}
-\sum_{n\in M(r)} V^{\mathrm{slot}}_{kilnt}
-\;\le\;\sum_{h\,:\,r\in R(h)} n_{hr}\,L_{p,i,h,l,r}
-    + M(1-Y_{pklt})
-\qquad \forall k,i,l,r,t.
-\label{sb:eq:slot-cap}
-\end{equation}
-
-Truck-level aggregation of per-slot loads:
-\begin{equation}
-V_{klnt}=\sum_{i\in I} V^{\mathrm{slot}}_{kilnt}
-\qquad \forall k,l,n,t.
-\label{sb:eq:slot-agg}
-\end{equation}
-
-For supplier-bound trucks, folded RTIs of type $r$ are capped by the
-aggregate layer capacity of the LC in use (no slot-level tracking is
-needed because folded-RTI weight is deterministic in $r$):
-\begin{equation}
-V^{\mathrm{e}}_{klrt}
-\;\le\;\sum_{i\in I}\sum_{h\,:\,r\in R(h)} n_{hr}\,L_{s,i,h,l,r}
-    + M(1-Y_{sklt})
-\qquad \forall k,l,r,t.
-\label{sb:eq:empty-cap}
-\end{equation}
-
-The three rows above are relaxed by $M$ whenever $Y_{gklt}=0$, so on
-their own they leave the loads of a configuration \emph{no truck
-selected} free to be positive, and the flow aggregations
-\eqref{sb:eq:flow-n}--\eqref{sb:eq:flow-r} would then count freight no
-dispatched truck carries as delivered. The loads are therefore gated on
-the selection as well as capped by it:
-\begin{align}
-V^{\mathrm{slot}}_{kilnt}&\le M\,Y_{pklt}
-    &&\forall k,i,l,n,t
-    \label{sb:eq:slot-gate}\\
-V_{klnt}&\le M\,Y_{pklt}
-    &&\forall k,l,n,t
-    \label{sb:eq:load-gate}\\
-V^{\mathrm{e}}_{klrt}&\le M\,Y_{sklt}
-    &&\forall k,l,r,t
-    \label{sb:eq:empty-gate}
-\end{align}
-These rows are not redundant: without them the model admits plans whose
-trucks do not carry what the plan claims to deliver.
-
-% --------------------------
-% Weight
-% --------------------------
-\subsection*{Weight constraints}
-
-Per-truck weight, plant-bound:
-\begin{equation}
-\sum_{l\in L}\sum_{n\in N} w_{n}\,V_{klnt}\;\le\;pK^{w}\,Y_{pkt}
-\qquad \forall k,t.
-\label{sb:eq:truck-w-plant}
-\end{equation}
-
-Per-truck weight, supplier-bound:
-\begin{equation}
-\sum_{l\in L}\sum_{r\in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{klrt}
-    \;\le\;pK^{w}\,Y_{skt}
-\qquad \forall k,t.
-\label{sb:eq:truck-w-sup}
-\end{equation}
-
-Per-stack crush-limit, period-exact on plant-bound trucks (the cap
-reflects the actual product mix loaded in each slot):
-\begin{equation}
-\sum_{n\in N} w_{n}\,V^{\mathrm{slot}}_{kilnt}\;\le\;W^{\max}
-\qquad \forall k,i,l,t.
-\label{sb:eq:stack-w-plant}
-\end{equation}
-
-Per-stack crush-limit on supplier-bound trucks (deterministic in the
-LC since folded-RTI weight depends only on $r$):
-\begin{equation}
-\sum_{h\in H}\sum_{r\in R(h)}
-    w^{\mathrm{f}}_{r}\,n_{hr}\,L_{s,i,h,l,r}\;\le\;W^{\max}
-\qquad \forall i,l.
-\label{sb:eq:stack-w-sup}
-\end{equation}
+These two rows are unconditional, and the non-overlap rows take the
+tightened constants $M^{x}=pK$ and $M^{y}=qK$, both because the
+geometry is now the truck's own. An unused slot has
+$LX_{gihkt}=LY_{gihkt}=0$ for every $h$, so
+\eqref{sb:eq:cont-x}--\eqref{sb:eq:cont-y} reduce to $PX_{gikt}\le pK$
+and $PY_{gikt}\le qK$ there and cut nothing; and given those bounds an
+inactive disjunct of \eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2} is
+never binding, since the left-hand side is at most $pK$ (respectively
+$qK$) and the other slot's origin is non-negative. Enlarging the two
+constants only weakens the linear relaxation.
 
 % --------------------------
 % Runtime full-truckload
 % --------------------------
-\subsection*{Full-truckload on each dispatched truck}
+\subsection*{Full-truckload on every dispatched truck}
 
-The design-time disjunction
-\eqref{sb:eq:util}--\eqref{sb:eq:utilw} says that the configuration's
-designed capacity could fill a truck. It does not say that the truck
-actually dispatched under it \emph{is} full, since a truck may be
-loaded to less than its configuration allows, and that is the condition
-the problem imposes. The same disjunction is therefore written a second
-time, on the loads rather than on the capacity, once per dispatched
-truck, with binaries $\theta^{p}_{klt}$ and $\theta^{s}_{klt}$
-selecting which resource binds:
+Full-truckload transport requires a dispatched truck to be full, but a
+truck can be full in two different ways: it may run out of space or it
+may run out of payload. Imposing the requirement on volume alone is not
+a conservative simplification, it is an infeasible one --- filling a
+fraction $\alpha$ of a $97.9$~m$^{3}$ trailer with RTIs at
+$590$~kg/m$^{3}$ weighs $27.4$~t against a $24$~t cap, so no truck is
+dispatchable at all and the instance is empty. Summing the two ratios
+instead is the opposite error: it accepts a truck that is $35\%$ full
+by volume and $20\%$ by weight, which is full by neither. We therefore
+require a dispatched truck to reach a fraction $\alpha$ of
+\emph{either} resource, using a binary $\theta_{gkt}$ to select which
+one binds. The requirement is stated on the load the truck actually
+carries, with each commodity's own weight:
 \begin{align}
-\sum_{r\in R}\sum_{n\in M(r)} \gamma_{pr}\,V_{klnt}
-&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{pklt}-1+\theta^{p}_{klt}\bigr)
-    &&\forall k,l,t
-    \label{sb:eq:util-run-p}\\
-\sum_{n\in N} w_{n}\,V_{klnt}
-&\;\ge\;\alpha\,pK^{w}\bigl(Y_{pklt}-\theta^{p}_{klt}\bigr)
-    &&\forall k,l,t
-    \label{sb:eq:utilw-run-p}\\
-\sum_{r\in R} \gamma_{sr}\,V^{\mathrm{e}}_{klrt}
-&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{sklt}-1+\theta^{s}_{klt}\bigr)
-    &&\forall k,l,t
-    \label{sb:eq:util-run-s}\\
-\sum_{r\in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{klrt}
-&\;\ge\;\alpha\,pK^{w}\bigl(Y_{sklt}-\theta^{s}_{klt}\bigr)
-    &&\forall k,l,t
-    \label{sb:eq:utilw-run-s}
+\sum_{n\in N}\gamma_{p\rho(n)}\,\overline{V}_{knt}
+&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{pkt}-1+\theta_{pkt}\bigr)
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:util-p}\\
+\sum_{n\in N} w_{n}\,\overline{V}_{knt}
+&\;\ge\;\alpha\,pK^{w}\bigl(Y_{pkt}-\theta_{pkt}\bigr)
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:utilw-p}\\
+\sum_{r\in R}\gamma_{sr}\,V^{\mathrm{e}}_{krt}
+&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{skt}-1+\theta_{skt}\bigr)
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:util-s}\\
+\sum_{r\in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{krt}
+&\;\ge\;\alpha\,pK^{w}\bigl(Y_{skt}-\theta_{skt}\bigr)
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:utilw-s}
 \end{align}
-At $Y_{gklt}=0$ both rows of a direction are vacuous; at
-$Y_{gklt}=1$ exactly one is active and the other is implied, so the
-pair is the disjunction ``full by volume \emph{or} full by payload''
-and never the sum of the two ratios, which is strictly weaker and would
-accept a trailer $35\%$ full by volume and $20\%$ by weight. These rows
-carry the load's own product weights $w_{n}$, as a per-load row must.
+At $Y_{gkt}=0$ both rows of a direction are vacuous; at $Y_{gkt}=1$
+exactly one is active and the other is implied, so each pair is the
+disjunction ``full by volume \emph{or} full by payload''.
 
-% --------------------------
-% Flow aggregation
-% --------------------------
-\subsection*{Flow aggregation}
-
+The same disjunction can be written on the layer \emph{capacity} the
+truck's stacks provide rather than on the load they receive, and in
+that form it is a valid tightening:
 \begin{align}
-Q_{nt}&=\sum_{k\in K}\sum_{l\in L} V_{klnt}
-    &&\forall n,t
-    \label{sb:eq:flow-n}\\
-Q_{rt}&=\sum_{k\in K}\sum_{l\in L} V^{\mathrm{e}}_{klrt}
-    &&\forall r,t
-    \label{sb:eq:flow-r}
+\sum_{h\in H}\sum_{r\in R(h)}
+    \gamma_{gr}\,n_{hr}\,\overline{L}_{ghktr}
+&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{gkt}-1+\theta_{gkt}\bigr)
+    &&\forall g\in G,\; k\in K,\; t\in T
+    \label{sb:eq:util-cap}\\
+\sum_{h\in H}\sum_{r\in R(h)}
+    \omega_{gr}\,n_{hr}\,\overline{L}_{ghktr}
+&\;\ge\;\alpha\,pK^{w}\bigl(Y_{gkt}-\theta_{gkt}\bigr)
+    &&\forall g\in G,\; k\in K,\; t\in T
+    \label{sb:eq:utilw-cap}
+\end{align}
+Which of the two forms is the \emph{requirement} and which is the
+consequence matters, and the paper states it once here. The requirement
+is \eqref{sb:eq:util-p}--\eqref{sb:eq:utilw-s}:
+full-truckload is a property of the freight that moves, and a truck
+whose stacks \emph{could} have been filled to the floor but were not is
+not full. \eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap} are implied
+by it --- a slot never receives more RTIs of type $r$ than its layers
+hold, by \eqref{sb:eq:slot-cap}--\eqref{sb:eq:empty-cap} below, and
+$\gamma_{gr}$ depends only on $r$ while $\omega_{gr}\ge w_{n}$ for every
+$n\in M(r)$ --- so they cut nothing and are kept only because they let a
+solver establish a first feasible layout without first choosing a
+product assignment. Taken \emph{alone}, in place of the load rows, they
+would be strictly weaker and would admit trucks that are not full.
+
+The coefficient $\omega_{pr}$ in \eqref{sb:eq:utilw-cap} is the
+\emph{heaviest} product the family can carry, and both of the reasons
+point the same way. The row is a $\ge$ requirement, so the smaller
+coefficient is the stronger row: with $\min_{n\in M(r)}w_{n}$ the row
+would assert that \emph{every} product assignment of this layout fills
+the truck, which is not a necessary condition of ``this truck is full''
+and cuts off loads the problem allows, so that the formulation reports
+an optimum above the true one --- in the very comparison where the
+decomposition is claimed to beat it. With the maximum the row is
+implied by the load rows, as the previous paragraph needs it to be;
+with the minimum it is not implied at all. The same principle governs
+the crush cap \eqref{sb:eq:stack-w-plant}, which is why that row is
+written on the mix actually loaded. A per-load row must use the load's
+own product weights; only a row that does not yet know the product may
+use a family bound, and then only the bound that keeps it necessary
+rather than sufficient.
+
+% --------------------------
+% Dispatch, loading and weight
+% --------------------------
+\subsection*{Dispatch, loading and weight}
+
+A dispatched truck must be configured:
+\begin{equation}
+Y_{gkt}\;\le\;Z_{gkt}
+\qquad \forall g\in G,\; k\in K,\; t\in T.
+\label{sb:eq:lc-active}
+\end{equation}
+The converse does not hold, and the two binaries are not the same
+variable in this section: $Z_{gkt}=1$ with $Y_{gkt}=0$ is a truck that
+carries a layout and no freight. Such a point costs nothing by
+\eqref{sb:eq:obj-zK} and delivers nothing by
+\eqref{fix:slot-link}--\eqref{fix:empty-link}; Section \ref{sec:pp}
+returns to it, because in the reformulated block it is exactly the
+empty column and the two binaries can then be identified.
+
+For plant-bound trucks, full RTIs of type $r$ loaded in slot $i$ cannot
+exceed the layer capacity of the stack placed in that slot; products
+sharing the same RTI type partition that slot capacity:
+\begin{equation}
+\sum_{n\in M(r)} V_{kint}
+\;\le\;\sum_{h\,:\,r\in R(h)} n_{hr}\,L_{p,i,h,k,t,r}
+\qquad \forall k\in K,\; i\in I,\; r\in R,\; t\in T.
+\label{sb:eq:slot-cap}
+\end{equation}
+For supplier-bound trucks, folded RTIs of type $r$ are capped by the
+aggregate layer capacity of the truck (no slot-level tracking is needed
+because folded-RTI weight is deterministic in $r$):
+\begin{equation}
+V^{\mathrm{e}}_{krt}
+\;\le\;\sum_{h\,:\,r\in R(h)} n_{hr}\,\overline{L}_{s,h,k,t,r}
+\qquad \forall k\in K,\; r\in R,\; t\in T.
+\label{sb:eq:empty-cap}
+\end{equation}
+Both rows are unconditional: the layers they refer to are the truck's
+own, and a truck with no stacks has zero capacity on the right-hand
+side.
+
+Capacity is not the same as dispatch, and the two rows above would
+leave the load of a configured but undispatched truck free. The loads
+are therefore also gated on the dispatch, at their own analytic bounds
+rather than at a generic big-$M$:
+\begin{align}
+V_{kint}&\le \bar u^{V}_{n}\,Y_{pkt}
+    &&\forall k\in K,\; i\in I,\; n\in N,\; t\in T
+    \label{fix:slot-link}\\
+V^{\mathrm{e}}_{krt}&\le \bar u^{\mathrm{e}}_{r}\,Y_{skt}
+    &&\forall k\in K,\; r\in R,\; t\in T
+    \label{fix:empty-link}
+\end{align}
+The constants are the tightest valid ones: no slot can hold more than
+$\bar u^{V}_{n}=\lfloor W^{\max}/w_{n}\rfloor$ full RTIs of $n$ without
+breaching the crush cap \eqref{sb:eq:stack-w-plant}, and no truck more
+than $\bar u^{\mathrm{e}}_{r}=\lfloor pK^{w}/w^{\mathrm{f}}_{r}\rfloor$
+folded RTIs of $r$ without breaching the payload
+\eqref{sb:eq:truck-w-sup}, so neither row cuts a feasible load and
+both are far smaller than the big-$M$ a generic gate would use.
+
+In the integer feasible set of \emph{this} model the two rows are in
+fact implied: every weight is strictly positive, so at $Y_{gkt}=0$ the
+payload rows \eqref{sb:eq:truck-w-plant}--\eqref{sb:eq:truck-w-sup}
+already force the truck's whole load to zero. They are nevertheless
+written, for two reasons. \eqref{fix:slot-link} is strictly tighter than
+that implication in the relaxation, because what bounds the content of
+a single slot is the crush cap and not the truck payload. And the
+implication is a property of the truck-indexed statement and of nothing
+more general: the moment a layout is shared by several trucks --- the
+restriction an implementation is tempted into, and the one solved in
+Section \ref{sec:results} --- the capacity rows are written on the
+shared layout while the payload row is written on the truck, so load
+can be charged to a layout that no truck selected and
+\eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} count it as delivered. Gating
+the load on the dispatch is what rules that out, and it is the form in
+which an implementation has to carry it.
+
+The payload is a property of the truck:
+\begin{align}
+\sum_{n\in N} w_{n}\,\overline{V}_{knt}&\;\le\;pK^{w}\,Y_{pkt}
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:truck-w-plant}\\
+\sum_{r\in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{krt}
+    &\;\le\;pK^{w}\,Y_{skt}
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:truck-w-sup}
+\end{align}
+and the crush limit a property of each stack. On plant-bound trucks it
+is period-exact, evaluated on the product mix actually loaded in the
+slot; on supplier-bound trucks it is deterministic in the layout, since
+the weight of a folded RTI depends only on its type:
+\begin{align}
+\sum_{n\in N} w_{n}\,V_{kint}&\;\le\;W^{\max}
+    &&\forall k\in K,\; i\in I,\; t\in T
+    \label{sb:eq:stack-w-plant}\\
+\sum_{h\in H}\sum_{r\in R(h)}
+    w^{\mathrm{f}}_{r}\,n_{hr}\,L_{s,i,h,k,t,r}&\;\le\;W^{\max}
+    &&\forall i\in I,\; k\in K,\; t\in T
+    \label{sb:eq:stack-w-sup}
 \end{align}
 
 % --------------------------
 % Symmetry breaking and slot-set sizing
 % --------------------------
-\subsection{Symmetry breaking and slot-set sizing}
+\subsection{Symmetry breaking, slot-set sizing and data assumptions}
 \label{sb:sec:symm}
 
-The slots $i\in I$ of a given LC are interchangeable, so any solution
-admits $|I|!$ permutations of the slot index. We break this symmetry
-by enforcing that slot $i+1$ is used only if slot $i$ is used:
+The slots $i\in I$ of a given truck are interchangeable, so any
+solution admits $|I|!$ permutations of the slot index. We break this
+symmetry by enforcing that slot $i+1$ is used only if slot $i$ is used:
 \begin{equation}
-\sum_{h\in H} X_{g,i+1,h,l}\;\le\;\sum_{h\in H} X_{g,i,h,l}
-\qquad \forall g\in G,\; l\in L,\; i\in\{1,\dots,|I|-1\}.
+\widehat{X}_{g,i+1,k,t}\;\le\;\widehat{X}_{gikt}
+\qquad \forall g\in G,\; k\in K,\; t\in T,\; i\in\{1,\dots,|I|-1\}.
 \label{sb:eq:sym}
 \end{equation}
-
-The cardinality of $I$ is a modelling parameter. An upper bound that
-eliminates provably unused slot variables without cutting any feasible
-layout is
-\begin{equation}
-|I|\;\le\;\left\lfloor
-    \frac{pK\cdot qK}{\min_{h\in H} p_{h}\cdot q_{h}}
-\right\rfloor,
-\label{sb:eq:Ibound}
-\end{equation}
-corresponding to tiling the truck floor with the smallest-footprint
-stack type; it serves as a tight preprocessing limit on $|I|$.
 
 The trucks of a given direction and period are interchangeable in the
 same way: nothing in the data distinguishes one element of $K$ from
@@ -453,14 +530,32 @@ another. We likewise force them to be used in index order,
 \begin{equation}
 Y_{g,k+1,t}\;\le\;Y_{gkt}
 \qquad \forall g\in G,\; t\in T,\; k\in\{1,\dots,|K|-1\}.
-\label{sb:eq:sym-truck}
+\label{dec:sym-truck}
 \end{equation}
 The row is valid because any solution can be re-indexed, but it removes
-only the choice of \emph{which} subset of trucks is used. The loads
-remain interchangeable among the used trucks, so a plan dispatching $n$
-trucks in a period still appears $n!$ times in the search, which is the
-difficulty Section \ref{sec:math} removes by aggregation rather than by
-a row.
+only the choice of \emph{which} subset of trucks is used. The loads and
+the layouts remain interchangeable among the used trucks, so a plan
+dispatching $m$ trucks in a period still appears $m!$ times in the
+search, which is the difficulty Section \ref{sec:math} removes by
+aggregation rather than by a row.
+
+Three properties of the data are assumed throughout. The cardinality of
+$I$ is a modelling parameter, and an upper bound that eliminates
+provably unused slot variables without cutting any feasible layout is
+\begin{equation}
+|I|\;\le\;\left\lfloor
+    \frac{pK\cdot qK}{\min_{h\in H} p_{h}\cdot q_{h}}
+\right\rfloor,
+\label{sb:eq:Ibound}
+\end{equation}
+corresponding to tiling the truck floor with the smallest-footprint
+stack type; it serves as a tight preprocessing limit on $|I|$. The
+product-to-RTI map is a partition --- each product travels in exactly
+one RTI type, so $\rho$ is well defined and the families $M(r)$ are
+disjoint --- and every RTI type carries at least one product, so no
+$M(r)$ is empty. Finally $lt\ge1$: a shipment never arrives in the
+period it leaves, which is what the lagged terms of
+\eqref{sb:eq:inv-plant-main} and \eqref{sb:eq:inve-sup-main} require.
 
 % --------------------------
 % Domains
@@ -468,17 +563,35 @@ a row.
 \subsection*{Domains}
 
 \begin{align*}
-&Z_{gl},\,\theta_{gl},\,X_{gihl},\,LX_{gihl},\,LY_{gihl},\,
-  A_{gijl},\,B_{gijl},\,C_{gijl},\,D_{gijl},\,
-  Y_{gkt},\,Y_{gklt},\,\theta^{p}_{klt},\,\theta^{s}_{klt}\in\{0,1\},\\
-&L_{gihlr},\,V_{klnt},\,V^{\mathrm{slot}}_{kilnt},\,
-  V^{\mathrm{e}}_{klrt},\,I_{gnt},\,Ie_{gtr},\,Q_{nt},\,Q_{rt}
+&Z_{gkt},\,Y_{gkt},\,\theta_{gkt},\,X_{gihkt},\,LX_{gihkt},\,LY_{gihkt},\,
+  A_{gijkt},\,B_{gijkt},\,C_{gijkt},\,D_{gijkt}\in\{0,1\},\\
+&L_{gihktr},\,V_{kint},\,V^{\mathrm{e}}_{krt},\,I_{gnt},\,Ie_{gtr}
   \in\mathbb{Z}_{\ge 0},\\
-&PX_{gil},\,PY_{gil}\ge 0.
+&PX_{gikt},\,PY_{gikt}\ge 0.
 \end{align*}
+
+% --------------------------
+% The three modelling decisions
+% --------------------------
+\paragraph{Three decisions, and the alternatives they reject.}
+Three of the rows above admit a tempting alternative that is wrong, and
+each is argued where it occurs rather than left to the reader. (i) The
+utilisation floor is imposed on the load carried
+\eqref{sb:eq:util-p}--\eqref{sb:eq:utilw-s} and not on the layer
+capacity designed \eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap}; the
+capacity form is a consequence and is kept as a tightening, never as
+the requirement. (ii) The family weight $\omega_{pr}$ in that
+tightening is the family \emph{maximum}: the minimum gives a strictly
+stronger row that is not a necessary condition of a full truck, cuts
+off feasible loads, and reports an optimum above the true one. (iii)
+The configuration binary $Z_{gkt}$ and the dispatch binary $Y_{gkt}$
+are both kept here, because the two differ --- at $Z=1,Y=0$ a truck
+carries a layout and no freight --- but the difference is one the
+reformulation of Section \ref{sec:math} does not need, and Section
+\ref{sec:pp} deletes $Y$ from the pricing problem on an argument stated
+there.
 
 
 % =====================================================================
 %           S E C T I O N   4 . X   (M A T H E U R I S T I C)
 % =====================================================================
-

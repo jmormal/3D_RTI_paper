@@ -2,10 +2,15 @@
 %  Dantzig--Wolfe reformulation and branch and price for 3D-SCPTOP
 % =====================================================================
 %
-%  The formulation in this section follows docs/reformulation/dw_reformulation.tex,
-%  which is the authoritative specification.  FOUR departures from it are
-%  deliberate; the first two are editorial, the last two are substantive and are
-%  argued in the text where they occur.
+%  Two authoritative sources sit behind this section and Section 4:
+%    * docs/reformulation/thesis_PyMML.pdf -- the truck-indexed base model.
+%      Section 4 (sec_model.tex) follows it row for row and keeps its labels.
+%    * docs/reformulation/dw_reformulation.tex -- the Dantzig-Wolfe spec.
+%      This section follows it; the row-by-row correspondence between the two
+%      is Table \ref{tab:rowmap}.
+%
+%  FIVE departures are deliberate.  The first two are editorial, the rest are
+%  substantive and are argued in the text where they occur.
 %    * a column is indexed by omega rather than p, because p is already the plant
 %      direction and p_h the length of a footprint;
 %    * the geometry shared by the two pricing problems is written once, with the
@@ -18,33 +23,39 @@
 %      Proposition \ref{prop:equiv} builds a compact solution that satisfies the
 %      row, so the master is equivalent to the compact model WITH the row in
 %      place and the drop costs nothing.  Stated in the Dropped-row paragraph.
-%    * the spec's full-truckload rows are written on the stack CAPACITY
-%      (omega_{g,r} n_hr Lbar_hr).  Here they are written on the LOAD the truck
-%      carries, with the capacity form retained as an implied cut.  The capacity
-%      form alone is strictly weaker and admits points that are not columns; see
-%      the paragraph after \eqref{bp:PP-utilw}.  This follows the rule that a row
-%      over a concrete load uses that load's own product weights, while only a
-%      design-time row that does not know the product may use the family maximum.
+%      (The paper cannot cite a private confirmation, so the proof stands in
+%      its place; it establishes more than the confirmation asserts.)
+%    * the base model's full-truckload rows (its util/utilw) are written on the
+%      stack CAPACITY (omega_{g,r} n_hr Lbar_hr) and gated on Z.  Section 4
+%      states the requirement on the LOAD the truck carries, gated on Y, and
+%      keeps the capacity form as an implied tightening -- eqs. sb:eq:util-cap,
+%      sb:eq:utilw-cap.  The capacity form alone is strictly weaker and admits
+%      points that are not columns; see the paragraph after \eqref{bp:PP-utilw}.
+%      julia/src/pricing.jl offers both (`floor_rule`, default :load, line 145)
+%      and src/rti3d/models/monolithic.py:230-241 imposes the load form.
+%    * the spec's pricing problems keep the dispatch binary Y and the row
+%      Y <= Z.  Here Y is deleted from the block and Z carries the truck
+%      (docs/DECISIONS.md decision 12).  The argument is in the paragraph after
+%      \eqref{bp:PP-utilw}: with no loading-configuration index the only points
+%      at which Y and Z differ are Z=1, Y=0, whose image and cost are those of
+%      the empty column, so the set of column images is unchanged.
 %
 \section{Dantzig--Wolfe reformulation and branch and price}
 \label{sec:math}
 
-Three structural difficulties stand between the 3D-SCPTOP model of
+Two structural difficulties stand between the 3D-SCPTOP model of
 Section \ref{sec:model} and an industrial instance. The first is that
-the number of loading configurations needed is not known a priori, so
-$|L|$ must be over-estimated; every configuration that turns out to be
-unnecessary still carries its full block of placement variables, and
-every \emph{under}-estimate silently restricts the problem. The second
-is that the model replicates a complete two-dimensional packing problem
-$|G|\cdot|L|$ times, and each replica contributes
-$4\binom{|I|}{2}$ big-$M$ disjunctions
+the model carries a complete two-dimensional packing problem for every
+truck of every direction and period --- $2|K||T|$ replicas, each
+contributing $4\binom{|I|}{2}$ big-$M$ disjunctions
 \eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2} whose linear relaxation
-is weak. The third is that the model indexes its variables by truck,
-and trucks are interchangeable: any two used trucks of the same
-direction and period can swap their entire loads, so every solution
-appears in the search a factorial number of times.
+is weak. The second is that those replicas are interchangeable: nothing
+in the data distinguishes one element of $K$ from another, so any two
+used trucks of the same direction and period can swap their entire
+layouts and loads, and every solution appears in the search a factorial
+number of times.
 
-The third difficulty is the one that scales worst, because it does not
+The second difficulty is the one that scales worst, because it does not
 depend on the loading geometry at all. It is present in the volumetric
 benchmark of Appendix \ref{appendix:A} exactly as in 3D-SCPTOP, and
 Section \ref{sec:results} reports what it costs there. Operational
@@ -52,14 +63,29 @@ procurement planning lives at horizons of weeks over dozens of trucks,
 so that is the regime the method has to serve, and it is the regime in
 which a decomposition earns its place.
 
-The reformulation developed below removes all three at once, and it
-removes the first by removing the loading configuration from the
-master \emph{entirely}. The master couples to the geometry through
-nothing but the definition of two aggregate flows and one count of
-trucks per direction and period; every slot, orientation, non-overlap,
-stack-height, crush and full-truckload constraint lives inside a
-pricing problem. There is no $L$, no $Z_{gl}$ and no $Y_{gklt}$ in
-what follows.
+The two difficulties invite one bad answer, and it is worth naming
+because an implementation of the compact model is forced into it.
+Rather than let every truck design its own layout, share a catalogue of
+$n_{\mathrm{LC}}$ layouts among the trucks of a direction and let each
+dispatched truck pick one. That collapses $2|K||T|$ packing replicas to
+$2n_{\mathrm{LC}}$, but it is a \emph{restriction} of the model of
+Section \ref{sec:model} --- the trucks of a direction must now agree on
+$n_{\mathrm{LC}}$ designs --- so its optimum is at or above the true one
+and its dual bound bounds the restriction and not the problem. It also
+destroys the very structure the next paragraph uses, because a shared
+catalogue is a global resource every truck draws on. The compact 3D
+runs of Section \ref{sec:results} are of that restricted model at
+$n_{\mathrm{LC}}=3$, and are labelled as such.
+
+The reformulation developed below removes both difficulties at once,
+and it removes the first without restricting anything. The master
+couples to the geometry through nothing but the definition of the two
+aggregate flows \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} and one count
+of trucks per direction and period; every slot, orientation,
+non-overlap, stack-height, crush and full-truckload constraint lives
+inside a pricing problem. There is no index of a loading configuration
+anywhere in what follows, and no variable indexed by an individual
+truck.
 
 \subsection{The decomposition}
 \label{sec:decomp}
@@ -71,58 +97,104 @@ integer, that a branching row leaves the pricing problem intact --- is
 a consequence of one of its steps.
 
 \paragraph{Blocks.}
-Take the block index to be $\mathcal{B}=G\times K\times T$. Inspect
-Section \ref{sec:model}. Every geometric constraint
-\eqref{sb:eq:slot-active}--\eqref{sb:eq:utilw} carries a single
-direction and a single configuration; every loading, weight and
-runtime full-truckload constraint
-\eqref{sb:eq:slot-cap}--\eqref{sb:eq:stack-w-sup} and
-\eqref{sb:eq:util-run-p}--\eqref{sb:eq:utilw-run-s} carries a single
-direction, a single truck and a single period; and the assignment row
-\eqref{sb:eq:one-lc} relates $Y_{gklt}$ to $Y_{gkt}$ inside one
-(direction, truck, period). None of those rows couples two values of
-$g$, of $k$ or of $t$. The remaining rows --- the inventory balances
-\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety} and the flow
-aggregations \eqref{sb:eq:flow-n}--\eqref{sb:eq:flow-r} --- see the
-blocks \emph{only} through the aggregate flows $Q_{nt}$ and $Q_{rt}$.
+Take the block index to be $\mathcal{B}=G\times K\times T$ and inspect
+Section \ref{sec:model}. Every row from \eqref{sb:eq:slot-active} to
+\eqref{dec:sym-truck} --- slot activation, orientation, stack height,
+non-overlap, cover, containment, the full-truckload disjunction in both
+its forms, the dispatch row, the slot and empty capacities, the
+dispatch gates, the payload and the crush caps, the slot symmetry ---
+carries a single direction, a single truck and a single period as a
+fixed $\forall$ index or as a literal. Not one of them couples two
+values of $g$, of $k$ or of $t$. The exception is
+\eqref{dec:sym-truck}, which relates truck $k+1$ to truck $k$; it is
+dealt with below.
 
-\paragraph{The one row that does couple the blocks.}
-Exactly one family is not block-separable as the compact model writes
-it, and the step above would be false if it were passed over. The
-activation row \eqref{sb:eq:lc-active}, $Y_{gklt}\le Z_{gl}$, couples
-every truck and every period of a direction through the shared
-configuration variables $Z_{gl}$: the catalogue $L$ is a global
-resource that all blocks of a direction draw on, and that is precisely
-the ``configuration designed once and used by many trucks'' structure
-the compact model has.
+The remaining rows are the objectives
+\eqref{sb:eq:obj-zK}--\eqref{sb:eq:obj-zI}, the inventory balances
+\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty} and the
+definitions \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} of the two
+aggregate flows. They see the blocks \emph{only} through those two
+aggregates and through the count of dispatches $\sum_{k}Y_{gkt}$ that
+$z^{K}$ charges for. The model is therefore block-angular over
+$\mathcal{B}$ with no further argument, and a block whose rows never
+couple two values of an index is the product of its parts over that
+index. This is a property of the formulation and not a discovery about
+it: Section \ref{sec:model} is written over trucks precisely so that it
+holds.
 
-It is discharged, not ignored, and by the hypothesis the equivalence
-already carries. Replace the shared catalogue by a \emph{private} one:
-give every block its own configuration variables, so that a block
-designs the layout of its own truck and $Z$ becomes a variable of the
-block rather than of the direction. One inclusion is immediate --- any
-solution of the shared-catalogue model is a solution of the private one,
-by replicating each used configuration into the blocks that use it,
-at the same cost, since cost counts trucks and not configurations. The
-other is the converse construction of
-Proposition~\ref{prop:equiv}: it introduces \emph{one configuration per
-distinct column used}, which is a solution of the shared-catalogue
-model whenever $|L|$ is not restricted a priori. The two therefore have
-the same optimal value under exactly the hypothesis of
-Proposition~\ref{prop:equiv}, and with the catalogue private the model
-is block-angular with one independent block per (direction, truck,
-period). A block whose rows never couple two values of an index is the
-product of its parts over that index.
+\paragraph{Delete the quantifier.}
+The pricing problem is now obtained by deletion and by nothing else.
+Fix a class $(g,t)$, take the rows listed above, and \emph{remove the
+$\forall$ over $\mathcal{B}$}: drop the indices $g$, $k$ and $t$ from
+every variable, read $g$ as data, and what is left is a mixed integer
+programme over one truck. That programme is $(\mathrm{PP}^{g})$ of
+Section \ref{sec:pp}; Table \ref{tab:rowmap} is the correspondence, row
+by row. Nothing is invented for the subproblem and nothing of the
+geometry is left behind in the master. The only rows that do not make
+the journey are the two the aggregation disposes of ---
+\eqref{dec:sym-truck}, which has no counterpart once the blocks are
+counted rather than indexed, and \eqref{sb:eq:lc-active}, whose two
+binaries collapse into one (Section \ref{sec:pp}).
 
-This is also where the $|L|$ of the compact model goes. It is not
-dropped as harmless: it is the one place the two formulations can
-differ, and Section \ref{sec:results} says so where it compares against
-a compact 3D-SCPTOP run at $|L|=3$, which is a restriction and whose
-dual bound bounds that restriction only. A block that designs a
-configuration and dispatches no truck is the all-zero point, so inside
-the block the design binary and the dispatch binary are the same
-variable --- which is why the pricing problem of
-Section~\ref{sec:pp} carries one binary $Z$ and not two.
+\begin{longtable}[hbt!]{@{}p{0.30\textwidth}p{0.30\textwidth}p{0.34\textwidth}@{}}
+\caption{The block rows of Section \ref{sec:model} and the rows of
+$(\mathrm{PP}^{g})$ they become when the $\forall$ over
+$\mathcal{B}=G\times K\times T$ is deleted. The two directions share
+the geometry, so the paper writes it once with $g$ as data; the
+direction-specific rows are those of Section \ref{sec:pp-dir}.}
+\label{tab:rowmap}\\
+\toprule
+Row & Section \ref{sec:model} & $(\mathrm{PP}^{g})$ \\
+\midrule
+\endfirsthead
+\toprule
+Row & Section \ref{sec:model} & $(\mathrm{PP}^{g})$ \\
+\midrule
+\endhead
+\multicolumn{3}{@{}l}{\textit{Block rows: the pricing problem}}\\
+Slot active            & \eqref{sb:eq:slot-active} & \eqref{bp:PP-slot-active}\\
+Orientation            & \eqref{sb:eq:orient}      & \eqref{bp:PP-orient}\\
+Stack height           & \eqref{sb:eq:height}      & \eqref{bp:PP-height}\\
+Non-overlap            & \eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2} & \eqref{bp:PP-nonov-x1}--\eqref{bp:PP-nonov-y2}\\
+Cover                  & \eqref{sb:eq:cover}       & \eqref{bp:PP-cover}\\
+Containment            & \eqref{sb:eq:cont-x}--\eqref{sb:eq:cont-y} & \eqref{bp:PP-cont-x}--\eqref{bp:PP-cont-y}\\
+Full truckload, volume & \eqref{sb:eq:util-p}, \eqref{sb:eq:util-s} & \eqref{bp:PP-util}\\
+Full truckload, payload& \eqref{sb:eq:utilw-p}, \eqref{sb:eq:utilw-s} & \eqref{bp:PP-utilw}\\
+The same on capacity   & \eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap} & \eqref{bp:PP-areacut}\\
+Slot capacity          & \eqref{sb:eq:slot-cap}    & \eqref{bp:PP-p-slot-cap}\\
+Folded capacity        & \eqref{sb:eq:empty-cap}   & \eqref{bp:PP-s-empty-cap}\\
+Dispatch gate, full    & \eqref{fix:slot-link}     & \eqref{bp:PP-p-slot-link}\\
+Dispatch gate, folded  & \eqref{fix:empty-link}    & \eqref{bp:PP-s-empty-link}\\
+Payload, plant-bound   & \eqref{sb:eq:truck-w-plant} & \eqref{bp:PP-p-truck-w}\\
+Payload, supplier-bound& \eqref{sb:eq:truck-w-sup} & \eqref{bp:PP-s-truck-w}\\
+Crush limit, plant-bound & \eqref{sb:eq:stack-w-plant} & \eqref{bp:PP-p-stack-w}\\
+Crush limit, supplier-bound & \eqref{sb:eq:stack-w-sup} & \eqref{bp:PP-s-stack-w}\\
+Slot symmetry          & \eqref{sb:eq:sym}         & \eqref{bp:PP-sym}\\
+Transport cost         & \eqref{sb:eq:obj-zK}      & $cK\cdot Z$ in \eqref{bp:PP-objective}\\
+Dispatch               & \eqref{sb:eq:lc-active}   & deleted; $Z$ carries the truck\\
+Truck symmetry         & \eqref{dec:sym-truck}     & dropped in the aggregation\\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Coupling rows: the master}}\\
+Aggregate flows        & \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} & \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve}\\
+Fleet per class        & $|K|$ trucks per $(g,t)$  & \eqref{bp:MP-count}\\
+Inventory and coverage & \eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty} & verbatim\\
+Holding cost           & \eqref{sb:eq:obj-zI}      & second term of \eqref{eq:MPObjective}\\
+\bottomrule
+\end{longtable}
+% The spec's own label names, for anyone matching this table against
+% docs/reformulation/dw_reformulation.tex (which prints both directions in
+% full, so each shared row below has an -s and a -p twin):
+%   sb:eq:slot-active -> bp:PP-{s,p}-slot_active     sb:eq:orient  -> bp:PP-{s,p}-orient
+%   sb:eq:height      -> bp:PP-{s,p}-height          sb:eq:cover   -> bp:PP-{s,p}-cover
+%   sb:eq:nonov-x1..y2-> bp:PP-{s,p}-nonov_x1..y2    sb:eq:cont-x/y-> bp:PP-{s,p}-cont_x/y
+%   sb:eq:util*       -> bp:PP-{s,p}-util            sb:eq:utilw*  -> bp:PP-{s,p}-utilw
+%   sb:eq:lc-active   -> bp:PP-{s,p}-lc_active (deleted here, decision 12)
+%   sb:eq:slot-cap    -> bp:PP-p-slot_cap            sb:eq:empty-cap -> bp:PP-s-empty_cap
+%   fix:slot-link     -> bp:PP-p-slot_link           fix:empty-link  -> bp:PP-s-empty_link
+%   sb:eq:truck-w-plant -> bp:PP-p-truck_w_plant     sb:eq:truck-w-sup -> bp:PP-s-truck_w_sup
+%   sb:eq:stack-w-plant -> bp:PP-p-stack_w_plant     sb:eq:stack-w-sup -> bp:PP-s-stack_w_sup
+%   sb:eq:sym         -> bp:PP-{s,p}-sym             dec:sym-truck   -> dropped (spec, Dropped)
+%   sb:eq:agg-V/-Ve   -> bp:MP-def-V / bp:MP-def-Ve  fleet count     -> bp:MP-count
 
 \paragraph{Identical blocks.}
 Nothing in the data distinguishes one element of $K$ from another: $K$
@@ -131,14 +203,14 @@ and identical blocks are aggregated. In place of one copy of the block
 per truck, the reformulation carries one non-negative integer variable
 per block \emph{solution}, counting how many of the class's blocks take
 it, and one row per class bounding that count by $|K|$. This is where
-the third difficulty disappears: the trucks are never distinguished in
+the second difficulty disappears: the trucks are never distinguished in
 the first place, so there is no permutation of them to search.
 
 \paragraph{Classes.}
 The classes are the pairs $(g,t)\in G\times T$. Within a class the
 block rows are pinned to the class's values of $g$, so there is one
 pricing problem per \emph{direction}. The pricing rows read no datum
-indexed by $t$: the trailer, the catalogue, the crush limit and the
+indexed by $t$: the trailer, the stack types, the crush limit and the
 utilisation floor are all time-invariant. The pricing problems of the
 periods of one direction therefore differ \emph{only in their duals},
 and one column set serves every period of that direction. This is what
@@ -147,7 +219,7 @@ reason the whole horizon costs two pricing problems rather than
 $2|T|$.
 
 \paragraph{The dropped row.}
-The truck-symmetry row \eqref{sb:eq:sym-truck} of the compact model
+The truck-symmetry row \eqref{dec:sym-truck} of the compact model
 orders the trucks of a direction and period so that truck $k+1$ is used
 only if truck $k$ is. It is a statement about \emph{which} identical
 block carries which load, and after aggregation there is no such
@@ -160,7 +232,7 @@ reformulation's --- so the drop is discharged by proof rather than by
 appeal to the blocks being identical. The converse direction of
 Proposition~\ref{prop:equiv} takes a master solution and assigns trucks
 to columns \emph{in index order}; the resulting compact solution
-satisfies \eqref{sb:eq:sym-truck}. The equivalence therefore holds
+satisfies \eqref{dec:sym-truck}. The equivalence therefore holds
 between the master and the compact model \emph{with} the row in force,
 which is what has to be true for the row's absence to cost nothing.
 
@@ -221,6 +293,12 @@ $\ell_{ir}$ and per-slot product loads $v_{in}$ such that
    &&\forall n\in N.
    \label{eq:col-agg}
 \end{align}
+Condition \eqref{eq:col-assign} is written with equality where
+\eqref{sb:eq:slot-cap} has an inequality, and the two describe the same
+set of images: a layer that carries nothing may always be removed,
+which leaves the placement unchanged and the stack no taller and no
+heavier.
+
 A \emph{supplier-bound} column is the analogous object
 $e_{\omega}=(e_{\omega r})_{r\in R}$ over folded heights $r_{sr}$,
 folded weights $w^{\mathrm{f}}_{r}$ and folded volumes $\gamma_{sr}$;
@@ -238,11 +316,11 @@ period-exact cap \eqref{sb:eq:stack-w-plant} of the compact model, and
 not the conservative surrogate $\bar w_{r}=\max_{n\in M(r)}w_{n}$ that
 a pool of capacity-only configurations is forced to use.
 
-Second, \eqref{eq:col-truck} is the compact model's runtime
-disjunction \eqref{sb:eq:util-run-p}--\eqref{sb:eq:utilw-run-s},
-written on the load a truck actually carries; the design-time pair
-\eqref{sb:eq:util}--\eqref{sb:eq:utilw}, written on the capacity a
-configuration provides, is the weaker necessary condition and is
+Second, \eqref{eq:col-truck} is the compact model's full-truckload
+disjunction \eqref{sb:eq:util-p}--\eqref{sb:eq:utilw-s},
+written on the load a truck actually carries; the capacity pair
+\eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap}, written on the layers
+the truck's stacks provide, is the weaker necessary condition and is
 implied by it. A truck is full when it is full on the \emph{binding}
 resource --- $\alpha$ of volume \emph{or} $\alpha$ of payload, never the
 sum of the two ratios, which is strictly weaker and would accept a
@@ -266,13 +344,13 @@ $\overline{V}_{nt}$ and $\overline{V^{\mathrm{e}}}_{rt}$ be the
 aggregate flows the inventory block reads. These aggregates are the
 compact model's $Q_{nt}$ and $Q_{rt}$ under a name that says where
 they come from: \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} below are the
-flow-aggregation rows \eqref{sb:eq:flow-n}--\eqref{sb:eq:flow-r} with
+definitions \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} with
 each truck's load replaced by the image of the column it carries. The
 master problem (MP) is
 \begin{align}
   \min\;\; & \sum_{g\in G}\sum_{t\in T}\sum_{\omega\in \Omega^{g}}
                 c_{\omega}\,\lambda^{g}_{\omega t}
-    \;+\;\sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn} I_{gnt}
+    \;+\;\lambda^{I}\sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn} I_{gnt}
     \label{eq:MPObjective}
 \end{align}
 subject to
@@ -285,7 +363,7 @@ subject to
     &&\forall r\in R,\;t\in T \label{bp:MP-def-Ve}\\
   \sum_{\omega\in \Omega^{g}} \lambda^{g}_{\omega t} &\le |K|
     &&\forall g\in G,\;t\in T \label{bp:MP-count}\\
-  &\text{\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety}}
+  &\text{\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty}}
     &&\text{verbatim} \nonumber\\
   \lambda^{g}_{\omega t}&\in\mathbb{Z}_{\ge0},\quad
   I_{gnt}\in\mathbb{Z}_{\ge0},\quad
@@ -297,11 +375,18 @@ The aggregates are written free because no row bounds them below;
 \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} equate each to a non-negative
 combination of non-negative $\lambda$, so $\overline{V}\ge0$ is implied
 and an implementation may declare it either way.
-That is the whole master. Objective \eqref{eq:MPObjective} minimises
-transport plus inventory holding cost, where $c_{\omega}=cK$ for every
-non-empty column and $c_{\omega}=0$ for the empty one; since every other
-column costs the same, the first term is $cK$ times the number of trucks
-dispatched. Writing $c_{\omega}$ rather than $cK$ is what makes the
+That is the whole master. Objective \eqref{eq:MPObjective} is
+\eqref{sb:eq:obj} with the transport term rewritten over columns:
+$c_{\omega}=\lambda^{K}cK$ for every non-empty column and
+$c_{\omega}=0$ for the empty one, so that $\sum_{\omega}c_{\omega}
+\lambda^{g}_{\omega t}$ is $\lambda^{K}z^{K}$ and the second term is
+$\lambda^{I}z^{I}$. Since every non-empty column costs the same, the
+first term is $cK$ times the number of trucks dispatched, at
+$\lambda^{K}=1$. The superscripted weights $\lambda^{K},\lambda^{I}$ of
+\eqref{sb:eq:obj} and the multipliers $\lambda^{g}_{\omega t}$ are
+different objects; both names are the ones the model and the
+decomposition carry in the literature, and they never appear in the
+same expression. Writing $c_{\omega}$ rather than $cK$ is what makes the
 empty column free, and hence usable as the slack of the count row.
 Constraints
 \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} \emph{define} the two
@@ -316,43 +401,50 @@ Two things are worth saying about what is \emph{not} there. There is no
 loading-configuration index, and so none of the model's geometric
 blocks: the master does not know what a slot is. And there is no
 variable indexed by an individual truck, so the symmetry that
-\eqref{sb:eq:sym-truck} was introduced to suppress has no
+\eqref{dec:sym-truck} was introduced to suppress has no
 representation to be suppressed in. The entire coupling between the
 transport--inventory problem and the loading problem is three families
 of rows: two definitions and one count.
 
 \begin{proposition}[equivalence]
 \label{prop:equiv}
-If $|L|$ is not restricted a priori, MP and 3D-SCPTOP have the same
-optimal value.
+MP and 3D-SCPTOP have the same optimal value.
 \end{proposition}
 \begin{proof}
 Given a 3D-SCPTOP solution, each used truck $(g,k,t)$ induces a load
 vector satisfying \eqref{eq:col-geom}--\eqref{eq:col-agg}, obtained by
-reading the slot data off the configuration it uses and setting
-$v_{in}=V^{\mathrm{slot}}_{kilnt}$; counting trucks by load vector
+reading the slot data off its own layout and setting
+$v_{in}=V_{kint}$; counting trucks by load vector
 gives a feasible MP solution, of equal cost because transport cost
 depends only on the number of used trucks and the inventory rows see
 only the aggregates, which \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve}
-reproduce. Conversely, introducing one configuration per distinct
-column used by an MP solution and assigning trucks to columns
+reproduce. Conversely, give each truck counted by an MP solution the
+layout witnessing the column it carries, assigning trucks to columns
 arbitrarily --- the blocks being identical, any assignment serves ---
-reconstructs a 3D-SCPTOP solution of the same cost, feasible because
-each column carries a witnessing placement. Assigning them in index
+which reconstructs a 3D-SCPTOP solution of the same cost, feasible
+because each column carries a witnessing placement. No catalogue has to
+be sized for this: in Section \ref{sec:model} a truck's layout is its
+own. Assigning them in index
 order makes that solution satisfy the truck-symmetry row
-\eqref{sb:eq:sym-truck} as well, so the equivalence holds whether or not
+\eqref{dec:sym-truck} as well, so the equivalence holds whether or not
 the compact model carries it.
 \end{proof}
 
-The proposition is what distinguishes this approach from a pool-based
-method such as the company procedure PLC-SCPTOP of Section
-\ref{sec:case}. A predefined pool is a \emph{restriction} of the
-problem and can only yield upper bounds of unknown quality, whereas MP
-is the same problem written differently, so any bound derived from it
-is a bound on the original. It also locates the one place where the
-compact model's $|L|$ still matters: Section \ref{sec:results}
-compares against a compact 3D-SCPTOP run at $|L|=3$, which is a
-restriction, and its dual bound accordingly bounds that restriction and
+The proposition holds unconditionally, and that is a consequence of
+how Section \ref{sec:model} is written rather than a strength of the
+decomposition: there is no catalogue of layouts to be sized, so there
+is no hypothesis about its size to carry. It is what distinguishes this
+approach from a pool-based method such as the company procedure
+PLC-SCPTOP of Section \ref{sec:case}. A predefined pool is a
+\emph{restriction} of the problem and can only yield upper bounds of
+unknown quality, whereas MP is the same problem written differently, so
+any bound derived from it is a bound on the original. The same
+qualification applies to any implementation of the compact model that
+shares a catalogue of $n_{\mathrm{LC}}$ layouts among the trucks of a
+direction: Section \ref{sec:results} compares against one run at
+$n_{\mathrm{LC}}=3$, which is a restriction of Section
+\ref{sec:model}, so its \emph{plan} is a
+legitimate comparator and its dual bound bounds that restriction and
 not $z^{\star}$.
 
 \subsection{The restricted master problem and the reduced cost}
@@ -571,11 +663,14 @@ between them is a genuine optimality gap for the 3D problem.
 By the Blocks and Classes steps of Section \ref{sec:decomp} the pricing
 problem of class $(g,t)$ \emph{is} the block of 3D-SCPTOP with the
 quantifier over $\mathcal{B}$ removed: the same rows, with the direction
-$g$ supplying the data and the master supplying the duals. Nothing has
-to be invented for it, and nothing of the geometry is left behind in
-the master. There is one such problem per direction, written
-$(\mathrm{PP}^{g})$; the periods of a direction share it and differ only
-in $\pi$ and $\mu$.
+$g$ supplying the data and the master supplying the duals. Table
+\ref{tab:rowmap} is the correspondence. Nothing has to be invented for
+it, and nothing of the geometry is left behind in the master. There is
+one such problem per direction, written $(\mathrm{PP}^{g})$; the periods
+of a direction share it and differ only in $\pi$ and $\mu$. One row of
+the block does not survive the deletion unchanged --- the dispatch row
+\eqref{sb:eq:lc-active}, whose two binaries are identified below --- and
+the reason is given with \eqref{bp:PP-utilw}.
 
 Let $\mathcal{I}$ index the slots, bounded by \eqref{sb:eq:Ibound}, and
 drop the block index from the compact model's variables. Table
@@ -663,38 +758,59 @@ At $Z=1$ exactly one of the two is active and the other is vacuous, so
 strictly weaker and would accept a trailer $35\%$ full by volume and
 $20\%$ by weight.
 
-These two rows are also why the block needs no second binary. The
-compact model distinguishes the configuration being designed from a
-truck being dispatched under it \eqref{sb:eq:lc-active}, and the
-pricing problem inherited that distinction; but
-\eqref{bp:PP-util}--\eqref{bp:PP-utilw} is written on the
-\emph{load}, so at $Z=1$ the block must ship at least $\alpha$ of one
-resource and a designed-but-empty truck is infeasible. The dispatch
-binary was therefore equal to $Z$ at every feasible point and
-redundant, and deleting it is a simplification of the formulation and
-not a change to the problem it states. It is worth doing: as two
-variables, $Z=1$ with no truck dispatched admitted a family of
-zero-image, zero-cost points with the slot, orientation and
-non-overlap variables all still free, which is a symmetry a big-$M$
-packing model solved in the inner loop can ill afford. In
-Dantzig--Wolfe the column \emph{is} a truck and how many trucks take it
-is what $\lambda$ counts in the master, so one binary in the block is
-the right number.
+These two rows are where the block's second binary goes, and the
+argument is worth stating because deleting a variable from a
+formulation is a claim about its feasible set. Section \ref{sec:model}
+carries two binaries per truck: $Z_{gkt}$, the truck is configured, and
+$Y_{gkt}$, the truck is dispatched, related by \eqref{sb:eq:lc-active}.
+With no loading-configuration index they differ at exactly one kind of
+point, $Z=1$ with $Y=0$: a truck that carries a layout and no freight.
+By \eqref{fix:slot-link}--\eqref{fix:empty-link} its image is $0$, and
+by \eqref{sb:eq:obj-zK} its cost is $0$ --- which are precisely the
+image and the cost of the empty column $Z=Y=0$. The map from feasible
+points to columns therefore sends every such point to a column the
+block already has, so identifying the two binaries removes points
+without removing a single element of $\Omega^{g}$, and the master,
+which sees only images and costs, cannot tell the difference. The
+block below keeps $Z$, charges it $cK\cdot Z$, and hangs every load
+gate on it.
 
-Two redundant rows written on the stack
-\emph{capacity} rather than on the load,
+It is worth doing rather than merely harmless. As two variables, $Z=1$
+with $Y=0$ admitted a whole family of zero-image, zero-cost points with
+the slot, orientation and non-overlap variables still free --- a
+symmetry that a big-$M$ packing model solved in the inner loop can ill
+afford. And it says something true about the reformulation: in
+Dantzig--Wolfe the column \emph{is} a truck, and how many trucks take
+it is what $\lambda$ counts in the master, so a second ``is it used''
+binary inside the block asks a question the master already answers. One
+binary is the right number. (The same observation licenses fixing $Z=1$
+when the empty column is wanted out of the way: the empty column is one
+analytically known point, of image $0$, cost $0$ and reduced cost
+$-\mu_{gt}\ge0$, so it never prices in.)
+
+Four redundant rows are available, two on the layer \emph{capacity}
+rather than on the load and two on the occupied floor area:
 \begin{align}
   & \sum_{h,\,r \in R(h)} \gamma_{gr}\,n_{hr}\,\overline{L}_{hr}
       \;\ge\;\alpha\,\Gamma_{K}\,(Z-1+\theta), \qquad
+    \sum_{h,\,r \in R(h)} \omega_{gr}\,n_{hr}\,\overline{L}_{hr}
+      \;\ge\;\alpha\,\mathit{pK}^{w}\,(Z-\theta),
+    \notag\\
+  & \sum_{i}\sum_{h} p_{h}q_{h}X_{ih} \;\le\; \mathit{pK}\cdot\mathit{qK},
+    \qquad
     \sum_{i}\sum_{h} p_{h}q_{h}X_{ih}
-      \;\ge\;\alpha\,\mathit{pK}\cdot\mathit{qK}\,(Z-1+\theta),
+      \;\ge\;\alpha\,\mathit{pK}\cdot\mathit{qK}\,(Z-1+\theta).
     \label{bp:PP-areacut}
 \end{align}
-are implied by \eqref{bp:PP-util} --- the load never exceeds the
-capacity, and a slot contributes at most its footprint area times
-$rK$ of volume --- and are added because they are what lets a solver
-find a \emph{first} feasible layout quickly, which on tight instances
-is harder than optimising once one is known.
+The first pair is \eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap} with
+the block index dropped, implied by \eqref{bp:PP-util} because the load
+never exceeds the capacity; the second says that the footprints lie on
+the floor and that a slot contributes at most its footprint area times
+$rK$ of volume, so a truck full by volume has at least $\alpha$ of its
+floor occupied. All four are implied, and any of them may be added to
+help a solver find a \emph{first} feasible layout, which on tight
+instances is harder than optimising once one is known. The oracles
+behind Section \ref{sec:results} carry the second pair.
 
 The direction of that implication is the whole point, and it is worth
 being explicit because the reverse is tempting and wrong. Writing the
@@ -702,20 +818,21 @@ floor on the stack capacity \emph{alone}, with a per-type weight in
 place of the product's own, gives a strictly weaker condition: it admits
 a point whose stacks could have been filled to the floor but whose
 actual load falls below it, and such a point is not a column. A row over
-a concrete load must use that load's own product weights; only a
-design-time row that does not yet know which products will ride in the
-stack may use the heaviest the family can carry, and then only because
-the product-exact condition is imposed later. Getting this backwards is
+a concrete load must use that load's own product weights; only a row
+written on the layer capacity, which does not yet know which products
+will ride in the stack, may use the heaviest the family can carry, and
+then only because the product-exact condition is imposed alongside
+it. Getting this backwards is
 silent in both directions --- the family maximum in a per-load floor
 passes trucks that are not full, and the family minimum in a
-design-time floor cuts off feasible ones.
+capacity floor cuts off feasible ones.
 
 \subsubsection*{The direction-specific rows}
 \label{sec:pp-dir}
 
 Plant-bound, $g=\mathrm{p}$, with $\mathrm{image}_{n}=\overline{V}_{n}$
-and $\bar u^{V}_{n}$ any valid upper bound on a truck's count of
-product $n$:
+and $\bar u^{V}_{n}$, $\bar u^{\mathrm{e}}_{r}$ the analytic slot and
+truck bounds of Section \ref{sec:model}:
 \begin{align}
   & \sum_{n \in M(r)} V_{in} \;\le\; \sum_{h\,:\,r \in R(h)} n_{hr}\,L_{ihr}
     && \forall i \in \mathcal{I},\, r \in R \label{bp:PP-p-slot-cap}\\
@@ -1157,35 +1274,92 @@ such comparison is offered.
 \subsection{The fleet tree}
 \label{sec:branching}
 
-Branching on the master's own variables is the obvious rule and the
-wrong one here. Bounding one $\lambda^{g}_{\omega t}$ removes one load
-from the relaxation, but a Dantzig--Wolfe master of this kind holds many
-columns that differ only in detail, so the relaxation answers by
-shifting the same fractional weight onto a near-identical column: the
-bound $\lambda^{g}_{\omega t}\le\lfloor\lambda^{\star}\rfloor$ excludes
-one point of $\Omega^{g}$ from a set whose remaining points include many
+What may be branched on is decided before anything else, and it is
+decided by the criterion of Section \ref{sec:rmp}: a row
+$\sum_{\omega}f(\omega)\,\lambda^{g}_{\omega t}\lessgtr\beta$ added to
+the master is \emph{robust} --- it changes the duals and nothing else,
+leaving the pricing problem structurally untouched --- exactly when
+$f$ is constant within a class or affine in the column's image. The
+branching hierarchy used here is read off that criterion rather than
+chosen and then justified, and it has three rungs.
+
+\begin{enumerate}
+\item \textbf{$f\equiv1$: counts of dispatches.} Any bound on a sum of
+  $\lambda^{g}_{\omega t}$ with unit coefficients is robust, because its
+  dual folds into $\mu_{gt}$ exactly as the count row
+  \eqref{bp:MP-count} does and the pricing objective
+  \eqref{bp:PP-objective} is unchanged. The aggregates available at
+  this rung are the per-class dispatch total
+  $\overline{\lambda}_{gt}=\sum_{\omega}\lambda^{g}_{\omega t}$, any
+  subset sum of them, and in particular the total fleet
+  $X=\sum_{g,t}\overline{\lambda}_{gt}$. All are integer in every plan,
+  so a fractional one is a genuine violation to branch on.
+\item \textbf{$f$ affine in the image: deliveries.} The aggregates
+  $\overline{V}_{nt}=\sum_{\omega}b_{\omega n}\lambda^{p}_{\omega t}$
+  and $\overline{V^{\mathrm{e}}}_{rt}$ have $f(\omega)=b_{\omega n}$,
+  which is affine (indeed linear) in the image, so a bound on them is
+  robust as well: its dual is absorbed into $\pi_{nt}$, which is a price
+  on the image and therefore already an input of the pricing problem.
+  These are continuous variables of the relaxation, but they count
+  physical RTIs and are integer in any plan, so they too may carry a
+  dichotomy.
+\item \textbf{Everything else: column variables.} Bounding a single
+  $\lambda^{g}_{\omega t}$ has $f=\mathbf{1}[\omega=\omega_{0}]$, which
+  is neither constant within the class nor affine in the image. Such a
+  row is \emph{not} robust: honouring it requires excluding $\omega_{0}$
+  from the pricing problem's feasible set, which the subproblem must be
+  told about and which destroys the property that one column set serves
+  every period of a direction.
+\end{enumerate}
+
+The third rung is useless here as well as non-robust, which settles the
+matter. Bounding
+one $\lambda^{g}_{\omega t}$ removes one load from the relaxation, but a
+Dantzig--Wolfe master of this kind holds many columns that differ only
+in detail, so the relaxation answers by shifting the same fractional
+weight onto a near-identical column: the bound
+$\lambda^{g}_{\omega t}\le\lfloor\lambda^{\star}\rfloor$ excludes one
+point of $\Omega^{g}$ from a set whose remaining points include many
 differing from it in a single RTI, so the child's LP value moves by
 almost nothing and the fractionality reappears one column over. The
 depth needed to exhaust that family grows with the pool, which is what
-makes the rule unusable here rather than merely slow. Branching on a
-per-period dispatch total has no symmetric
-twin, but it has an escape of its own: the relaxation answers a bound on
-one period by moving a truckload into a neighbouring period, at the
-price of one period's holding cost, so the bound barely moves.
+makes the rule unusable here rather than merely slow. Run to exhaustion
+on one benchmark instance with the pool frozen, it branched $3\,000$
+times without ever producing an integral relaxation.
+% Provenance of the 3000: sec_reformulation_blue.tex:478-480, CLAUDE.md
+% ("Branch on aggregates, not on column variables") and the comment at
+% src/rti3d/tree.py:185.  One instance, pool frozen; it is a diagnosis of the
+% rule, not a benchmark row.  The three sources agree on 3000 and disagree on
+% the second figure -- "depth 1971" in the first two, "1955 still open" in the
+% third -- so no second figure is printed.
 
-We therefore branch on the \emph{fleet}. With $n_{gt}$ the dispatch
-total of direction $g$ in period $t$, let $\mathbf{n}=(n_{gt})_{g,t}$ be
-the fleet vector and $X:=\sum_{g,t}n_{gt}$ the total fleet. Both are
-integer in every plan, and every bound placed on them is a row of the
-master of the robust kind identified in Section \ref{sec:rmp} --- $f$
-constant within a class --- so the pricing problems are untouched. Given
-an incumbent plan with fleet vector $\mathbf{n}^{\star}$ and total
-$X^{\star}$, the tree has two levels that ask different questions;
-Figure~\ref{fig:branching} draws them.
+That leaves the first two rungs, and between them the first is the one
+that binds. Transport cost is $cK\cdot X$ and nothing else in the
+objective counts trucks, so a bound on a dispatch count is a bound on
+cost directly, whereas a bound on a delivery is answered by the
+relaxation moving freight between periods at the price of one period's
+holding cost --- and a bound on a \emph{single} period's dispatch total
+is answered the same way, by moving a truckload into a neighbouring
+period. The aggregate that has no such escape is the total over the
+whole horizon.
+
+We therefore branch on the \emph{fleet}. With $n_{gt}=\overline{\lambda}_{gt}$
+the dispatch total of direction $g$ in period $t$, let
+$\mathbf{n}=(n_{gt})_{g,t}$ be the fleet vector and
+$X:=\sum_{g,t}n_{gt}$ the total fleet. Every bound placed on either is
+a rung-one row and the pricing problems are untouched. Given an
+incumbent plan with fleet vector $\mathbf{n}^{\star}$ and total
+$X^{\star}$, the tree has two levels that ask different questions ---
+level 1 on the total, level 2 on the vector --- and they are exactly
+the two aggregates of rung one, in the order the paragraph above puts
+them. Figure~\ref{fig:branching} draws them. The delivery rung is kept as a
+third level of the tree, entered only where the first two have nothing
+left to say: a region that fixes the whole fleet vector and whose
+relaxation is still fractional.
 
 \paragraph{Level 1: the total fleet.}
-Transport cost is exactly $cK\cdot X$, so a bound on the total has
-nothing to compensate it. Three regions partition the space:
+A bound on the total fleet has nothing to compensate it, as above.
+Three regions partition the space:
 \begin{itemize}
 \item $X\ge X^{\star}+1$ costs a whole truck with no offset. A plan in
   it improves on the incumbent only if the extra truck saves more than
@@ -1409,25 +1583,26 @@ invisible at $lt=1$.
 
 \paragraph{Inventory recursion under a lead time.}
 Constraints \eqref{sb:eq:inv-plant-main} and
-\eqref{sb:eq:inve-sup-main} as originally written carry inventory
-forward from period $t-lt$, whereas inventory accumulates one period at
-a time and only the \emph{arrival} is delayed. They must read
+\eqref{sb:eq:inve-sup-main} carry inventory forward from period $t-1$
+and delay only the \emph{arrival}, which is what the physical system
+does. An earlier statement of the model carried the stock itself
+forward from $t-lt$,
 \begin{align}
-I_{pnt}  &=I_{p,n,t-1}-d_{pnt}+Q_{n,t-lt}
+I_{pnt}  &=I_{p,n,t-lt}-d_{pnt}+\overline{V}_{n,t-lt}
     &&\forall n\in N,\; t\ge lt+1,
     \label{eq:fix-plant}\\
-Ie_{str} &=Ie_{s,t-1,r}+Q_{r,t-lt}-\textstyle\sum_{n\in M(r)} d_{snt}
-    &&\forall r\in R,\; t\ge lt+1.
+Ie_{str} &=Ie_{s,t-lt,r}+\overline{V^{\mathrm{e}}}_{r,t-lt}
+          -\textstyle\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t\ge lt+1,
     \label{eq:fix-sup}
 \end{align}
-With $lt=1$ the two versions coincide, which is why the defect survived;
-with $lt\ge2$ the original silently discards $lt-1$ periods of stock.
-Every model in this paper is run at $lt=1$, so no reported number
-changes either way; the correction is recorded because the formulation
-is the contribution.
+which silently discards $lt-1$ periods of stock. With $lt=1$ the two
+versions coincide, which is why the defect survived; every model in
+this paper is run at $lt=1$, so no reported number changes either way.
+The correction is recorded because the formulation is the contribution.
 
 \paragraph{Coverage stock on folded RTIs.}
-Constraint \eqref{sb:eq:safety} requires $Ie_{gtr}\ge ss_{gtr}$ at
+Constraint \eqref{sb:eq:safety-empty} requires $Ie_{gtr}\ge sse_{gtr}$ at
 \emph{both} nodes, and every model in this paper enforces it that way:
 the master of Section \ref{sec:mp}, the volumetric benchmark of
 Appendix \ref{appendix:A}, the company procedure PLC-SCPTOP and the

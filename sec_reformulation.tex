@@ -9,7 +9,7 @@
 %      This section follows it; the row-by-row correspondence between the two
 %      is Table \ref{tab:rowmap}.
 %
-%  FIVE departures are deliberate.  The first two are editorial, the rest are
+%  SIX departures are deliberate.  The first two are editorial, the rest are
 %  substantive and are argued in the text where they occur.
 %    * a column is indexed by omega rather than p, because p is already the plant
 %      direction and p_h the length of a footprint;
@@ -39,6 +39,13 @@
 %      \eqref{bp:PP-utilw}: with no loading-configuration index the only points
 %      at which Y and Z differ are Z=1, Y=0, whose image and cost are those of
 %      the empty column, so the set of column images is unchanged.
+%    * the base model leaves gamma_gr, p_h, q_h, n_hr as independent data.
+%      Section 4 adds the footprint consistency n_hr a_r = p_h q_h and
+%      gamma_gr = a_r r_gr as a declared data assumption (sb:sec:symm), because
+%      two arguments need it and are false without it: the volumetric inclusion
+%      of Proposition \ref{prop:inclusion}, and the area floor \eqref{bp:PP-areacut},
+%      which can cut feasible layouts if a layer does not tile its footprint.
+%      Both instance families satisfy it (one stack type per RTI footprint).
 %
 \section{Dantzig--Wolfe reformulation and branch and price}
 \label{sec:math}
@@ -281,7 +288,7 @@ $\ell_{ir}$ and per-slot product loads $v_{in}$ such that
    &&\forall i\le m,
    \label{eq:col-height}\\
 &\textstyle\sum_{n\in M(r)} v_{in}\;\le\;n_{h_{i}r}\ell_{ir}
-   &&\forall i\le m,\;r\in R(h_{i}),
+   &&\forall i\le m,\;r\in R,
    \label{eq:col-assign}\\
 &\textstyle\sum_{n\in N} w_{n}v_{in}\;\le\;W^{\max}
    &&\forall i\le m,
@@ -299,7 +306,14 @@ Conditions \eqref{eq:col-geom}--\eqref{eq:col-agg} are
 \eqref{sb:eq:nonov-x1}--\eqref{sb:eq:cont-y}, \eqref{sb:eq:height},
 \eqref{sb:eq:slot-cap}, \eqref{sb:eq:stack-w-plant},
 \eqref{sb:eq:truck-w-plant} with \eqref{sb:eq:util-p}--\eqref{sb:eq:utilw-p},
-and \eqref{sb:eq:agg-Vk}, read on a single truck. In particular
+and \eqref{sb:eq:agg-Vk}, read on a single truck. The quantifier of
+\eqref{eq:col-assign} is \eqref{sb:eq:slot-cap}'s own: $r$ runs over all
+of $R$, with $n_{h_{i}r}\ell_{ir}$ read as $0$ for $r\notin R(h_{i})$,
+so a slot carries only the RTI types its stack type accepts. Restricting
+it to $r\in R(h_{i})$ would leave an incompatible product unbounded in
+the slot and admit columns with no compact realisation, which is exactly
+the case \eqref{sb:eq:slot-cap} covers by quantifying over $R$ and
+letting its right-hand side be an empty sum. In particular
 \eqref{eq:col-assign} is an inequality, as \eqref{sb:eq:slot-cap} is: a
 layer may be partly filled. Both pricing oracles impose it as an
 equality instead, which is exact on every instance solved here because
@@ -320,8 +334,9 @@ depends only on its type, so the per-slot crush condition reads
 \end{equation}
 which is \eqref{sb:eq:stack-w-sup}, and $e_{\omega r}\le\sum_{i\le m}
 n_{h_{i}r}\ell_{ir}$ replaces \eqref{eq:col-assign} and
-\eqref{eq:col-agg}, which is \eqref{sb:eq:empty-cap} with
-\eqref{sb:eq:agg-Ve}. \eqref{eq:col-geom} and \eqref{eq:col-height}
+\eqref{eq:col-agg}, which is \eqref{sb:eq:empty-cap}, whose right-hand
+side is \eqref{sb:eq:agg-L}; the supplier needs no per-truck aggregate,
+because $V^{\mathrm{e}}_{krt}$ is already the truck's own load. \eqref{eq:col-geom} and \eqref{eq:col-height}
 carry over on folded heights and \eqref{eq:col-truck} on folded weights
 and volumes. \eqref{eq:col-geom}--\eqref{eq:col-agg} is used from here
 on as the name of the column conditions of \emph{either} direction,

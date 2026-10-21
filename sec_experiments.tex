@@ -748,7 +748,10 @@ dispatches $724$ truck loads. Of those, $501$ ($69.2\%$) are
 $174$ ($24.0\%$) are left undecided within the limit. The undecided
 share must be read with the other two, and it is not noise: a
 constraint programme cannot decide easy loads quickly either, and the
-undecided counts of Table~\ref{tab:bench} are where that shows. What the census
+last column of Table~\ref{tab:bench} reports the count per instance ---
+not to be confused with the \emph{und.}\ column under
+\emph{partition}, which counts compositions the construction proposed
+rather than loads SCPTOP dispatched. What the census
 supports is therefore a statement about the loads it \emph{decided}:
 of the $550$ loads decided either way, $91.1\%$ cannot be placed.
 
@@ -760,6 +763,16 @@ discovers the shortfall on the loading dock, not in the model. By
 granularity the shares are $91.8\%$ proved unplaceable at $v=60$ (with
 only $2.7\%$ undecided, so that row is nearly fully decided), $55.2\%$
 at $v=90$ and $66.7\%$ at $v=120$.
+
+The two ladder instances on which the crush limit binds give the same
+finding with no undecided caveat at all, because there the oracle
+decided every load. On $I\_16\_15\_2\_90\_k25$, where the volumetric
+plan is the \emph{proved} optimum, $41$ of its $45$ dispatched loads are
+proved unplaceable and four are placeable, none undecided; on
+$I\_24\_20\_2\_90\_k50$ it is $119$ of $137$, again none undecided. A
+volumetric optimum can therefore be a plan nine tenths of which cannot
+be loaded, and that statement rests on a complete audit rather than on
+a share of the decided.
 
 \paragraph{The mechanism.}
 The error of a volumetric capacity is governed by how much it
@@ -788,12 +801,15 @@ stated budget.
 
 \paragraph{The layer ratio alone does not predict it, and we say so.}
 It is tempting to turn the mechanism into a one-number test, and the
-obvious candidate fails. Over eighteen generated instances --- the
-benchmark generator's, with product weights scaled to move the dose and
-nothing else altered, so footprints, heights, demands and seeds are
-held fixed --- the share of a volumetric plan's own dispatched loads
-that a placeability proof rejects correlates at only $0.42$ with the
-ratio of height-limited to crush-limited layer counts. The sweep
+obvious candidate fails. The sweep is eighteen generated instances: three seeds crossed with six
+dose levels, where the dose is a scaling of the product weights alone,
+so that within a seed the footprints, heights and demands are identical
+across the six levels and only the weights move. Over those eighteen,
+the share of a volumetric plan's own dispatched loads that a
+placeability proof rejects correlates at only $0.42$ with the ratio of
+height-limited to crush-limited layer counts. Three of the eighteen
+volumetric solves stopped on their time limit rather than at
+optimality, which affects which plan was audited but not the audit. The sweep
 contains three instances at $0\%$ with that ratio between $0.98$ and
 $1.25$, and one at $90.9\%$ with the ratio at $1.08$. The ratio is part
 of the mechanism and is not a predictor of the share, and a predictor
@@ -844,18 +860,50 @@ reported for contrast and is \emph{not} used as the comparison, because
 consolidation is worth twelve and forty-four trucks and a planner would
 do it.
 
-\begin{center}\small
+\begin{table}[!htbp]
+\centering
+\small
+\caption{\textbf{What volumetric planning costs, constructed rather than
+estimated.} Trucks dispatched, on the two instances where the per-stack
+crush limit binds. Row 1 is the volumetric benchmark's own plan, which
+is not executable: $41$ of its $45$ dispatched loads on the first
+instance and $119$ of its $137$ on the second are \emph{proved}
+unplaceable, with \emph{none} left undecided on either, so those two
+rows are fully decided and the shares --- $91.1\%$ and $86.9\%$ ---
+carry no undecided caveat. Row 2 splits each unplaceable
+load where it stands, with no consolidation; it is reported for
+contrast and is \emph{not} the comparison, because consolidation is
+worth twelve and forty-four trucks. Row 3 is the comparison: the
+volumetric plan's delivery quantities kept exactly, each period
+re-packed with the same partition-and-pack machinery the method uses,
+every resulting truck verified. Row 4 is MATH-3D-SCPTOP, which also
+chooses the quantities. The volumetric plan on
+$I\_24\_20\_2\_90\_k50$ is a \emph{memory stop} and not an optimum
+($200\,266.21$, Table~\ref{tab:volumetric}), so a better volumetric
+plan might repair into fewer than $212$ trucks and that row's margin is
+overstated by an unquantified amount in the method's favour; the
+$I\_16\_15\_2\_90\_k25$ plan is the proved volumetric optimum and
+carries no such caveat.}
+\label{tab:repack}
+% results/volumetric_loads_recheck.json (pack_tl 60 s, oracle
+% feasibility.pack_witness, every placed witness re-verified by verify_column):
+%   I_16_15_2_90_k25  source compact_ref (OPTIMAL 68139.17), dispatched 45,
+%     dispatched_placed 4, dispatched_unplaceable 41, dispatched_undecided 0
+%   I_24_20_2_90_k50  source compact_ref (MEM_LIMIT 200266.21), dispatched 137,
+%     dispatched_placed 18, dispatched_unplaceable 119, dispatched_undecided 0
+% results/repacked_volumetric.json for rows 2-4 (loadlocal_trucks, repacked_trucks,
+%   method_trucks; pairs_unpacked 0 and complaints 0 on both instances).
 \begin{tabular}{lrr}
 \toprule
  & $I\_16\_15\_2\_90\_k25$ & $I\_24\_20\_2\_90\_k50$ \\
 \midrule
 volumetric plan (not executable)      & 45  & 137 \\
-repaired load by load                 & 86  & 256 \\
+repaired load by load (contrast only) & 86  & 256 \\
 \textbf{re-packed, quantities kept}   & \textbf{74} & \textbf{212} \\
 \textbf{MATH-3D-SCPTOP} (which also chooses the quantities) & \textbf{54} & \textbf{160} \\
 \bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
 Against the re-packed baseline the method uses $27.0\%$ and $24.5\%$
 fewer trucks and costs $19.1\%$ and $16.2\%$ less, with no pair left

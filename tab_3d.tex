@@ -224,35 +224,41 @@ and~\ref{tab:3d-head} ran at. No row of this table \emph{is} a row of
 that campaign: these are earlier commits, kept because they isolate one
 decision each, and they are not compared with it on time. Every plan is
 verified truck by truck; the bound is the certified volumetric
-relaxation in every row.}
+relaxation in every row. \emph{commit} is the code revision each row ran
+on, read from the run's own record: no two rows of this table share one,
+so no pair of rows is a controlled comparison of anything but the knob
+its row changes, and the $0.012\%$ between the two
+$I\_12\_12\_2\_90\_k25$ rows is not a run-to-run spread on one
+configuration. The measured spread on that instance is reported in
+Section~\ref{sec:res-3d}.}
 \label{tab:pool}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llllllrrrrrrr}
+\begin{tabular}{llllllrrrrrrrl}
 \toprule
-Instance & pool & rung & integer stacks & order & reserve & cap (GB) & $z$ & trucks & first hit (s) & budget (s) & nodes / open & LB (cert.) \\
+Instance & pool & rung & integer stacks & order & reserve & cap (GB) & $z$ & trucks & first hit (s) & budget (s) & nodes / open & LB (cert.) & commit \\
 \midrule
 % results/fleet_tree_3d/tree_3d_I_8_5_2_90_thr10_policy.json (seeded, root CG 5%, soft_mem_gb 4, commit 773f8cf; 18796.96 / 12 at 48.5 s, 455 s, 219 nodes, 0 open)
-$I\_8\_5\_2\_90$ & seeded by hand (reference) & no & no & $X=X^{\star}$ first & 15\% & 4 & 18\,796.96 & 12 & 48.5 & 900 & 219 / 0 & 18\,795.54 \\
+$I\_8\_5\_2\_90$ & seeded by hand (reference) & no & no & $X=X^{\star}$ first & 15\% & 4 & 18\,796.96 & 12 & 48.5 & 900 & 219 / 0 & 18\,795.54 & \texttt{773f8cf} \\
 % results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_cg0.15_900.json (pure, soft_mem_gb 4, commit 5390e6c; 19682.36 / 13, first hit "172.2 NEW INCUMBENT 19682.36", 170 nodes, 10 open)
-$I\_8\_5\_2\_90$ & pure & no & no & $X=X^{\star}$ first & 15\% & 4 & 19\,682.36 & 13 & 172.2 & 900 & 170 / 10 & 18\,795.54 \\
+$I\_8\_5\_2\_90$ & pure & no & no & $X=X^{\star}$ first & 15\% & 4 & 19\,682.36 & 13 & 172.2 & 900 & 170 / 10 & 18\,795.54 & \texttt{5390e6c} \\
 % results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_900.json (pure + ladder, soft_mem_gb 20, commit 1d4ccbe; 19682.36 / 13 at 140.3 s, 180 nodes, 9 open)
-$I\_8\_5\_2\_90$ & pure & yes & no & $X=X^{\star}$ first & 15\% & 20 & 19\,682.36 & 13 & 140.3 & 900 & 180 / 9 & 18\,795.54 \\
+$I\_8\_5\_2\_90$ & pure & yes & no & $X=X^{\star}$ first & 15\% & 20 & 19\,682.36 & 13 & 140.3 & 900 & 180 / 9 & 18\,795.54 & \texttt{1d4ccbe} \\
 % results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_tree2_900.json (pure + ladder + integer stacks + ratchet first, soft_mem_gb 20, commit bdd39ca; 18796.96 / 12 at 139.9 s, 170 nodes, 5 open)
-$I\_8\_5\_2\_90$ & pure & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 18\,796.96 & 12 & 139.9 & 900 & 170 / 5 & 18\,795.54 \\
+$I\_8\_5\_2\_90$ & pure & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 18\,796.96 & 12 & 139.9 & 900 & 170 / 5 & 18\,795.54 & \texttt{bdd39ca} \\
 % results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_900.json (as above plus volumetric region certificates, commit 4fe6dc6; 18796.96 / 12 at 140.2 s, 135 nodes, 4 open, wall 779.6)
-$I\_8\_5\_2\_90$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 18\,796.96 & 12 & 140.2 & 900 & 135 / 4 & 18\,795.54 \\
+$I\_8\_5\_2\_90$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 18\,796.96 & 12 & 140.2 & 900 & 135 / 4 & 18\,795.54 & \texttt{4fe6dc6} \\
 % results/fleet_tree_3d/tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json (18796.96 / 12 at 185.4 s, 147 nodes / 7 open, wall 890.2, frontier_share 0.03)
-$I\_8\_5\_2\_90$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 3\% & 20 & 18\,796.96 & 12 & 185.4 & 900 & 147 / 7 & 18\,795.54 \\
+$I\_8\_5\_2\_90$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 3\% & 20 & 18\,796.96 & 12 & 185.4 & 900 & 147 / 7 & 18\,795.54 & \texttt{4fe6dc6} \\
 \midrule
 % results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_900.json (38859.44 / 26 at 420.8 s, 18 nodes / 7 open, wall 774.6, frontier_share 0.15)
-$I\_8\_10\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 38\,859.44 & 26 & 420.8 & 900 & 18 / 7 & 38\,791.14 \\
+$I\_8\_10\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 38\,859.44 & 26 & 420.8 & 900 & 18 / 7 & 38\,791.14 & \texttt{4fe6dc6} \\
 % results/fleet_tree_3d/tree_3d_I_8_10_2_90_k25_pure_ladder_vcert_fs003_900.json (38855.70 / 26 at 481.9 s, 30 nodes / 5 open, wall 882.7, frontier_share 0.03)
-$I\_8\_10\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 3\% & 20 & 38\,855.70 & 26 & 481.9 & 900 & 30 / 5 & 38\,791.14 \\
+$I\_8\_10\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 3\% & 20 & 38\,855.70 & 26 & 481.9 & 900 & 30 / 5 & 38\,791.14 & \texttt{4fe6dc6} \\
 \midrule
 % results/fleet_tree_3d/tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_1800.json (52129.91 / 34 at 1515.3 s, 12 nodes / 9 open, wall 1560.8, frontier_share 0.15)
-$I\_12\_12\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 52\,129.91 & 34 & 1\,515.3 & 1\,800 & 12 / 9 & 52\,105.25 \\
+$I\_12\_12\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 15\% & 20 & 52\,129.91 & 34 & 1\,515.3 & 1\,800 & 12 / 9 & 52\,105.25 & \texttt{4fe6dc6} \\
 % results/fleet_tree_3d/tree_3d_I_12_12_2_90_k25_pure_ladder_vcert_fs003_1800.json (52123.03 / 34 at 1691.9 s, 17 nodes / 11 open, wall 1770.3, frontier_share 0.03)
-$I\_12\_12\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 3\% & 20 & 52\,123.03 & 34 & 1\,691.9 & 1\,800 & 17 / 11 & 52\,105.25 \\
+$I\_12\_12\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 3\% & 20 & 52\,123.03 & 34 & 1\,691.9 & 1\,800 & 17 / 11 & 52\,105.25 & \texttt{4fe6dc6} \\
 \bottomrule
 \end{tabular}}
 \end{table}

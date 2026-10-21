@@ -2,7 +2,11 @@
 % Fleet-tree rows: results/hp/tree_<instance>.json.  These runs recorded no
 % configuration; results/hp/provenance.json recovers it AFTER THE FACT from the
 % launcher scripts and journal excerpts (level "recovered"): time limit 1800 s,
-% 10 threads, Murty depth 6, step-2 limit 300 s, and the 4 GB default per-model
+% 10 threads ASKED FOR BUT NOT APPLIED (fleet_tree.py before 9e57df7 built its
+% models on a fresh gp.Env, which does not inherit Threads from the default
+% environment, so every model ran on all 12 cores of the machine; these runs are
+% 2026-09-09, the fix is 2026-09-14), Murty depth 6, step-2 limit 300 s, and the
+% 4 GB default per-model
 % memory cap, since no launcher set RTI3D_SOFT_MEM_GB and systemd-run does not
 % inherit a terminal environment.  Seed and commit are not established by
 % anything on disk.  The k80 row's time limit is not established either and is
@@ -10,9 +14,10 @@
 % Compact rows: results/compact_ref/compact_ref_<instance>.json, each with a
 % config block written by the run: 3600 s (1800 s on I_8_5_2_90), MIP gap 0,
 % 10 threads, 20 GB per model, seed 0.
-% The budgets are NOT equal and the asymmetry favours the compact model on
-% every row with a known tree budget: it had twice the time and five times the
-% memory.  The caption says so.
+% The budgets are NOT equal.  On TIME and MEMORY the asymmetry favours the
+% compact model on every row with a known tree budget: it had twice the time and
+% five times the memory.  On CORES it favours the tree, 12 against 10, for the
+% reason recorded above.  The caption says both.
 
 \begin{table}[!htbp]
 \centering
@@ -33,10 +38,15 @@ $3\,600$ s and a $20$ GB per-model cap; the fleet-tree runs recorded
 none, and their configuration is \emph{recovered} after the fact from
 their launchers (marked $^{\sim}$) as $1\,800$ s with the $4$ GB default
 cap, with no seed or commit established and, on the last row, no time
-limit established either (marked $^{!}$). The asymmetry runs against the
-fleet tree on every row where its budget is known, so a row on which it
-is cheaper is not a budget artefact; a row on which it is dearer may
-be.}
+limit established either (marked $^{!}$). On time and memory the asymmetry runs
+against the fleet tree on every row where its budget is known. On cores
+it runs the other way, and the table marks it $^{\dagger}$: the
+launcher asked for ten threads, but the implementation built each model
+on a fresh Gurobi environment, which does not inherit that setting, so
+these runs used all twelve cores of the machine against the compact
+model's ten. A row on which the fleet tree is cheaper is therefore not
+a time or a memory artefact, but neither is any row here a timing
+claim; a row on which it is dearer may be a budget artefact.}
 \label{tab:volumetric}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrrlrrrrr}
@@ -46,11 +56,11 @@ be.}
 Instance & $z$ & bound & trucks & $t$ (s) & $z$ & bound (cert.) & trucks & $t$ (s) & $\Delta z$ (\%) & tighter bound \\
 \midrule
 $I\_8\_5\_2\_90$ & 18\,796.96\,\textsc{opt} & 18\,796.96 & 12 & 0.2 & \emph{not run} & --- & --- & --- & --- & --- \\
-$I\_8\_10\_2\_90\_k25$ & 38\,855.65$^{\mathrm{m}}$ & 38\,851.93 & 26 & 3243 & 38\,853.39$^{\mathrm{t}}$ & 38\,791.14 & 26 & 1817 & $-0.0058$ & 38\,851.93 (compact) \\
-$I\_16\_15\_2\_90\_k25$ & 68\,139.17\,\textsc{opt} & 68\,139.17 & 45 & 1349 & 68\,139.59$^{\mathrm{t}}$ & 68\,131.43 & 45 & 1897 & $+0.0006$ & 68\,139.17 (compact) \\
-$I\_16\_15\_2\_90\_k50$ & 134\,346.91$^{\mathrm{m}}$ & 133\,417.47 & 89 & 1113 & 133\,503.74$^{\mathrm{t}}$ & 133\,484.32 & 88 & 1827 & $-0.6276$ & 133\,484.32 (DW) \\
-$I\_24\_20\_2\_90\_k50$ & 200\,266.21$^{\mathrm{m}}$ & 199\,518.04 & 137 & 2088 & 200\,047.54$^{\mathrm{t}}$ & 200\,013.41 & 137 & 1854 & $-0.1092$ & 200\,013.41 (DW) \\
-$I\_24\_20\_2\_90\_k80$ & 282\,101.77$^{\mathrm{m}}$ & 280\,823.53 & 189 & 2399 & 281\,023.77$^{\mathrm{t}}$ & 280\,910.02 & 188 & 868$^{!}$ & $-0.3821$ & 280\,910.02 (DW) \\
+$I\_8\_10\_2\_90\_k25$ & 38\,855.65$^{\mathrm{m}}$ & 38\,851.93 & 26 & 3243 & 38\,853.39$^{\mathrm{t}}$ & 38\,791.14 & 26 & 1817$^{\dagger}$ & $-0.0058$ & 38\,851.93 (compact) \\
+$I\_16\_15\_2\_90\_k25$ & 68\,139.17\,\textsc{opt} & 68\,139.17 & 45 & 1349 & 68\,139.59$^{\mathrm{t}}$ & 68\,131.43 & 45 & 1897$^{\dagger}$ & $+0.0006$ & 68\,139.17 (compact) \\
+$I\_16\_15\_2\_90\_k50$ & 134\,346.91$^{\mathrm{m}}$ & 133\,417.47 & 89 & 1113 & 133\,503.74$^{\mathrm{t}}$ & 133\,484.32 & 88 & 1827$^{\dagger}$ & $-0.6276$ & 133\,484.32 (DW) \\
+$I\_24\_20\_2\_90\_k50$ & 200\,266.21$^{\mathrm{m}}$ & 199\,518.04 & 137 & 2088 & 200\,047.54$^{\mathrm{t}}$ & 200\,013.41 & 137 & 1854$^{\dagger}$ & $-0.1092$ & 200\,013.41 (DW) \\
+$I\_24\_20\_2\_90\_k80$ & 282\,101.77$^{\mathrm{m}}$ & 280\,823.53 & 189 & 2399 & 281\,023.77$^{\mathrm{t}}$ & 280\,910.02 & 188 & 868$^{!\dagger}$ & $-0.3821$ & 280\,910.02 (DW) \\
 \bottomrule
 \end{tabular}}
 \end{table}

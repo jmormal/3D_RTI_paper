@@ -374,6 +374,21 @@ layout is
 corresponding to tiling the truck floor with the smallest-footprint
 stack type; it serves as a tight preprocessing limit on $|I|$.
 
+The trucks of a given direction and period are interchangeable in the
+same way: nothing in the data distinguishes one element of $K$ from
+another. We likewise force them to be used in index order,
+\begin{equation}
+Y_{g,k+1,t}\;\le\;Y_{gkt}
+\qquad \forall g\in G,\; t\in T,\; k\in\{1,\dots,|K|-1\}.
+\label{sb:eq:sym-truck}
+\end{equation}
+The row is valid because any solution can be re-indexed, but it removes
+only the choice of \emph{which} subset of trucks is used. The loads
+remain interchangeable among the used trucks, so a plan dispatching $n$
+trucks in a period still appears $n!$ times in the search, which is the
+difficulty Section \ref{sec:math} removes by aggregation rather than by
+a row.
+
 % --------------------------
 % Domains
 % --------------------------

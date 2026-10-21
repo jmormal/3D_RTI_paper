@@ -447,12 +447,14 @@ the multiplier being the class's own count row \eqref{bp:MP-count}. The
 expression is formed only when every pair has an entry; a partial sweep
 yields nothing, and a pair served by a heuristic rung (Section
 \ref{sec:pp}) returns no proved minimum and so contributes none. The
-bound is valid at any iteration and is kept as a running maximum. It is
-weak when $|K|$ is large relative to the reduced costs --- on
-$I\_8\_5\_2\_90$, whose optimum is $18\,796.96$, it gives $18\,778.31$,
-because ten pairs at $|K|=12$ accumulate $120$ units of penalty against
-a target of $1.42$ --- so it is reported as a bound and not relied on as
-the method's bound.
+bound is valid at any iteration and is kept as a running maximum. Its
+weakness is structural, and it is why the method does not rest on it:
+the multiplier is the fleet size $|K|$ at each of the $2|T|$ pairs, so a
+reduced cost of $-\varepsilon$ at every pair subtracts
+$2|T|\,|K|\,\varepsilon$ from $\bar z$, while the quantity the bound
+has to make up --- the distance from the restricted LP to the true one
+--- is typically a small fraction of one truck.
+Section~\ref{sec:res-bounds} reports what it returns in practice.
 
 \paragraph{The restricted value is never a bound.}
 At every node the search first solves the LP over the current pool.
@@ -508,9 +510,9 @@ its optimum is at least its LP value.
 The practical consequence is the part that matters. A geometric pricing
 sweep costs $2|T|$ calls at the pricing limit and, on the instances of
 Section \ref{sec:results}, certified no region on any run; the
-volumetric relaxation --- a two-constraint knapsack oracle over the same
-master --- returns a sweep in $2.5$ to $112$ s on every instance in the
-study and proves it on all but one of the forty-one runs. The method therefore takes its bound from the volumetric
+volumetric relaxation is a two-constraint knapsack oracle over the same
+master, and a sweep of it closes in seconds
+(Section~\ref{sec:res-bounds}). The method therefore takes its bound from the volumetric
 relaxation and asks geometric pricing only for columns. The division of
 labour is principled rather than expedient: the plan comes from the
 pool, the construction and the tree, the bound comes from a relaxation
@@ -980,22 +982,13 @@ and which shortfall, since a walk that returns nothing silently is
 indistinguishable from one that was never run.
 
 This is the procedure the period-scope experiments used, on the
-volumetric master. In the eight recorded runs on
-$I\_24\_20\_2\_90\_k50$ at a $600$ s budget, \emph{every} incumbent was
-produced by the walk and none by the closing integer master over the
-final pool; the best was $206\,492.17$ with $137$ trucks against a
-certified bound of $200\,013.36$, a gap of $3.14\%$. Without the repair,
-the two runs under period scoping returned no plan at all. These are
-volumetric results at a budget of their own and the two procedures have
-never been run against each other under a common budget, so no
-comparison between them is offered here; the walk is described because
-it is a distinct procedure with its own recorded results, and because
-the aggregate-first alternative above is a response to the same
-obstruction.
-% results/period_scope_dive.csv (no plan under period scoping; 206900.86 / 139 and
-% 207809.60 / 140 under shared scoping) and results/period_scope_dive_priced.csv
-% (210052.85 / 139, 209845.84 / 139, 206492.17 / 137, 206565.21 / 137; first_source
-% relax_fix on every row; bound 200013.36-200013.72, bound_valid 1, runtime 600 s)
+volumetric master, and Section~\ref{sec:res-vol} reports what it
+returned there. It is described here, at the length its reimplementation
+needs, because it is a distinct procedure with recorded results of its
+own, and because the aggregate-first alternative above is a response to
+the same obstruction --- not because the paper compares the two. They
+have never been run against each other under a common budget, and no
+such comparison is offered.
 
 \subsection{The fleet tree}
 \label{sec:branching}
@@ -1188,14 +1181,11 @@ it, an undecided probe leaves the analytic cap in force --- and handed to
 the partition as the bound $\bar u_{gc}$ before it solves. Without it a
 single-commodity dominance cut advances one unit per round, from the
 volumetric fill down towards the placeable count, at a placeability call
-and a partition re-solve each. The caps also measure the volumetric
-relaxation's optimism directly: on $I\_16\_15\_2\_90\_k25$ the payload
-admits $57$ full RTIs of product $P_{1}$ in one truck and $32$ can be
-placed, because its $650$ mm container stacks four high under the roof
-and two high under the crush limit.
-% 57 = floor(24000 / 419.2) from instances_scale/I_16_15_2_90_k25.json (w_full of P1, pKw);
-% 32 = trace "single-commodity caps: p:P1=32" in
-% results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_table_1800.json
+and a partition re-solve each. A cap is also a measurement in its own
+right: it is the largest number of one commodity that \emph{can} be
+placed, and setting it beside the number a volumetric capacity credits
+measures the relaxation's optimism directly, with no plan involved.
+Section~\ref{sec:res-abstraction} reports that comparison.
 
 \paragraph{A stack relaxation inside the partition.}
 The partition additionally carries, per truck and footprint, an integer

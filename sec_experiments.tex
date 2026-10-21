@@ -400,6 +400,33 @@ that reason; both bounds are valid bounds on the same relaxation.
 %   vol_lb_proved true, trace "26.3 volumetric relaxation LB 52105.25 proved=True")
 % 0.310% = (52105.2467-51944.2197)/51944.2197; 600/26.3 = 22.8
 
+\paragraph{The horizon walk, measured once.}
+The volumetric problem is also where the second relax and fix of
+Section~\ref{sec:relaxfix-walk} has its recorded results, and they are
+reported here rather than beside the procedure. Eight runs on
+$I\_24\_20\_2\_90\_k50$ at a $600$ s budget, over the volumetric master
+and final pools of $551$ to $3\,518$ columns: \emph{every} incumbent any
+of the eight produced came from the walk, and none from the closing
+integer master over the whole horizon, which is the obstruction the walk
+exists to get round. The best was $206\,492.17$ with $137$ trucks
+against a certified bound of $200\,013.36$ --- a gap of $3.14\%$ of the
+incumbent, on the definition of Section~\ref{sec:protocol}. Under period
+scoping and without the pricing repair, two of the eight returned no
+plan at all.
+
+These runs are not comparable with the fleet-tree rows above: a
+different budget, a different machine configuration, and a procedure
+that was never asked for the same thing. What they establish is the one
+structural fact the walk was built for --- that at twenty periods the
+monolithic integer master produces nothing and a committed prefix
+produces something --- and nothing about which primal is better.
+% results/period_scope_dive.csv (4 rows: no plan on the two period-scoped rows,
+%   206900.86 / 139 and 207809.60 / 140 on the shared-scope rows) and
+%   results/period_scope_dive_priced.csv (4 rows: 210052.85 / 139, 209845.84 / 139,
+%   206492.17 / 137, 206565.21 / 137).  first_source = relax_fix on every row that
+%   has a plan; bound 200013.36-200013.72 with bound_valid 1; runtime 600 s;
+%   columns 551-3518.  3.14% = (206492.17-200013.36)/206492.17.
+
 % ---------------------------------------------------------------
 \subsection{The 3D problem}
 \label{sec:res-3d}
@@ -987,6 +1014,31 @@ crush limit binds and it does not, the residual gap is not closable by
 more search. Regions remain open on every row of
 Table~\ref{tab:3d-onecommit} but the first, and a run with open regions
 has not searched the space whatever its gap.
+
+\paragraph{What the bound costs and what the alternatives return.}
+Certifying the volumetric relaxation is cheap and is the reason the
+division of labour of Section~\ref{sec:bounds} is affordable: over the
+forty-one runs reported here the sweep returns in $2.5$ to $111.8$ s and
+comes back with every pair proved on forty of them, the exception being
+the one row of Table~\ref{tab:bench} that prints \emph{unproved}. The
+geometric sweep is the other extreme: it certified no region on any run
+in this study, and the three leaves of $I\_8\_5\_2\_90$ that the search
+could not refute took $237$ s each to attempt and returned nothing
+proved. The Lagrangian bound \eqref{eq:lagr} sits between them and is
+reported rather than relied on, for the reason given when it was
+stated: on $I\_8\_5\_2\_90$, whose optimum is $18\,796.96$, it returns
+$18\,778.31$ --- valid, and beaten by the volumetric certificate's
+$18\,795.54$, because ten proved pairs at $|K|=12$ accumulate $120$
+units of penalty against a target of $1.42$.
+% sweep times: the "volumetric relaxation LB ... proved=" trace line of each
+%   results/bench_tree/tree_3d_*.json (36) and
+%   results/fleet_tree_3d/tree_3d_*_table_*.json (5): min 2.5 s, max 111.8 s
+%   (I_24_20_2_90_k50), proved=False on I_8_10_3_60 alone.
+% Lagrangian: results/fleet_tree_3d/tree_3d_I_8_5_2_90_lag_900.json
+%   (lag_lb 18778.305958587145; trace "geometric Lagrangian bound 18778.31 does
+%   not beat the volumetric certified 18795.54").
+% the 237 s leaves: results/fleet_tree_3d/STATE.md and the per-region traces of
+%   tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json
 
 \paragraph{A lower bound is printed only where a sweep proved it.}
 Where no full sweep completed with every pair proved, the value the run

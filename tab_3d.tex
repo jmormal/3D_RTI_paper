@@ -147,7 +147,8 @@ instances were generated to expose.
 % 68139.17 proved optimal), otherwise the method's certified volumetric bound.
 % The compact 3D model's own dual bound is printed in its column and never used
 % as an interval end: n_LC = 3 shared layouts per direction is an a-priori
-% restriction of Section 4 (Proposition 1, equivalence).
+% restriction of Section 4, so its optimum is at or above the problem's.  The
+% argument is the paragraph after Proposition 1, not Proposition 1 itself.
 \begin{table}[!htbp]
 \centering
 \small
@@ -170,7 +171,8 @@ applies. The last column is the interval in which $z^{\star}$ lies,
 taking the method's plan as the upper end and, as the lower end, the
 tighter bound \emph{that is a bound on the problem}: the compact 3D
 model's dual bound bounds its own three-layout restriction and not
-$z^{\star}$ (Proposition~\ref{prop:equiv}), so it appears in its column
+$z^{\star}$ (Section~\ref{sec:mp}, the paragraph after
+Proposition~\ref{prop:equiv}), so it appears in its column
 and never as an interval end, and where a compact \emph{volumetric}
 solve exists its dual bound is used instead, being valid for 3D by
 inclusion.}

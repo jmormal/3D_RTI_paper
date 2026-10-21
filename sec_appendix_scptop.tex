@@ -21,9 +21,12 @@ their volumes sum to less than the trailer's.
 The notation is that of Section \ref{sec:model}: $Y_{gkt}\in\{0,1\}$ indicates
 that truck $k$ is dispatched in direction $g$ in period $t$, and
 $\overline{V}_{knt}$ and $V^{\mathrm{e}}_{krt}$ are the full RTIs of product
-$n$, respectively the folded RTIs of type $r$, that it carries --- here
-decision variables in their own right, since SCPTOP has no slots to aggregate
-\eqref{sb:eq:agg-Vk} over. The aggregates
+$n$, respectively the folded RTIs of type $r$, that it carries. The symbols
+are deliberately those of Section \ref{sec:model}, because the quantity is the
+same one and \eqref{eq:A-ftl} below is then literally
+\eqref{sb:eq:util-p}--\eqref{sb:eq:utilw-p}; the only difference is that
+$\overline{V}_{knt}$ is a decision variable here rather than the slot sum
+\eqref{sb:eq:agg-Vk}, SCPTOP having no slots to sum over. The aggregates
 $\overline{V}_{nt}$ and $\overline{V^{\mathrm{e}}}_{rt}$ are
 \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} as before. All remaining notation is
 that of Table \ref{tab:sb-Nomenclature}.
@@ -73,9 +76,10 @@ can be loaded at all.
 
 \paragraph{Why the floor is imposed on the binding resource.}
 Writing \eqref{eq:A-ftl} on volume alone, as the original formulation does,
-makes dense freight structurally infeasible: filling $\alpha$ of a $97.9$~m$^3$
-trailer with RTIs at $590$~kg/m$^3$ weighs $27.4$~t against a $24$~t cap, so no
-truck is dispatchable and the instance is empty. Summing the two ratios
+makes dense freight structurally infeasible: filling the fraction
+$\alpha=0.55$ of a $97.92$~m$^3$ trailer with freight at $579$~kg/m$^3$ weighs
+$31.2$~t against a $24$~t cap, so no truck is dispatchable and the instance is
+empty (Section~\ref{sec:model}, where the density is traced to the catalogue). Summing the two ratios
 instead is strictly weaker --- it accepts a truck $35\%$ full by volume and
 $20\%$ by weight. The disjunctive form above is used identically in every model
 compared here, so no method is held to an easier standard than another.

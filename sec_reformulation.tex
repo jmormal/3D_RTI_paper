@@ -141,7 +141,8 @@ binaries collapse into one (Section \ref{sec:pp}).
 $(\mathrm{PP}^{g})$ they become when the $\forall$ over
 $\mathcal{B}=G\times K\times T$ is deleted. The two directions share
 the geometry, so the paper writes it once with $g$ as data; the
-direction-specific rows are those of Section \ref{sec:pp-dir}.}
+direction-specific rows are those of Section \ref{sec:pp-dir}. One row
+of $(\mathrm{PP}^{g})$ is not a transcription and is marked as such.}
 \label{tab:rowmap}\\
 \toprule
 Row & Section \ref{sec:model} & $(\mathrm{PP}^{g})$ \\
@@ -160,7 +161,8 @@ Cover                  & \eqref{sb:eq:cover}       & \eqref{bp:PP-cover}\\
 Containment            & \eqref{sb:eq:cont-x}--\eqref{sb:eq:cont-y} & \eqref{bp:PP-cont-x}--\eqref{bp:PP-cont-y}\\
 Full truckload, volume & \eqref{sb:eq:util-p}, \eqref{sb:eq:util-s} & \eqref{bp:PP-util}\\
 Full truckload, payload& \eqref{sb:eq:utilw-p}, \eqref{sb:eq:utilw-s} & \eqref{bp:PP-utilw}\\
-The same on capacity   & \eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap} & \eqref{bp:PP-areacut}\\
+The same on capacity   & \eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap} & \eqref{bp:PP-cap}, re-gated on $Z$\\
+Occupied floor area    & --- (no counterpart)      & \eqref{bp:PP-areacut}, a valid inequality\\
 Slot capacity          & \eqref{sb:eq:slot-cap}    & \eqref{bp:PP-p-slot-cap}\\
 Folded capacity        & \eqref{sb:eq:empty-cap}   & \eqref{bp:PP-s-empty-cap}\\
 Dispatch gate, full    & \eqref{fix:slot-link}     & \eqref{bp:PP-p-slot-link}\\
@@ -170,7 +172,7 @@ Payload, supplier-bound& \eqref{sb:eq:truck-w-sup} & \eqref{bp:PP-s-truck-w}\\
 Crush limit, plant-bound & \eqref{sb:eq:stack-w-plant} & \eqref{bp:PP-p-stack-w}\\
 Crush limit, supplier-bound & \eqref{sb:eq:stack-w-sup} & \eqref{bp:PP-s-stack-w}\\
 Slot symmetry          & \eqref{sb:eq:sym}         & \eqref{bp:PP-sym}\\
-Transport cost         & \eqref{sb:eq:obj-zK}      & $cK\cdot Z$ in \eqref{bp:PP-objective}\\
+Transport cost         & \eqref{sb:eq:obj-zK}      & $\lambda^{K}cK\cdot Z$ in \eqref{bp:PP-objective}\\
 Dispatch               & \eqref{sb:eq:lc-active}   & deleted; $Z$ carries the truck\\
 Truck symmetry         & \eqref{dec:sym-truck}     & dropped in the aggregation\\
 \midrule
@@ -278,7 +280,7 @@ $\ell_{ir}$ and per-slot product loads $v_{in}$ such that
 &\textstyle\sum_{r\in R(h_{i})} r_{pr}\ell_{ir}\;\le\;rK
    &&\forall i\le m,
    \label{eq:col-height}\\
-&\textstyle\sum_{n\in M(r)} v_{in}\;=\;n_{h_{i}r}\ell_{ir}
+&\textstyle\sum_{n\in M(r)} v_{in}\;\le\;n_{h_{i}r}\ell_{ir}
    &&\forall i\le m,\;r\in R(h_{i}),
    \label{eq:col-assign}\\
 &\textstyle\sum_{n\in N} w_{n}v_{in}\;\le\;W^{\max}
@@ -293,22 +295,45 @@ $\ell_{ir}$ and per-slot product loads $v_{in}$ such that
    &&\forall n\in N.
    \label{eq:col-agg}
 \end{align}
-Condition \eqref{eq:col-assign} is written with equality where
-\eqref{sb:eq:slot-cap} has an inequality, and the two describe the same
-set of images: a layer that carries nothing may always be removed,
-which leaves the placement unchanged, the stack no taller and no
-heavier, and the load --- which is what \eqref{eq:col-truck} is a
-condition on --- exactly as it was. The step uses the floor being
-stated on the load; under the capacity form an empty layer counts as
-occupied volume and the two readings come apart.
+Conditions \eqref{eq:col-geom}--\eqref{eq:col-agg} are
+\eqref{sb:eq:nonov-x1}--\eqref{sb:eq:cont-y}, \eqref{sb:eq:height},
+\eqref{sb:eq:slot-cap}, \eqref{sb:eq:stack-w-plant},
+\eqref{sb:eq:truck-w-plant} with \eqref{sb:eq:util-p}--\eqref{sb:eq:utilw-p},
+and \eqref{sb:eq:agg-Vk}, read on a single truck. In particular
+\eqref{eq:col-assign} is an inequality, as \eqref{sb:eq:slot-cap} is: a
+layer may be partly filled. Both pricing oracles impose it as an
+equality instead, which is exact on every instance solved here because
+their stack catalogues carry one stack type per distinct RTI footprint
+and hence $n_{hr}=1$, so a layer is one RTI and cannot be partly
+filled. Nothing below uses the equality: the full-truckload floor
+\eqref{eq:col-truck} is stated on $b_{\omega}$ and not on the layers.
 
 A \emph{supplier-bound} column is the analogous object
 $e_{\omega}=(e_{\omega r})_{r\in R}$ over folded heights $r_{sr}$,
-folded weights $w^{\mathrm{f}}_{r}$ and folded volumes $\gamma_{sr}$;
-there no product assignment is needed, because the weight of a folded
-RTI depends only on its type. Every non-empty column costs
-$c_{\omega}=cK$, the value of $cK\cdot Z$ at the point; the empty
-column costs nothing.
+folded weights $w^{\mathrm{f}}_{r}$ and folded volumes $\gamma_{sr}$. No
+product assignment is needed there, because the weight of a folded RTI
+depends only on its type, so the per-slot crush condition reads
+\begin{equation}
+\textstyle\sum_{r\in R(h_{i})} w^{\mathrm{f}}_{r}\,n_{h_{i}r}\,\ell_{ir}
+  \;\le\;W^{\max}\qquad\forall i\le m,
+\label{eq:col-crush-s}
+\end{equation}
+which is \eqref{sb:eq:stack-w-sup}, and $e_{\omega r}\le\sum_{i\le m}
+n_{h_{i}r}\ell_{ir}$ replaces \eqref{eq:col-assign}--\eqref{eq:col-agg},
+which is \eqref{sb:eq:empty-cap} with \eqref{sb:eq:agg-Ve}.
+\eqref{eq:col-geom}--\eqref{eq:col-agg} is used from here on as the
+name of the column conditions of \emph{either} direction, with
+\eqref{eq:col-crush-s} and the folded capacity standing in for
+\eqref{eq:col-assign}--\eqref{eq:col-crush} on the supplier side.
+Every $\omega\in\Omega^{g}$ costs $c_{\omega}=\lambda^{K}cK$, the value
+of $\lambda^{K}cK\cdot Z$ at the point.
+
+$\Omega^{g}$ holds the \emph{non-empty} columns only. The all-zero
+point is feasible for the pricing problem and will be needed there, but
+its image and its cost are both zero, so a multiplier on it would add
+nothing to either side of any master row; it is carried instead as the
+slack of the count row \eqref{bp:MP-count}, which is what lets that row
+be written as an inequality.
 
 Three features of this definition carry the method.
 
@@ -374,23 +399,31 @@ subject to
   \overline{V}_{nt},\,\overline{V^{\mathrm{e}}}_{rt}\ \text{free}.
     \nonumber
 \end{align}
+Since $\Omega^{g}$ holds the non-empty columns only, with the all-zero
+point carried as the slack of \eqref{bp:MP-count},
+$\overline{\lambda}_{gt}=\sum_{\omega\in\Omega^{g}}\lambda^{g}_{\omega t}$
+is the number of trucks \emph{dispatched} by class $(g,t)$ and not the
+number offered --- which is what Section \ref{sec:branching} branches
+on.
+
 The aggregates are written free because no row bounds them below;
 \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} equate each to a non-negative
 combination of non-negative $\lambda$, so $\overline{V}\ge0$ is implied
 and an implementation may declare it either way.
 That is the whole master. Objective \eqref{eq:MPObjective} is
 \eqref{sb:eq:obj} with the transport term rewritten over columns:
-$c_{\omega}=\lambda^{K}cK$ for every non-empty column and
-$c_{\omega}=0$ for the empty one, so that $\sum_{\omega}c_{\omega}
-\lambda^{g}_{\omega t}$ is $\lambda^{K}z^{K}$ and the second term is
-$\lambda^{I}z^{I}$. Since every non-empty column costs the same, the
-first term is $cK$ times the number of trucks dispatched, at
-$\lambda^{K}=1$. The superscripted weights $\lambda^{K},\lambda^{I}$ of
-\eqref{sb:eq:obj} and the multipliers $\lambda^{g}_{\omega t}$ are
-different objects; both names are the ones the model and the
-decomposition carry in the literature, and they never appear in the
-same expression. Writing $c_{\omega}$ rather than $cK$ is what makes the
-empty column free, and hence usable as the slack of the count row.
+$c_{\omega}=\lambda^{K}cK$ for every $\omega\in\Omega^{g}$, so that
+$\sum_{\omega}c_{\omega}\lambda^{g}_{\omega t}$ is $\lambda^{K}z^{K}$
+and the second term is $\lambda^{I}z^{I}$. Since every column of
+$\Omega^{g}$ costs the same, the first term is $cK$ times the number of
+trucks dispatched, at $\lambda^{K}=1$. The superscripted weights
+$\lambda^{K},\lambda^{I}$ of \eqref{sb:eq:obj} and the multipliers
+$\lambda^{g}_{\omega t}$ are different objects; both names are the ones
+the model and the decomposition carry in the literature, and they never
+appear in the same expression. Writing the cost as $c_{\omega}$ keeps
+the zero-cost, zero-image point of the block out of the sum: it is what
+the count row's slack stands for, and giving it a multiplier would add
+nothing to either side of any row.
 Constraints
 \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} \emph{define} the two
 aggregates as what the dispatched trucks carry; \eqref{bp:MP-count}
@@ -415,9 +448,16 @@ MP and 3D-SCPTOP have the same optimal value.
 \end{proposition}
 \begin{proof}
 Given a 3D-SCPTOP solution, each used truck $(g,k,t)$ induces a load
-vector satisfying \eqref{eq:col-geom}--\eqref{eq:col-agg}, obtained by
+vector satisfying the column conditions of its direction, obtained by
 reading the slot data off its own layout and setting
-$v_{in}=V_{kint}$; counting trucks by load vector
+$\ell_{ir}=L_{g,i,h_{i},k,t,r}$ and, at the plant, $v_{in}=V_{kint}$.
+Every condition is a row the truck already satisfies: at most one stack
+type occupies a slot by \eqref{sb:eq:slot-active}, and
+\eqref{sb:eq:height} with $r_{gr}>0$ empties the slots that hold none,
+so \eqref{sb:eq:slot-cap} \emph{is} \eqref{eq:col-assign} and
+\eqref{sb:eq:empty-cap} is its folded twin --- which is why
+\eqref{eq:col-assign} must be written as an inequality: a partly filled
+layer is a legal compact layout. Counting trucks by load vector
 gives a feasible MP solution, of equal cost because transport cost
 depends only on the number of used trucks and the inventory rows see
 only the aggregates, which \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve}
@@ -544,7 +584,7 @@ may be reported; Figure~\ref{fig:bound} states them as a decision.
 \paragraph{A certificate needs a full sweep.}
 When the pricing problem has \emph{proven} that
 $\zeta_{gt}:=\max_{\omega\in\Omega^{g}}\sum_{c}\pi_{ct}\,a_{\omega c}
-\le cK-\mu_{gt}$ for every $g$ and every $t$, no column outside
+\le \lambda^{K}cK-\mu_{gt}$ for every $g$ and every $t$, no column outside
 $\bar\Omega^{g}$ has negative reduced cost, so the current duals are
 feasible for the dual of the full MP. Weak duality then gives
 $z_{\mathrm{RMP}}=z_{\mathrm{MP}}\le z^{\star}_{\text{3D-SCPTOP}}$. The
@@ -630,11 +670,16 @@ Two conventions of Section \ref{sec:model} are used and are stated
 because the inclusion rests on them: the trailer volume is
 $\Gamma_{K}=pK\cdot qK\cdot rK$, and the volume $\gamma_{gr}$ charged to
 an RTI of type $r$ in direction $g$ is the volume of its bounding box,
-$p_{h}\,q_{h}$ times its height in that direction, with no allowance for
-void space inside it or clearance between stacks. Both are what the data
-of Section \ref{sec:instances} provide. A valid placement satisfying
+its own footprint area $a_{r}$ times its height $r_{gr}$ in that
+direction, with no allowance for void space inside it or clearance
+between stacks; by the footprint consistency of Section
+\ref{sb:sec:symm} one layer of stack type $h$ then occupies exactly
+$n_{hr}\gamma_{gr}=p_{h}q_{h}\,r_{gr}$. Both are what the data of
+Section \ref{sec:instances} provide. A valid placement satisfying
 \eqref{eq:col-geom}--\eqref{eq:col-agg} then has its RTIs in disjoint
-boxes inside the trailer, so their bounding-box volumes sum to at most
+boxes inside the trailer --- the footprints do not overlap and lie
+inside $pK\times qK$, and each stack's layers fit under $rK$ by
+\eqref{eq:col-height} --- so their bounding-box volumes sum to at most
 $\Gamma_{K}$; its weight is at most $pK^{w}$ by
 \eqref{eq:col-truck}; and \eqref{eq:col-truck} is the same floor in
 both sets. Hence
@@ -667,8 +712,11 @@ By the Blocks and Classes steps of Section \ref{sec:decomp} the pricing
 problem of class $(g,t)$ \emph{is} the block of 3D-SCPTOP with the
 quantifier over $\mathcal{B}$ removed: the same rows, with the direction
 $g$ supplying the data and the master supplying the duals. Table
-\ref{tab:rowmap} is the correspondence. Nothing has to be invented for
-it, and nothing of the geometry is left behind in the master. There is
+\ref{tab:rowmap} is the correspondence. Nothing of the geometry has to
+be invented for it and nothing of it is left behind in the master; the
+only rows below with no counterpart in Section \ref{sec:model} are the
+valid inequalities \eqref{bp:PP-areacut}, which are additions and not
+transcriptions. There is
 one such problem per direction, written $(\mathrm{PP}^{g})$; the periods
 of a direction share it and differ only in $\pi$ and $\mu$. One row of
 the block does not survive the deletion unchanged --- the dispatch row
@@ -714,8 +762,18 @@ $V^{\mathrm{e}}_{r}$ & Integer, $g=\mathrm{s}$ only. Folded RTIs of type $r$
 
 \subsubsection*{The shared block: geometry}
 
+The index $c$ below ranges over the \emph{commodities} of the
+direction: the products $n\in N$ when $g=\mathrm{p}$ and the RTI types
+$r\in R$ when $g=\mathrm{s}$. Accordingly $\mathrm{image}_{c}$ is
+$\overline{V}_{n}$ respectively $V^{\mathrm{e}}_{r}$, the weight
+$w_{c}$ is $w_{n}$ respectively $w^{\mathrm{f}}_{r}$, and the volume
+$\gamma_{gc}$ is $\gamma_{\mathrm{p}\rho(n)}$ respectively
+$\gamma_{\mathrm{s}r}$. The same convention is used in the partition
+problem \eqref{eq:part-cap}--\eqref{eq:part-floor} of Section
+\ref{sec:relaxfix-flow}.
+
 \begin{align}
-  \min\;\; & cK\cdot Z \;-\; \sum_{c}\pi_{ct}\,\mathrm{image}_{c}
+  \min\;\; & \lambda^{K}cK\cdot Z \;-\; \sum_{c}\pi_{ct}\,\mathrm{image}_{c}
     && \bar c = z-\mu_{gt} \label{bp:PP-objective}\\
   & \widehat{X}_{i} \le Z && \forall i \in \mathcal{I} \label{bp:PP-slot-active}\\
   & \mathit{LX}_{ih} + \mathit{LY}_{ih} = X_{ih}
@@ -750,7 +808,7 @@ A truck is full on the binding resource. Written on the load the truck
 actually carries, with $\Gamma_{K}$ the trailer volume and $\alpha$ the
 utilisation floor,
 \begin{align}
-  & \sum_{c}\gamma_{g\rho(c)}\,\mathrm{image}_{c}
+  & \sum_{c}\gamma_{gc}\,\mathrm{image}_{c}
       \;\ge\;\alpha\,\Gamma_{K}\,(Z-1+\theta) \label{bp:PP-util}\\
   & \sum_{c} w_{c}\,\mathrm{image}_{c}
       \;\ge\;\alpha\,\mathit{pK}^{w}\,(Z-\theta). \label{bp:PP-utilw}
@@ -775,8 +833,8 @@ points to columns therefore sends every such point to a column the
 block already has, so identifying the two binaries removes points
 without removing a single element of $\Omega^{g}$, and the master,
 which sees only images and costs, cannot tell the difference. The
-block below keeps $Z$, charges it $cK\cdot Z$, and hangs every load
-gate on it.
+block below keeps $Z$, charges it $\lambda^{K}cK\cdot Z$, and hangs
+every load gate on it.
 
 It is worth doing rather than merely harmless. As two variables, $Z=1$
 with $Y=0$ admitted a whole family of zero-image, zero-cost points with
@@ -791,29 +849,48 @@ when the empty column is wanted out of the way: the empty column is one
 analytically known point, of image $0$, cost $0$ and reduced cost
 $-\mu_{gt}\ge0$, so it never prices in.)
 
-Four redundant rows are available, two on the layer \emph{capacity}
-rather than on the load and two on the occupied floor area:
+Four redundant rows are available. Two restate the floor on the layer
+\emph{capacity} rather than on the load,
 \begin{align}
   & \sum_{h,\,r \in R(h)} \gamma_{gr}\,n_{hr}\,\overline{L}_{hr}
       \;\ge\;\alpha\,\Gamma_{K}\,(Z-1+\theta), \qquad
     \sum_{h,\,r \in R(h)} \omega_{gr}\,n_{hr}\,\overline{L}_{hr}
       \;\ge\;\alpha\,\mathit{pK}^{w}\,(Z-\theta),
-    \notag\\
+    \label{bp:PP-cap}
+\end{align}
+and two bound the occupied floor area,
+\begin{align}
   & \sum_{i}\sum_{h} p_{h}q_{h}X_{ih} \;\le\; \mathit{pK}\cdot\mathit{qK},
     \qquad
     \sum_{i}\sum_{h} p_{h}q_{h}X_{ih}
       \;\ge\;\alpha\,\mathit{pK}\cdot\mathit{qK}\,(Z-1+\theta).
     \label{bp:PP-areacut}
 \end{align}
-The first pair is \eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap} with
-the block index dropped, implied by \eqref{bp:PP-util} because the load
-never exceeds the capacity; the second says that the footprints lie on
-the floor and that a slot contributes at most its footprint area times
-$rK$ of volume, so a truck full by volume has at least $\alpha$ of its
-floor occupied. All four are implied, and any of them may be added to
-help a solver find a \emph{first} feasible layout, which on tight
-instances is harder than optimising once one is known. The oracles
-behind Section \ref{sec:results} carry the second pair.
+\eqref{bp:PP-cap} is \eqref{sb:eq:util-cap}--\eqref{sb:eq:utilw-cap}
+with the block index dropped and the gate on $Z$, and it is implied by
+\eqref{bp:PP-util}--\eqref{bp:PP-utilw} because the load never exceeds
+the capacity. \eqref{bp:PP-areacut} has no counterpart in Section
+\ref{sec:model}: it is not a transcription but a valid inequality, and
+it is where the footprint consistency of Section \ref{sb:sec:symm}
+earns its place. Its first row says the footprints lie on the floor.
+For its second, multiply the height row \eqref{bp:PP-height} by
+$p_{h}q_{h}$ and use $n_{hr}\gamma_{gr}=p_{h}q_{h}r_{gr}$:
+\[
+  \sum_{r\in R(h)} \gamma_{gr}\,n_{hr}\,L_{ihr}
+  \;=\;p_{h}q_{h}\sum_{r\in R(h)} r_{gr}\,L_{ihr}
+  \;\le\;p_{h}q_{h}\,\mathit{rK}\,X_{ih},
+\]
+so the volume the stacks can hold is at most $\mathit{rK}$ times the
+occupied area; summing over $i$ and $h$ and chaining through
+\eqref{bp:PP-cap} and $\Gamma_{K}=\mathit{pK}\cdot\mathit{qK}\cdot
+\mathit{rK}$ gives the row. A truck full by volume therefore has at
+least a fraction $\alpha$ of its floor occupied. Without the tiling
+assumption the step fails and the row can cut off feasible layouts.
+
+All four are implied, and any of them may be added to help a solver
+find a \emph{first} feasible layout, which on tight instances is harder
+than optimising once one is known. The oracles behind Section
+\ref{sec:results} carry \eqref{bp:PP-areacut}.
 
 The direction of that implication is the whole point, and it is worth
 being explicit because the reverse is tempting and wrong. Writing the
@@ -1326,9 +1403,10 @@ point of $\Omega^{g}$ from a set whose remaining points include many
 differing from it in a single RTI, so the child's LP value moves by
 almost nothing and the fractionality reappears one column over. The
 depth needed to exhaust that family grows with the pool, which is what
-makes the rule unusable here rather than merely slow. Run to exhaustion
-on one benchmark instance with the pool frozen, it branched $3\,000$
-times without ever producing an integral relaxation.
+makes the rule unusable here rather than merely slow. Run on one
+benchmark instance with the pool frozen, it branched $3\,000$ times
+without ever producing an integral relaxation, and left most of its
+regions open.
 % Provenance of the 3000: sec_reformulation_blue.tex:478-480, CLAUDE.md
 % ("Branch on aggregates, not on column variables") and the comment at
 % src/rti3d/tree.py:185.  One instance, pool frozen; it is a diagnosis of the

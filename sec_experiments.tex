@@ -801,82 +801,10 @@ volumetric optimum can therefore be a plan nine tenths of which cannot
 be loaded, and that statement rests on a complete audit rather than on
 a share of the decided.
 
-\paragraph{The mechanism.}
-The error of a volumetric capacity is governed by how much it
-over-credits a truck relative to what physically fits, and the clearest
-single case is measured directly. On $I\_16\_15\_2\_90\_k25$ the
-payload admits $57$ full RTIs of product $P_{1}$ in one truck, and $32$
-is the largest number that can be placed --- a proved bound, obtained by
-running the pricing problem for that commodity alone to optimality.
-The cause is that the family's container is $650$ mm tall, so four
-layers fit under the $3\,000$ mm roof, while at $378$ to $484$ kg full
-only two fit under the $1\,200$ kg crush limit. A volumetric fill
-therefore credits a truck with roughly twice the placeable count of
-that family. The same divergence is why the certified bound on the two
-crush-binding rungs of Table~\ref{tab:3d-onecommit} sits $13.3\%$ below
-the best verified plan: the bound credits every such stack with four
-layers where two can be carried, and we attribute the gap to the bound
-rather than to the plan on that evidence --- noting that nothing in this
-paper proves it, and that the fifty-four- and one-hundred-and-sixty-truck
-plans are reported as what they are, verified upper bounds under a
-stated budget.
-% 57 = floor(24000 / 419.2), w_full of P1 and pKw from instances_scale/I_16_15_2_90_k25.json
-% 32 = trace "single-commodity caps: ... p:P1=32" in
-%      results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_table_1800.json
-% R1 geometry 1200x1600x650, w_full 378.0-483.6 (same instance file)
-% 13.3% = (78549.14-68139.17)/78549.14 and (230594.36-200013.41)/230594.36
-
-\paragraph{The layer ratio alone does not predict it, and we say so.}
-It is tempting to turn the mechanism into a one-number test, and the
-obvious candidate fails. The sweep is eighteen generated instances: three seeds crossed with six
-dose levels, where the dose is a scaling of the product weights alone,
-so that within a seed the footprints, heights and demands are identical
-across the six levels and only the weights move. Over those eighteen,
-the share of a volumetric plan's own dispatched loads that a
-placeability proof rejects correlates at only $0.42$ with the ratio of
-height-limited to crush-limited layer counts. Three of the eighteen
-volumetric solves stopped on their time limit rather than at
-optimality, which affects which plan was audited but not the audit. The sweep
-contains three instances at $0\%$ with that ratio between $0.98$ and
-$1.25$, and one at $90.9\%$ with the ratio at $1.08$. The ratio is part
-of the mechanism and is not a predictor of the share, and a predictor
-validated across instances is not established here. What \emph{is}
-established is narrower, and it cuts in both directions, so we state it
-as it is. Over the fifteen container types of the industrial catalogue
-the ratio of volumetric credit to placeable count --- call it $\theta$,
-so that $\theta>1$ means a volumetric capacity credits a truck with more
-of that type than physically fits --- has median $0.923$, ranges from
-$0.316$ to $2.00$, and exceeds $1.20$ on four of the fifteen types.
-Read correctly that says two things. The median real type is
-\emph{under}-credited by $7.7\%$, so on a catalogue dominated by such
-types a volumetric capacity is conservative and the criticism of it does
-not apply. And four of fifteen are over-credited by more than a fifth,
-which is enough for a plan drawn over a mixed catalogue to contain
-unplaceable loads, since a plan fails on its worst container and not on
-its median one.
-
-The instances on which the census above was taken are
-\emph{generated}, with $\theta$ in a range the generator controls, and
-the catalogue measurement is a realism check on that range rather than a
-second census. Two statements therefore survive and a third does not.
-It survives that a volumetric capacity can err badly and that where it
-errs it errs by prescribing loads that cannot be placed --- the census
-proves that on the generated set, and the mechanism explains it. It
-survives that $\theta$ is computable from the catalogue and the trailer
-alone, with no model solved, so a planner can tell in advance which
-regime a catalogue is in. It does \emph{not} survive that a volumetric
-capacity is always or usually inadequate: on this catalogue most types
-say the opposite, and a study that wanted that conclusion would have to
-take its census on real catalogues and not on generated ones.
-% results/dose_response.csv: 18 rows, columns rho (= height layers / crush layers) and
-%   unplaceable_share; Pearson correlation 0.423; rho 0.979 -> 0.0%, 1.208 -> 0.0%,
-%   1.250 -> 0.0% and 92.3% on two different seeds, 1.083 -> 90.9%
-% results/catalogue_realism.json: 15 types, theta_min 0.316, theta_median 0.923,
-%   theta_max 2.0, n_severe 4
-
 \paragraph{What volumetric planning costs, constructed rather than estimated.}
 The census says a volumetric plan's loads frequently cannot be placed;
-it does not say what that costs. To answer that, each volumetric plan is
+it does not say what that costs, and the cost is the answer to the third
+question of this section. To answer that, each volumetric plan is
 repaired into an executable one on the two instances where the crush
 limit binds. The \emph{competent} repair keeps the volumetric plan's
 delivery quantities unchanged and re-packs each period's freight with
@@ -994,6 +922,81 @@ model is being faulted for.
 % 19.1% = (97139.17-78549.14)/97139.17; 16.2% = (275266.21-230594.36)/275266.21
 
 % ---------------------------------------------------------------
+\paragraph{The mechanism behind all of it.}
+Both the census and the cost above have one cause, and it is worth
+isolating because it is the part a planner can check in advance. The
+error of a volumetric capacity is governed by how much it over-credits a
+truck relative to what physically fits, and the clearest single case is
+measured directly. On $I\_16\_15\_2\_90\_k25$ the
+payload admits $57$ full RTIs of product $P_{1}$ in one truck, and $32$
+is the largest number that can be placed --- a proved bound, obtained by
+running the pricing problem for that commodity alone to optimality.
+The cause is that the family's container is $650$ mm tall, so four
+layers fit under the $3\,000$ mm roof, while at $378$ to $484$ kg full
+only two fit under the $1\,200$ kg crush limit. A volumetric fill
+therefore credits a truck with roughly twice the placeable count of
+that family. The same divergence is why the certified bound on the two
+crush-binding rungs of Table~\ref{tab:3d-onecommit} sits $13.3\%$ below
+the best verified plan: the bound credits every such stack with four
+layers where two can be carried, and we attribute the gap to the bound
+rather than to the plan on that evidence --- noting that nothing in this
+paper proves it, and that the fifty-four- and one-hundred-and-sixty-truck
+plans are reported as what they are, verified upper bounds under a
+stated budget.
+% 57 = floor(24000 / 419.2), w_full of P1 and pKw from instances_scale/I_16_15_2_90_k25.json
+% 32 = trace "single-commodity caps: ... p:P1=32" in
+%      results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_table_1800.json
+% R1 geometry 1200x1600x650, w_full 378.0-483.6 (same instance file)
+% 13.3% = (78549.14-68139.17)/78549.14 and (230594.36-200013.41)/230594.36
+
+\paragraph{The layer ratio alone does not predict it, and we say so.}
+It is tempting to turn the mechanism into a one-number test, and the
+obvious candidate fails. The sweep is eighteen generated instances: three seeds crossed with six
+dose levels, where the dose is a scaling of the product weights alone,
+so that within a seed the footprints, heights and demands are identical
+across the six levels and only the weights move. Over those eighteen,
+the share of a volumetric plan's own dispatched loads that a
+placeability proof rejects correlates at only $0.42$ with the ratio of
+height-limited to crush-limited layer counts. Three of the eighteen
+volumetric solves stopped on their time limit rather than at
+optimality, which affects which plan was audited but not the audit. The sweep
+contains three instances at $0\%$ with that ratio between $0.98$ and
+$1.25$, and one at $90.9\%$ with the ratio at $1.08$. The ratio is part
+of the mechanism and is not a predictor of the share, and a predictor
+validated across instances is not established here. What \emph{is}
+established is narrower, and it cuts in both directions, so we state it
+as it is. Over the fifteen container types of the industrial catalogue
+the ratio of volumetric credit to placeable count --- call it $\theta$,
+so that $\theta>1$ means a volumetric capacity credits a truck with more
+of that type than physically fits --- has median $0.923$, ranges from
+$0.316$ to $2.00$, and exceeds $1.20$ on four of the fifteen types.
+Read correctly that says two things. The median real type is
+\emph{under}-credited by $7.7\%$, so on a catalogue dominated by such
+types a volumetric capacity is conservative and the criticism of it does
+not apply. And four of fifteen are over-credited by more than a fifth,
+which is enough for a plan drawn over a mixed catalogue to contain
+unplaceable loads, since a plan fails on its worst container and not on
+its median one.
+
+The instances on which the census above was taken are
+\emph{generated}, with $\theta$ in a range the generator controls, and
+the catalogue measurement is a realism check on that range rather than a
+second census. Two statements therefore survive and a third does not.
+It survives that a volumetric capacity can err badly and that where it
+errs it errs by prescribing loads that cannot be placed --- the census
+proves that on the generated set, and the mechanism explains it. It
+survives that $\theta$ is computable from the catalogue and the trailer
+alone, with no model solved, so a planner can tell in advance which
+regime a catalogue is in. It does \emph{not} survive that a volumetric
+capacity is always or usually inadequate: on this catalogue most types
+say the opposite, and a study that wanted that conclusion would have to
+take its census on real catalogues and not on generated ones.
+% results/dose_response.csv: 18 rows, columns rho (= height layers / crush layers) and
+%   unplaceable_share; Pearson correlation 0.423; rho 0.979 -> 0.0%, 1.208 -> 0.0%,
+%   1.250 -> 0.0% and 92.3% on two different seeds, 1.083 -> 90.9%
+% results/catalogue_realism.json: 15 types, theta_min 0.316, theta_median 0.923,
+%   theta_max 2.0, n_severe 4
+
 \subsection{What the bounds and the claims rest on}
 \label{sec:res-bounds}
 

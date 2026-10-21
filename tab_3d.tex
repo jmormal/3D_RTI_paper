@@ -74,26 +74,31 @@ code sharing nothing with the solver. The bound is the certified
 volumetric relaxation, valid for 3D by
 Proposition~\ref{prop:inclusion}; it is loose wherever the crush limit
 binds, so the gap on the last two rows is not an optimality gap.
-$I\_8\_5\_2\_90$ is the exception and is the paper's only proved optimum:
-there the volumetric relaxation itself solves to optimality at exactly
-the 3D plan's cost (footnote~$^{b}$).}
+The LB and \emph{gap}
+columns are the \emph{method's own} certificate on every row, never a
+mixture, so that no row carries two gaps; where a tighter valid bound
+exists it is reported in Table~\ref{tab:volumetric} and noted in
+footnote~$^{c}$. $I\_8\_5\_2\_90$ is the paper's only proved optimum and
+the proof is not the method's: footnote~$^{b}$.}
 \label{tab:3d-onecommit}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrlrrrrrrrr}
 \toprule
 Instance & $z$ & trucks & verified & LB (cert.) & gap & root ($t$) & tree & nodes & dropped & open & wall / budget (s) \\
 \midrule
-$I\_8\_5\_2\_90$        & 18\,796.96$^{b}$ & 12  & 12 / 12   & 18\,796.96$^{b}$ & \textbf{0 (optimal)} & 18\,796.96 ($140$ s) & $0.00\%$ & 67 & 0 & 0  & 873 / 900 \\
+$I\_8\_5\_2\_90$        & \textbf{18\,796.96}$^{b}$ & 12  & 12 / 12   & 18\,795.54 & $0.0076\%$ & 18\,796.96 ($140$ s) & $0.00\%$ & 67 & 0 & 0  & 873 / 900 \\
 $I\_8\_10\_2\_90\_k25$  & 38\,855.34 & 26  & 26 / 26   & 38\,791.14$^{c}$ & $0.165\%$ & 38\,865.30 ($136$ s) & $0.03\%$ & 68 & 0 & 35 & 883 / 900 \\
-$I\_12\_12\_2\_90\_k25$ & 52\,129.45 & 34  & 34 / 34   & 52\,105.2 & $0.046\%$ & 53\,195.84 ($459$ s) & $\mathbf{2.00\%}^{d}$ & 11 & 0 & 10 & 1\,761 / 1\,800 \\
+$I\_12\_12\_2\_90\_k25$ & 52\,129.45 & 34  & 34 / 34   & 52\,105.25 & $0.046\%$ & 53\,195.84 ($459$ s) & $\mathbf{2.00\%}^{d}$ & 11 & 0 & 10 & 1\,761 / 1\,800 \\
 $I\_16\_15\_2\_90\_k25$ & 78\,549.14 & 54  & 54 / 54   & 68\,131.43$^{c}$ & $13.3\%^{e}$ & 78\,549.14 ($1\,181$ s) & $0.00\%$ & 1  & 0 & 2  & 1\,746 / 1\,800 \\
-$I\_24\_20\_2\_90\_k50$ & 230\,594.36 & 160 & 160 / 160 & 200\,013.4 & $13.3\%^{e}$ & 230\,594.36 ($1\,418$ s) & $0.00\%$ & 2 & 0 & 4 & 3\,492 / 3\,600 \\
+$I\_24\_20\_2\_90\_k50$ & 230\,594.36 & 160 & 160 / 160 & 200\,013.41 & $13.3\%^{e}$ & 230\,594.36 ($1\,418$ s) & $0.00\%$ & 2 & 0 & 4 & 3\,492 / 3\,600 \\
 \bottomrule
 \end{tabular}}
 \begin{flushleft}\footnotesize
-$^{b}$ The volumetric relaxation of this instance solves to proved
-optimality at $18\,796.96$ in $0.18$ s, and the verified 3D plan costs
-the same to machine precision. Every placeable load is volumetrically
+$^{b}$ \textbf{This plan is optimal}, and the LB column does not say so
+because that column is the method's own certificate throughout. The
+proof is by inclusion: the compact volumetric relaxation of this
+instance solves to proved optimality at $18\,796.96$ in $0.18$ s, and
+the verified 3D plan costs the same to machine precision. Every placeable load is volumetrically
 feasible, so $z^{\star}_{\mathrm{3D}}\ge z^{\star}_{\mathrm{vol}}$ and a
 feasible 3D plan attaining it is optimal. \emph{This proof does not come
 from the method}: no tree, no pricing, no geometric certification. It is
@@ -103,13 +108,14 @@ Section~\ref{sec:results} argues a volumetric capacity is adequate. The
 method's own attempt at the same proof --- certifying, under their own
 duals, the three regions its search could not refute --- failed, at
 $237$ s per region.
-$^{c}$ The method's own certified bound. On these two instances the
-compact volumetric model's dual bound is tighter and is also valid for
-3D by inclusion --- $38\,851.93$ at a memory stop and $68\,139.17$ proved
-optimal --- which narrows the gaps to $0.009\%$ and $13.25\%$; it is
+$^{c}$ On these two instances the compact volumetric model's dual bound
+is \emph{tighter} than the method's own and is equally valid for 3D by
+inclusion --- $38\,851.93$ at a memory stop and $68\,139.17$ proved
+optimal --- which would narrow the gaps to $0.009\%$ and $13.25\%$. It is
 reported in Table~\ref{tab:volumetric} and used as the interval end in
-Table~\ref{tab:3d-head}, and the gap column here is to one bound
-throughout so that one row never carries two.
+Table~\ref{tab:3d-head}, and deliberately \emph{not} used here: the LB
+and gap columns of this table are the method's own certificate on every
+row, so that no row of it carries two bounds or two gaps.
 $^{d}$ This is where branching does the most work in the paper: the
 construction returns $53\,195.84$ at $459$ s and five node improvements
 take it to $52\,129.45$, a $2.00\%$ gain that reproduces under a second

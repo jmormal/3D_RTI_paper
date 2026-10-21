@@ -56,7 +56,7 @@ denotes folded-RTI loads on supplier-bound trucks. Table
     $w_{n}$        & Weight of a full RTI carrying product $n$.\\
     $w^{\mathrm{f}}_{r}$ & Weight of a folded RTI of type $r$.\\
     $pK^{w}$       & Maximum truck weight capacity.\\
-    $W^{\max}$     & Per-stack crush-limit weight cap.\\
+    $W^{\max}$     & Per-stack crush-limit weight cap: the \emph{total} weight of one stack, summed over all its layers, not the weight borne by its bottom RTI alone.\\
     $pK,qK,rK$     & Truck length, width, and height.\\
     $\Gamma_K$     & Truck volume, $\Gamma_K=pK\cdot qK\cdot rK$.\\
     $\alpha$       & Minimum truck utilisation, required on whichever of volume or payload binds ($0<\alpha\le 1$).\\
@@ -68,7 +68,7 @@ denotes folded-RTI loads on supplier-bound trucks. Table
     \hline
     \multicolumn{2}{|l|}{\textbf{Decision variables -- LC level}}\\\hline
     $Z_{gl}$         & $\in\{0,1\}$. Equals $1$ iff LC $l$ is active in direction $g$.\\
-    $\theta_{gl}$    & $\in\{0,1\}$. Selects which resource the utilisation floor is applied to: volume if $1$, payload if $0$.\\
+    $\theta_{gl}$    & $\in\{0,1\}$. Selects which resource the \emph{design-time} utilisation floor is applied to: volume if $1$, payload if $0$.\\
     $X_{gihl}$       & $\in\{0,1\}$. Equals $1$ iff slot $i$ of LC $l$ is of stack type $h$ in direction $g$.\\
     $L_{gihlr}$      & $\in\mathbb{Z}_{\ge 0}$. Number of layers of RTI type $r\in R(h)$ in slot $i$ of LC $l$ in direction $g$.\\
     $LX_{gihl}$      & $\in\{0,1\}$. Equals $1$ iff stack $h$'s length is along the $x$-axis in slot $i$.\\
@@ -82,6 +82,7 @@ denotes folded-RTI loads on supplier-bound trucks. Table
     \multicolumn{2}{|l|}{\textbf{Decision variables -- runtime level}}\\\hline
     $Y_{gkt}$        & $\in\{0,1\}$. Equals $1$ iff truck $k$ is used in direction $g$ in period $t$.\\
     $Y_{gklt}$       & $\in\{0,1\}$. Equals $1$ iff truck $k$ uses LC $l$ in direction $g$ in period $t$.\\
+    $\theta^{p}_{klt},\theta^{s}_{klt}$ & $\in\{0,1\}$. Select which resource the \emph{runtime} utilisation floor of truck $k$ under LC $l$ in period $t$ is applied to: volume if $1$, payload if $0$.\\
     $V_{klnt}$       & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ on plant-bound truck $k$ using LC $l$ in period $t$.\\
     $V^{\mathrm{slot}}_{kilnt}$ & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of product $n$ in slot $i$ of plant-bound truck $k$ using LC $l$ in period $t$.\\
     $V^{\mathrm{e}}_{klrt}$ & $\in\mathbb{Z}_{\ge 0}$. Folded RTIs of type $r$ on supplier-bound truck $k$ using LC $l$ in period $t$.\\
@@ -244,12 +245,25 @@ $\theta_{gl}$ to select which one binds:
 \label{sb:eq:utilw}
 \end{align}
 with $\omega_{gr}=w^{\mathrm{f}}_{r}$ in the supplier direction and
-$\omega_{pr}=\min_{n\in M(r)}w_{n}$ in the plant direction, the
-lightest product being the one that makes the requirement hardest to
-meet. The same disjunction is imposed on each dispatched truck at
-runtime, on the loads $V_{klnt}$ and $V^{\mathrm{e}}_{klrt}$ rather
-than on the configuration's designed capacity, since a truck may be
-loaded to less than the configuration allows.
+$\omega_{pr}=\max_{n\in M(r)}w_{n}$ in the plant direction. The
+\emph{heaviest} product the family can carry is the right coefficient
+here, and the reason is that
+\eqref{sb:eq:util}--\eqref{sb:eq:utilw} is a \emph{design-time}
+requirement on a configuration that does not yet know which products
+will ride in its stacks: what it has to assert is that \emph{some}
+loading of this design fills a truck, which is a necessary condition
+for the design to be usable, and the product-exact condition is
+imposed separately on each dispatched truck by
+\eqref{sb:eq:util-run-p}--\eqref{sb:eq:utilw-run-s} below. With the
+family \emph{minimum} the row would instead assert that \emph{every}
+product assignment fills the truck --- strictly stronger than the
+runtime rule --- and would cut off configurations the model is
+otherwise free to use, so that the formulation reports an optimum above
+the true one. The same principle governs the crush cap
+\eqref{sb:eq:stack-w-plant}, which is why that row is written on the
+mix actually loaded. A per-load row must use the load's own product
+weights; only a design-time row may use a family bound, and then only
+the bound that keeps it necessary rather than sufficient.
 
 % --------------------------
 % Truck -- LC linking and runtime loading
@@ -296,6 +310,26 @@ V^{\mathrm{e}}_{klrt}
 \label{sb:eq:empty-cap}
 \end{equation}
 
+The three rows above are relaxed by $M$ whenever $Y_{gklt}=0$, so on
+their own they leave the loads of a configuration \emph{no truck
+selected} free to be positive, and the flow aggregations
+\eqref{sb:eq:flow-n}--\eqref{sb:eq:flow-r} would then count freight no
+dispatched truck carries as delivered. The loads are therefore gated on
+the selection as well as capped by it:
+\begin{align}
+V^{\mathrm{slot}}_{kilnt}&\le M\,Y_{pklt}
+    &&\forall k,i,l,n,t
+    \label{sb:eq:slot-gate}\\
+V_{klnt}&\le M\,Y_{pklt}
+    &&\forall k,l,n,t
+    \label{sb:eq:load-gate}\\
+V^{\mathrm{e}}_{klrt}&\le M\,Y_{sklt}
+    &&\forall k,l,r,t
+    \label{sb:eq:empty-gate}
+\end{align}
+These rows are not redundant: without them the model admits plans whose
+trucks do not carry what the plan claims to deliver.
+
 % --------------------------
 % Weight
 % --------------------------
@@ -332,6 +366,45 @@ LC since folded-RTI weight depends only on $r$):
 \qquad \forall i,l.
 \label{sb:eq:stack-w-sup}
 \end{equation}
+
+% --------------------------
+% Runtime full-truckload
+% --------------------------
+\subsection*{Full-truckload on each dispatched truck}
+
+The design-time disjunction
+\eqref{sb:eq:util}--\eqref{sb:eq:utilw} says that the configuration's
+designed capacity could fill a truck. It does not say that the truck
+actually dispatched under it \emph{is} full, since a truck may be
+loaded to less than its configuration allows, and that is the condition
+the problem imposes. The same disjunction is therefore written a second
+time, on the loads rather than on the capacity, once per dispatched
+truck, with binaries $\theta^{p}_{klt}$ and $\theta^{s}_{klt}$
+selecting which resource binds:
+\begin{align}
+\sum_{r\in R}\sum_{n\in M(r)} \gamma_{pr}\,V_{klnt}
+&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{pklt}-1+\theta^{p}_{klt}\bigr)
+    &&\forall k,l,t
+    \label{sb:eq:util-run-p}\\
+\sum_{n\in N} w_{n}\,V_{klnt}
+&\;\ge\;\alpha\,pK^{w}\bigl(Y_{pklt}-\theta^{p}_{klt}\bigr)
+    &&\forall k,l,t
+    \label{sb:eq:utilw-run-p}\\
+\sum_{r\in R} \gamma_{sr}\,V^{\mathrm{e}}_{klrt}
+&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{sklt}-1+\theta^{s}_{klt}\bigr)
+    &&\forall k,l,t
+    \label{sb:eq:util-run-s}\\
+\sum_{r\in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{klrt}
+&\;\ge\;\alpha\,pK^{w}\bigl(Y_{sklt}-\theta^{s}_{klt}\bigr)
+    &&\forall k,l,t
+    \label{sb:eq:utilw-run-s}
+\end{align}
+At $Y_{gklt}=0$ both rows of a direction are vacuous; at
+$Y_{gklt}=1$ exactly one is active and the other is implied, so the
+pair is the disjunction ``full by volume \emph{or} full by payload''
+and never the sum of the two ratios, which is strictly weaker and would
+accept a trailer $35\%$ full by volume and $20\%$ by weight. These rows
+carry the load's own product weights $w_{n}$, as a per-load row must.
 
 % --------------------------
 % Flow aggregation
@@ -397,7 +470,7 @@ a row.
 \begin{align*}
 &Z_{gl},\,\theta_{gl},\,X_{gihl},\,LX_{gihl},\,LY_{gihl},\,
   A_{gijl},\,B_{gijl},\,C_{gijl},\,D_{gijl},\,
-  Y_{gkt},\,Y_{gklt}\in\{0,1\},\\
+  Y_{gkt},\,Y_{gklt},\,\theta^{p}_{klt},\,\theta^{s}_{klt}\in\{0,1\},\\
 &L_{gihlr},\,V_{klnt},\,V^{\mathrm{slot}}_{kilnt},\,
   V^{\mathrm{e}}_{klrt},\,I_{gnt},\,Ie_{gtr},\,Q_{nt},\,Q_{rt}
   \in\mathbb{Z}_{\ge 0},\\

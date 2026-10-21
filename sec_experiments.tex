@@ -468,17 +468,31 @@ Section~\ref{sec:res-abstraction} finds a volumetric capacity adequate.
 \paragraph{The size ladder.}
 Table~\ref{tab:3d-onecommit} reports the method on five rungs, every
 row on one commit and verified truck by truck. Read as a progression it
-says three things. The certified gap is under $0.05\%$ through twelve
-periods --- $0.0076\%$, $0.009\%$ and $0.046\%$ --- and the truck counts
-there are the minimum possible, because the region with one truck fewer
-is certified infeasible (Table~\ref{tab:fleetfloor}): $X\le11$,
-$X\le25$ and $X\le33$ are infeasible in $1.5$, $3.9$ and $16.3$ s, and
-the reported plans use twelve, twenty-six and thirty-four trucks. What
-remains of those gaps is inventory cost. At fifteen and twenty periods
-the method still returns verified plans --- fifty-four trucks at
-$78\,549.14$ and one hundred and sixty at $230\,594.36$ --- but the gap
-jumps to $13.3\%$, and Section~\ref{sec:res-abstraction} attributes
-that to the bound rather than to the plan. On
+says three things, and the gaps have to be read with one convention
+fixed: the gap column of that table is to the \emph{method's own}
+certified bound on every row, so that no row carries two gaps, and
+where the compact volumetric model supplies a tighter valid bound it is
+reported in Table~\ref{tab:volumetric} and used as the interval end in
+Table~\ref{tab:3d-head}, never as a second gap.
+
+Against its own bound the gap is $0.0076\%$ at five periods,
+$0.165\%$ at ten and $0.046\%$ at twelve --- so two of the first three
+rungs are under $0.05\%$ and the third is under $0.2\%$ --- and on all
+three the truck count is the minimum possible, because the region with
+one truck fewer is certified infeasible
+(Table~\ref{tab:fleetfloor}): $X\le11$, $X\le25$ and $X\le33$ are
+infeasible in $1.5$, $3.9$ and $16.3$ s, and the reported plans use
+twelve, twenty-six and thirty-four trucks. What remains of those three
+gaps is inventory cost. At fifteen and twenty periods the method still
+returns verified plans --- fifty-four trucks at $78\,549.14$ and one
+hundred and sixty at $230\,594.36$ --- but the gap jumps to $13.3\%$,
+and Section~\ref{sec:res-abstraction} attributes that to the bound
+rather than to the plan. Over the thirty-six generated instances the
+mean of the same gap is $8.8\%$ (Table~\ref{tab:summary}); nothing in
+this paper supports a blanket statement that the method's gaps are
+small, and the one that can be made is the conditional one: they are
+small where the volumetric relaxation is nearly exact, and that
+condition is checkable in advance (Section~\ref{sec:res-abstraction}). On
 $I\_16\_15\_2\_90\_k25$ neither $X\le52$ nor $X\le45$ is refuted, so
 nothing about the truck count is proved there, for the same reason the
 bound is loose: the volumetric relaxation admits forty-five-truck plans
@@ -663,7 +677,12 @@ flow-first relax and fix as the primal. Labelling it with the method's
 name would be the error this section is organised to avoid.
 
 Second, and independently, all nine company baselines stopped on their
-$315$ s time limit rather than at the requested MIP gap of zero. A
+time limit rather than at the requested MIP gap of zero. The evaluation
+solve is given $315$ s of the instance's $900$ s budget and every one of
+the nine returned \textsc{time\_limit}; the stage's recorded wall times,
+$513.8$ to $1\,493.6$ s, are larger because the stage also rebuilds the
+configuration pool in up to four rounds of $180$ s before the evaluation
+solve, and three instances ran concurrently. A
 saving measured over a baseline that was not solved is a saving over
 whatever the baseline's solver happened to hold when the clock ran out;
 it bounds the true saving from one side only, and in the wrong
@@ -698,12 +717,17 @@ hand, every entry of which was found by trial rather than by design.
 The nine instances also carry the one piece of evidence about real
 containers that does not depend on the method at all. The volumetric
 benchmark, run on them under the same budgets, dispatches $392$ truck
-loads of which $189$ --- $48.2\%$ --- are \emph{proved} unplaceable by
+loads of which $169$ --- $43.1\%$ --- are \emph{proved} unplaceable by
 the same constraint programme used throughout. That run did not record
-how many of the remainder were left undecided, so $48.2\%$ is a lower
-bound on the share that cannot be placed and not an estimate of it.
+how many of the remainder were left undecided, so $43.1\%$ is a lower
+bound on the share that cannot be placed and not an estimate of it, and
+it is not comparable with the $69.2\%$ of
+Section~\ref{sec:res-abstraction}, which is measured over the generated
+instances and reports its undecided share.
 % scp_loads / scp_loads_infeasible in results/case_study.csv: 47/41, 25/24, 52/7, 24/24,
-%   27/26, 70/8, 25/21, 49/10, 73/8; totals 392 and 189; no undecided column is recorded.
+%   27/26, 70/8, 25/21, 49/10, 73/8; totals 392 and 169, i.e. 43.1%.  (An earlier revision
+%   of this paragraph printed 189 / 48.2% -- the addition was simply wrong, and the round-1
+%   referee caught it from this comment's own inputs.)  No undecided column is recorded.
 
 % ---------------------------------------------------------------
 \subsection{Is a volumetric capacity adequate?}
@@ -774,14 +798,33 @@ contains three instances at $0\%$ with that ratio between $0.98$ and
 $1.25$, and one at $90.9\%$ with the ratio at $1.08$. The ratio is part
 of the mechanism and is not a predictor of the share, and a predictor
 validated across instances is not established here. What \emph{is}
-established, and is enough for the modelling conclusion, is that the
-condition is common in a real catalogue: over the fifteen container
-types of the industrial catalogue the ratio of volumetric credit to
-placeable count has median $0.923$ and ranges from $0.316$ to $2.00$,
-with four of the fifteen types credited more than $20\%$ above what
-fits. A planner can compute that number from the catalogue and the
-trailer alone, with no model solved, which is the practical value of the
-mechanism even without a validated predictor of the share.
+established is narrower, and it cuts in both directions, so we state it
+as it is. Over the fifteen container types of the industrial catalogue
+the ratio of volumetric credit to placeable count --- call it $\theta$,
+so that $\theta>1$ means a volumetric capacity credits a truck with more
+of that type than physically fits --- has median $0.923$, ranges from
+$0.316$ to $2.00$, and exceeds $1.20$ on four of the fifteen types.
+Read correctly that says two things. The median real type is
+\emph{under}-credited by $7.7\%$, so on a catalogue dominated by such
+types a volumetric capacity is conservative and the criticism of it does
+not apply. And four of fifteen are over-credited by more than a fifth,
+which is enough for a plan drawn over a mixed catalogue to contain
+unplaceable loads, since a plan fails on its worst container and not on
+its median one.
+
+The instances on which the census above was taken are
+\emph{generated}, with $\theta$ in a range the generator controls, and
+the catalogue measurement is a realism check on that range rather than a
+second census. Two statements therefore survive and a third does not.
+It survives that a volumetric capacity can err badly and that where it
+errs it errs by prescribing loads that cannot be placed --- the census
+proves that on the generated set, and the mechanism explains it. It
+survives that $\theta$ is computable from the catalogue and the trailer
+alone, with no model solved, so a planner can tell in advance which
+regime a catalogue is in. It does \emph{not} survive that a volumetric
+capacity is always or usually inadequate: on this catalogue most types
+say the opposite, and a study that wanted that conclusion would have to
+take its census on real catalogues and not on generated ones.
 % results/dose_response.csv: 18 rows, columns rho (= height layers / crush layers) and
 %   unplaceable_share; Pearson correlation 0.423; rho 0.979 -> 0.0%, 1.208 -> 0.0%,
 %   1.250 -> 0.0% and 92.3% on two different seeds, 1.083 -> 90.9%

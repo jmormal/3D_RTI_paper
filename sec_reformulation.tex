@@ -296,8 +296,11 @@ $\ell_{ir}$ and per-slot product loads $v_{in}$ such that
 Condition \eqref{eq:col-assign} is written with equality where
 \eqref{sb:eq:slot-cap} has an inequality, and the two describe the same
 set of images: a layer that carries nothing may always be removed,
-which leaves the placement unchanged and the stack no taller and no
-heavier.
+which leaves the placement unchanged, the stack no taller and no
+heavier, and the load --- which is what \eqref{eq:col-truck} is a
+condition on --- exactly as it was. The step uses the floor being
+stated on the load; under the capacity form an empty layer counts as
+occupied volume and the two readings come apart.
 
 A \emph{supplier-bound} column is the analogous object
 $e_{\omega}=(e_{\omega r})_{r\in R}$ over folded heights $r_{sr}$,

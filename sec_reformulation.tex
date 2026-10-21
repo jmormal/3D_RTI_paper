@@ -430,9 +430,12 @@ only as a filter: if even the over-estimate lies below the incumbent,
 the region cannot be pruned and the expensive sweep is not run. It is
 never entered as a bound, and a search stopped by its deadline reports
 the last \emph{certified} value it holds, not the last LP it solved.
-Reduced costs oscillate here --- $-0.01$ at one iteration and $-104.54$
-two iterations later has been measured --- so a sweep that finds nothing
-is not convergence unless every pair was proved.
+The reason the qualification matters is that the \emph{best} reduced
+cost of a class need not decrease monotonically along a column
+generation run: the duals move with every column added, so a pair that
+prices out at nearly zero under one dual vector can price out heavily
+under the next. ``The oracle found nothing'' is therefore not
+convergence unless every pair was proved in the same sweep.
 
 \paragraph{A bound by inclusion.}
 The certificate above is expensive when the oracle is the geometric
@@ -950,10 +953,14 @@ Branching on the master's own variables is the obvious rule and the
 wrong one here. Bounding one $\lambda^{g}_{\omega t}$ removes one load
 from the relaxation, but a Dantzig--Wolfe master of this kind holds many
 columns that differ only in detail, so the relaxation answers by
-shifting the same fractional weight onto a near-identical column. Run to
-exhaustion on a benchmark instance with the pool frozen, that rule
-branched thousands of times without ever producing an integral
-relaxation. Branching on a per-period dispatch total has no symmetric
+shifting the same fractional weight onto a near-identical column: the
+bound $\lambda^{g}_{\omega t}\le\lfloor\lambda^{\star}\rfloor$ excludes
+one point of $\Omega^{g}$ from a set whose remaining points include many
+differing from it in a single RTI, so the child's LP value moves by
+almost nothing and the fractionality reappears one column over. The
+depth needed to exhaust that family grows with the pool, which is what
+makes the rule unusable here rather than merely slow. Branching on a
+per-period dispatch total has no symmetric
 twin, but it has an escape of its own: the relaxation answers a bound on
 one period by moving a truckload into a neighbouring period, at the
 price of one period's holding cost, so the bound barely moves.

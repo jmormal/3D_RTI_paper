@@ -9,7 +9,7 @@ vector with the flow-first construction as primal}\label{alg:bp3d}
                 In 3D: on the volumetric relaxation, Prop.~\ref{prop:inclusion}}
 \State $(\bar z,\mathbf{n}^{\star},\bar P) \gets \textsc{Construct}(\bar P,\ \text{root})$;
        \quad $X^{\star}\gets\sum_{g,t}n^{\star}_{gt}$
-       \Comment{steps 1--4, Section \ref{sec:branching}}
+       \Comment{steps 1--4, Section \ref{sec:relaxfix-flow}}
 \State $\mathcal{S} \gets \bigl[\,X\ge X^{\star}+1,\;\; X=X^{\star},\;\; X\le X^{\star}-1\,\bigr]$
        \Comment{a stack; the region that can beat the incumbent is expanded first}
 \While{$\mathcal{S} \ne \emptyset$ and time remains}

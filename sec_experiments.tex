@@ -336,15 +336,39 @@ of a percent of the truth. This is the strongest credibility datum in
 the paper, and the reason for reporting it first is that nothing
 elsewhere in the study can be checked this way.
 
-Two qualifications belong with it rather than after it. The budgets are
-\emph{not} equal, and the inequality runs against the fleet tree: the
-compact model had twice the time and five times the memory. And the
-fleet-tree run recorded no configuration of its own, so the $1\,800$ s
-and the $4$ GB in the table are recovered from its launcher and the
-system journal, with no seed and no commit established. A recovered
-configuration is weaker than a recorded one; what it supports is the
-objective comparison, which is a comparison of two numbers on one
-instance, and not a timing claim.
+Three qualifications belong with it rather than after it, and the third
+is the one that limits what it proves.
+
+The budgets are \emph{not} equal, and the inequality runs against the
+fleet tree: the compact model had twice the time and five times the
+memory. The fleet-tree run recorded no configuration of its own, so the
+$1\,800$ s and the $4$ GB in the table are recovered from its launcher
+and the system journal, with no seed and no commit established; a
+recovered configuration is weaker than a recorded one, and what it
+supports is the objective comparison --- two numbers on one instance ---
+and not a timing claim. And the five volumetric runs are five days older
+than the 3D campaign: they ran the same \emph{scheme} --- the master of
+Section~\ref{sec:mp}, the pure single-commodity pool, the flow-first
+relax and fix, the two-level fleet branch and bound --- but an earlier
+revision of it, in which step 3 solved an exact split rather than the
+cover of Section~\ref{sec:relaxfix-flow}, step 2 carried no integer
+stack counts, and level 1 did not recurse. They are therefore evidence
+about the scheme and not a measurement of the code that produced
+Table~\ref{tab:3d-onecommit}. Re-running them on the current code is a
+cheap and obvious next step, and until it is done this row is the
+weakest-provenanced of the paper's strong claims.
+
+One thing the volumetric rows do measure cleanly is the tree, because
+there it certifies per node. On $I\_16\_15\_2\_90\_k25$ its root
+construction returns $68\,151.00$ at $332$ s and four node improvements
+take that to $68\,139.59$, a gain of $0.0167\%$ that lands within
+$0.0006\%$ of the proved optimum. The pattern repeats on the three
+larger rows: root plans of $133\,506.22$, $200\,053.56$ and
+$281\,024.98$ improved by three, five and two node improvements to
+$133\,503.74$, $200\,047.54$ and $281\,023.77$ --- gains of $0.0019\%$,
+$0.0030\%$ and $0.0004\%$. The tree earns little here and much on the
+3D rows, which is consistent with what the root leaves it: where the
+relaxation is nearly exact the construction is already there.
 
 \paragraph{Where the compact model stops on memory.}
 On the other four instances the compact model exhausts its $20$ GB cap

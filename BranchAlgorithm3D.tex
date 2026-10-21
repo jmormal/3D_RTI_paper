@@ -2,23 +2,23 @@
 \caption{The fleet tree for 3D-SCPTOP: branch and bound over the fleet
 vector with the flow-first construction as primal}\label{alg:bp3d}
 \begin{algorithmic}[1]
-\State $\bar P \gets$ one full single-commodity truck per commodity and direction
+\State $\bar\Omega \gets$ one full single-commodity truck per commodity and direction
        \Comment{Section \ref{sec:initcols}}
-\State $\mathrm{LB}_{0} \gets \textsc{Certify}(\bar P,\ \text{root})$
+\State $\mathrm{LB}_{0} \gets \textsc{Certify}(\bar\Omega,\ \text{root})$
        \Comment{full sweep, every $(g,t)$, every pair proved; else no bound.
                 In 3D: on the volumetric relaxation, Prop.~\ref{prop:inclusion}}
-\State $(\bar z,\mathbf{n}^{\star},\bar P) \gets \textsc{Construct}(\bar P,\ \text{root})$;
+\State $(\bar z,\mathbf{n}^{\star},\bar\Omega) \gets \textsc{Construct}(\bar\Omega,\ \text{root})$;
        \quad $X^{\star}\gets\sum_{g,t}n^{\star}_{gt}$
        \Comment{steps 1--4, Section \ref{sec:relaxfix-flow}}
 \State $\mathcal{S} \gets \bigl[\,X\ge X^{\star}+1,\;\; X=X^{\star},\;\; X\le X^{\star}-1\,\bigr]$
        \Comment{a stack; the region that can beat the incumbent is expanded first}
 \While{$\mathcal{S} \ne \emptyset$ and time remains}
    \State $\mathcal{R} \gets$ pop $\mathcal{S}$; impose $\mathcal{R}$ on the RMP as fleet rows
-   \State $\tilde z \gets$ LP over $\bar P$ inside $\mathcal{R}$
+   \State $\tilde z \gets$ LP over $\bar\Omega$ inside $\mathcal{R}$
           \Comment{over-estimates the region's LP: a filter, never a bound}
    \If{LP infeasible} \State \textbf{continue} \Comment{discarded} \EndIf
    \If{$\tilde z \ge \bar z$ and the policy certifies $\mathcal{R}$}
-      \State $(\mathrm{LB}_{\mathcal{R}},\text{proved}) \gets \textsc{Certify}(\bar P,\mathcal{R})$
+      \State $(\mathrm{LB}_{\mathcal{R}},\text{proved}) \gets \textsc{Certify}(\bar\Omega,\mathcal{R})$
       \If{region infeasible or $\mathrm{LB}_{\mathcal{R}} \ge \bar z$}
          \State \textbf{continue} \Comment{pruned}
       \EndIf
@@ -26,7 +26,7 @@ vector with the flow-first construction as primal}\label{alg:bp3d}
    \Else
       \State $\mathcal{R}$ carries its parent's bound
    \EndIf
-   \State $(z,\mathbf{n},\bar P) \gets \textsc{Construct}(\bar P,\ \mathcal{R})$
+   \State $(z,\mathbf{n},\bar\Omega) \gets \textsc{Construct}(\bar\Omega,\ \mathcal{R})$
           \Comment{inside the region; its columns join the shared pool}
    \If{no plan} \State price under the region's duals; \textsc{Construct} once more; \textbf{continue} if still none \EndIf
    \If{$z < \bar z$} \State $(\bar z,\mathbf{n}^{\star}) \gets (z,\mathbf{n})$

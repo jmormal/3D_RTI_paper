@@ -3,14 +3,28 @@
 % =====================================================================
 %
 %  The formulation in this section follows docs/reformulation/dw_reformulation.tex,
-%  which is the authoritative specification.  Two editorial departures from it are
-%  deliberate and are stated in the text where they occur:
+%  which is the authoritative specification.  FOUR departures from it are
+%  deliberate; the first two are editorial, the last two are substantive and are
+%  argued in the text where they occur.
 %    * a column is indexed by omega rather than p, because p is already the plant
 %      direction and p_h the length of a footprint;
 %    * the geometry shared by the two pricing problems is written once, with the
 %      direction g as a parameter, instead of twice.  The spec prints both
 %      problems in full; they differ only in the rows listed in Section
 %      \ref{sec:pp-dir}.
+%    * the spec records the drop of the truck-symmetry row as resting on the
+%      author's confirmation that it "cannot be proven symmetric automatically".
+%      Here it is proved rather than asserted: the converse direction of
+%      Proposition \ref{prop:equiv} builds a compact solution that satisfies the
+%      row, so the master is equivalent to the compact model WITH the row in
+%      place and the drop costs nothing.  Stated in the Dropped-row paragraph.
+%    * the spec's full-truckload rows are written on the stack CAPACITY
+%      (omega_{g,r} n_hr Lbar_hr).  Here they are written on the LOAD the truck
+%      carries, with the capacity form retained as an implied cut.  The capacity
+%      form alone is strictly weaker and admits points that are not columns; see
+%      the paragraph after \eqref{bp:PP-utilw}.  This follows the rule that a row
+%      over a concrete load uses that load's own product weights, while only a
+%      design-time row that does not know the product may use the family maximum.
 %
 \section{Dantzig--Wolfe reformulation and branch and price}
 \label{sec:math}
@@ -99,9 +113,18 @@ The truck-symmetry row \eqref{sb:eq:sym-truck} of the compact model
 orders the trucks of a direction and period so that truck $k+1$ is used
 only if truck $k$ is. It is a statement about \emph{which} identical
 block carries which load, and after aggregation there is no such
-statement to make: counts of identical blocks carry no order. The row
-is dropped, and the drop is sound precisely because the blocks it
-orders were established to be identical in the step above.
+statement to make: counts of identical blocks carry no order, so the
+master has no variable in which to express it and the row is dropped.
+
+Dropping a \emph{valid} row is not automatically free --- it could in
+principle be the row that made the compact model's optimum match the
+reformulation's --- so the drop is discharged by proof rather than by
+appeal to the blocks being identical. The converse direction of
+Proposition~\ref{prop:equiv} takes a master solution and assigns trucks
+to columns \emph{in index order}; the resulting compact solution
+satisfies \eqref{sb:eq:sym-truck}. The equivalence therefore holds
+between the master and the compact model \emph{with} the row in force,
+which is what has to be true for the row's absence to cost nothing.
 
 \paragraph{Discretisation.}
 Every block variable that reaches the master is integer. For the
@@ -207,8 +230,8 @@ flow-aggregation rows \eqref{sb:eq:flow-n}--\eqref{sb:eq:flow-r} with
 each truck's load replaced by the image of the column it carries. The
 master problem (MP) is
 \begin{align}
-  \min\;\; & cK \sum_{g\in G}\sum_{t\in T}\sum_{\omega\in \Omega^{g}}
-                \lambda^{g}_{\omega t}
+  \min\;\; & \sum_{g\in G}\sum_{t\in T}\sum_{\omega\in \Omega^{g}}
+                c_{\omega}\,\lambda^{g}_{\omega t}
     \;+\;\sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn} I_{gnt}
     \label{eq:MPObjective}
 \end{align}
@@ -231,7 +254,12 @@ subject to
     \nonumber
 \end{align}
 That is the whole master. Objective \eqref{eq:MPObjective} minimises
-transport plus inventory holding cost. Constraints
+transport plus inventory holding cost, where $c_{\omega}=cK$ for every
+non-empty column and $c_{\omega}=0$ for the empty one; since every other
+column costs the same, the first term is $cK$ times the number of trucks
+dispatched. Writing $c_{\omega}$ rather than $cK$ is what makes the
+empty column free, and hence usable as the slack of the count row.
+Constraints
 \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} \emph{define} the two
 aggregates as what the dispatched trucks carry; \eqref{bp:MP-count}
 caps the fleet available per direction and period, with the empty
@@ -266,7 +294,10 @@ reproduce. Conversely, introducing one configuration per distinct
 column used by an MP solution and assigning trucks to columns
 arbitrarily --- the blocks being identical, any assignment serves ---
 reconstructs a 3D-SCPTOP solution of the same cost, feasible because
-each column carries a witnessing placement.
+each column carries a witnessing placement. Assigning them in index
+order makes that solution satisfy the truck-symmetry row
+\eqref{sb:eq:sym-truck} as well, so the equivalence holds whether or not
+the compact model carries it.
 \end{proof}
 
 The proposition is what distinguishes this approach from a pool-based
@@ -454,9 +485,18 @@ $z_{\mathrm{vol}}\le z^{\star}_{\text{3D-SCPTOP}}$, and the same holds
 inside any region defined by bounds on the fleet vector.
 \end{proposition}
 \begin{proof}
-A valid placement satisfying \eqref{eq:col-geom}--\eqref{eq:col-agg}
-has total RTI volume at most $\Gamma_{K}$ and total weight at most
-$pK^{w}$, and \eqref{eq:col-truck} is the same floor in both sets, so
+Two conventions of Section \ref{sec:model} are used and are stated
+because the inclusion rests on them: the trailer volume is
+$\Gamma_{K}=pK\cdot qK\cdot rK$, and the volume $\gamma_{gr}$ charged to
+an RTI of type $r$ in direction $g$ is the volume of its bounding box,
+$p_{h}\,q_{h}$ times its height in that direction, with no allowance for
+void space inside it or clearance between stacks. Both are what the data
+of Section \ref{sec:instances} provide. A valid placement satisfying
+\eqref{eq:col-geom}--\eqref{eq:col-agg} then has its RTIs in disjoint
+boxes inside the trailer, so their bounding-box volumes sum to at most
+$\Gamma_{K}$; its weight is at most $pK^{w}$ by
+\eqref{eq:col-truck}; and \eqref{eq:col-truck} is the same floor in
+both sets. Hence
 $\Omega^{g}\subseteq\Omega^{g}_{\mathrm{vol}}$. The rows of the master
 --- the two definitions, the count, the inventory and coverage rows, and
 any bound on a dispatch total --- do not depend on the load model; only
@@ -587,10 +627,21 @@ are implied by \eqref{bp:PP-util} --- the load never exceeds the
 capacity, and a slot contributes at most its footprint area times
 $rK$ of volume --- and are added because they are what lets a solver
 find a \emph{first} feasible layout quickly, which on tight instances
-is harder than optimising once one is known. A bound written on
-capacity alone would \emph{not} do: it admits a point whose stacks could
-have been full but whose actual load falls below the floor, and such a
-point is not a column.
+is harder than optimising once one is known.
+
+The direction of that implication is the whole point, and it is worth
+being explicit because the reverse is tempting and wrong. Writing the
+floor on the stack capacity \emph{alone}, with a per-type weight in
+place of the product's own, gives a strictly weaker condition: it admits
+a point whose stacks could have been filled to the floor but whose
+actual load falls below it, and such a point is not a column. A row over
+a concrete load must use that load's own product weights; only a
+design-time row that does not yet know which products will ride in the
+stack may use the heaviest the family can carry, and then only because
+the product-exact condition is imposed later. Getting this backwards is
+silent in both directions --- the family maximum in a per-load floor
+passes trucks that are not full, and the family minimum in a
+design-time floor cuts off feasible ones.
 
 \subsubsection*{The direction-specific rows}
 \label{sec:pp-dir}

@@ -7,7 +7,7 @@
     \tikzstyle{line} = [draw, -Latex]
 
     \node [block] (MP) {\textbf{Master Problem}\\[2pt]
-        \footnotesize all feasible truck loads $P^{p}\cup P^{s}$};
+        \footnotesize all feasible truck loads $\Omega^{p}\cup\Omega^{s}$};
     \node[block, below=0.9cm of MP] (RMP) {\textbf{Restricted Master Problem}\\[2pt]
         \footnotesize loads generated so far, $\lambda\ge 0$};
     \node[block, below=0.9cm of RMP] (PP) {\textbf{Pricing Problem}\\[2pt]
@@ -17,13 +17,14 @@
   \draw[bend right,left,->,align=left] (MP.west) to
         node {A reduced number \\ of columns} (RMP.west);
   \draw[bend right,left,->,align=left] (RMP.west) to
-        node {Dual prices $\pi_{ct}$, $\nu_{gt}$} (PP.west);
+        node {Dual prices $\pi_{ct}$, $\mu_{gt}$} (PP.west);
   \draw[bend left,right,<-,align=left] (RMP.east) to
         node {If reduced cost is negative \\ add the truck load as a column; \\
               if not, branch} (PP.east);
   \draw[bend right,below,->,align=center] (PP.west) to
-        node {Maximise $\sum_{c}\pi_{ct}a_{c}$ \\ subject to
-              \eqref{bp:PP-slot-active}--\eqref{bp:PP-s-stack-w}} (PP.east);
+        node {Minimise $c_{\omega}-\sum_{c}\pi_{ct}a_{c}$ \\ subject to
+              \eqref{bp:PP-slot-active}--\eqref{bp:PP-sym} and the
+              direction's rows of Section~\ref{sec:pp-dir}} (PP.east);
   \draw[bend left,below,<-,align=center] (RMP.west) to node {} (RMP.east);
 \end{tikzpicture}
 }

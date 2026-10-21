@@ -8,7 +8,7 @@
   side/.style={rectangle, draw=black!35, dashed, fill=white,
                text width=44mm, align=left, inner sep=4pt, font=\scriptsize}]
 
-  \node[io] (in) {duals $\pi_{ct}$, $\nu_{gt}$\\[2pt] rounded \emph{upwards}};
+  \node[io] (in) {duals $\pi_{ct}$, $\mu_{gt}$\\[2pt] rounded \emph{upwards}};
   \node[box, right=9mm of in] (oracle)
     {\textbf{CP oracle: design one truck}\\[3pt]
      \textbullet\; \emph{stack types} --- one per distinct footprint;
@@ -24,10 +24,10 @@
 
   \node[side, below=8mm of oracle.south west, anchor=north west] (modes)
     {\textbf{what it returns}\quad $\max\sum_{c}\pi_{ct}a_{c}$\\
-     a \emph{vertex} of $\operatorname{conv}(P^{g})$, for any duals\\[4pt]
+     a \emph{vertex} of $\operatorname{conv}(\Omega^{g})$, for any duals\\[4pt]
      \textbf{what it cannot return}\\
      an interior load; those come from the construction
-     (Section~\ref{sec:branching}) and join the same pool};
+     (Section~\ref{sec:relaxfix-flow}) and join the same pool};
   \node[side, right=6mm of modes] (fast)
     {\textbf{what a certificate costs}\\
      one full sweep: every $(g,t)$, no memoisation, no restriction to
@@ -40,7 +40,7 @@
 payload and the full-truckload rule are enforced \emph{inside} the
 oracle, so any column it returns is a physically loadable truck. It
 maximises the dual-weighted load and therefore returns a vertex of
-$\operatorname{conv}(P^{g})$ whatever the duals are; loads in the
+$\operatorname{conv}(\Omega^{g})$ whatever the duals are; loads in the
 interior of that hull (Figure~\ref{fig:hull}) are supplied by the
 construction of Section~\ref{sec:branching}, not by pricing. A
 certificate needs every call of a sweep closed to proven optimality,

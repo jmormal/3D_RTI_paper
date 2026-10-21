@@ -92,7 +92,9 @@ time limit between phases as described in Section~\ref{sec:branching}:
 in 3D, $15\%$ of the budget to root column generation, $3\%$ reserved
 for the frontier sweep, placeability calls limited to $5$ s and pricing
 calls to $20$ s at eight CP-SAT workers each, the heuristic rung on with
-a $0.5\%$ qualifying margin and the stop-early oracle, an initial Murty
+a $0.5\%$ qualifying margin and the stop-early oracle and pre-empting
+the oracle at a pair it serves --- which is what the budget condition of
+Section~\ref{sec:pp} selects at a $20$ s per-call limit --- an initial Murty
 depth of $6$ raised by two whenever the stack empties with budget left,
 at most two cut-and-repack rounds per partition attempt, and at most
 $15\%$ of the budget on region certificates. The $900$ s budget applies
@@ -710,28 +712,99 @@ constructed first: the method returns the twelve-truck plan at
 $18\,796.96$, to the cent the value of the hand-seeded reference that
 was removed from the method. Without those two decisions it returned
 thirteen trucks at $19\,682.36$, for the reason given in
-Section~\ref{sec:relaxfix-flow}. The heuristic rung's contribution
-depends on the instance in a way the qualifying rule predicts: where
-the volumetric relaxation is nearly exact it is neutral to slightly
-negative --- on $I\_8\_5\_2\_90$ the stand-alone measurement reaches an
-LP of $18\,798.56$ after five iterations with the rung against
-$18\,796.66$ without it, on a pool sixty percent larger --- and on
-$I\_16\_15\_2\_90\_k25$ it is the difference between a feasible
-restricted master and none: over the seventeen single-commodity trucks
-the master carries $1.55\cdot10^{8}$ of artificials, three sweeps of a
-$5$ s exact oracle leave it at $3.4\cdot10^{7}$, and the rung reaches a
-feasible $79\,400$ after one iteration and $76\,810$ after three. In
-the one-commit runs it served $13$, $15$, $66$, $206$ and $318$ of the
-$215$, $69$, $227$, $585$ and $873$ pricing calls, and the trucks it
-contributed to the reported plan are none, none, none, $44$ of $54$ and
-$122$ of $160$: nothing on the three instances whose certified gap is
-under $0.05\%$, and most of the fleet on the two where the pure pool
-cannot make the master feasible at all (Table~\ref{tab:ladder}). The certificate is never the rung's: the bound of every
-row is one uncapped exact sweep of the volumetric oracle.
-% ladder_measure_I_8_5_2_90.json (exact final_lp 18796.6558, 30 columns; ladder 18798.5613, 48)
-% ladder_measure_I_16_15_2_90_k25.json (exact it0 lp 1.5508e8, final_lp 3.4049e7;
-%   ladder it1 79400.38, final_lp 76810.49)
-% "ladder: N pairs served by GRASP" in the root LB trace line of each tree_3d_*_table_*.json
+Section~\ref{sec:relaxfix-flow}.
+
+The heuristic rung is isolated by a three-arm experiment from one pure
+pool --- the exact oracle alone, the rung pre-empting the oracle
+wherever it qualifies, and the two additively --- run in two
+configurations that answer two different questions. At $5$ s per call
+the exact oracle is invoked at every pair in \emph{all three} arms, so
+that the arms differ only in which columns enter the pool and the walls
+differ only by the rung's own cost; at $20$ s, the campaign's own
+per-call budget, the arms run the production structure, in which a
+pre-empted oracle is not called at all, so those walls are comparable.
+What the rung buys is \textbf{LP quality at equal work}, and it buys it
+only where the instance is large enough to need balanced loads.
+
+On $I\_8\_5\_2\_90$ all three arms land within $0.003\%$ of one another
+after five sweeps --- $18\,796.61$ exact-only, $18\,796.04$ with the
+rung pre-empting, $18\,796.11$ with both --- and the rung contributes
+no truck to the reported plan: there it is inert, not harmful. On
+$I\_16\_15\_2\_90\_k25$ the separation is wide. At $20$ s and six
+sweeps, exact-only reaches $76\,103.92$ in $744.5$ s, the rung-fed arm
+reaches $75\,983.75$ in $405.6$ s --- a better value $1.8\times$ sooner
+--- and running both generators reaches $75\,361.05$. At matched wall
+within that configuration the rung-fed arm is $2.0\%$ tighter at
+${\sim}235$ s and $1.6\%$ at ${\sim}410$ s. The two configurations ran
+at $1.96$ and ${\sim}8$ sampled cores, so no figure of one is compared
+with a figure of the other.
+
+One claim this paper made in an earlier revision is withdrawn here. At
+$5$ s per call the exact oracle alone leaves $99.6$ units of
+artificials in this master after three sweeps while one rung-fed sweep
+clears them, and that was reported as a structural limit of exact
+pricing. It is not one: at $20$ s the exact arm reaches zero
+artificials at \emph{sweep one}, with an LP of $78\,746.59$, and
+finishes feasible. The infeasible master was an artefact of a
+five-second cap, and the case for the rung rests on LP quality at equal
+work and not on feasibility. What remains true, and is a different
+statement, is that the pure pool of seventeen single-commodity trucks
+\emph{by itself} cannot cover demand within the fleet: the master over
+that pool alone carries $1.55\cdot10^{8}$ of artificials, and some
+generator has to clear them.
+
+The two generators are complementary rather than alternative, which is
+why the best of the three arms is the one that runs both. Within that
+arm, where both generators are called at every pair and so compared
+under one dual trajectory, the oracle's columns carry $4.72$ distinct
+commodities (median $5$) with $0.522$ of the load in the heaviest and
+the rung's carry $10.17$ (median $14$ of $16$) at $0.374$; pricing
+maximises a linear objective and so returns extreme,
+concentrated loads, and a balanced load is not an extreme point of
+$\operatorname{conv}(\Omega^{g})$ at any duals. Which arrangement to
+run is a budget question rather than a choice between the two, and
+Section~\ref{sec:pp} states the condition: both while the mean per-pair
+oracle time is at or under $5$ s, the rung pre-empting above it. At
+$20$ s that is pre-emption, which is what the code already did, so
+every row of this section was produced by the algorithm just described.
+
+In the one-commit runs the rung served $13$, $15$, $66$, $206$ and
+$318$ of the $215$, $69$, $227$, $585$ and $873$ pricing calls, and the
+trucks it contributed to the reported plan are none, none, none, $44$
+of $54$ and $122$ of $160$: nothing on the three instances whose
+certified gap is under $0.05\%$, and most of the fleet on the two whose
+catalogue makes the crush limit bind, which are also the two on which
+the pure pool alone cannot cover demand (Table~\ref{tab:ladder}). It
+costs $18.9$ s of the $405.6$ s arm, $4.7\%$. The certificate is never
+the rung's: the bound of every row is one uncapped exact sweep of the
+volumetric oracle, and a sweep at which the rung served any pair cannot
+report \emph{proved}.
+% Three-arm experiment, same pure pool, exact oracle run at every pair in every
+% arm so that only the COLUMN SET differs:
+%   results/fleet_tree_3d/ladder_both_I_8_5_2_90.json (price_tl 5, 5 sweeps,
+%     pool 10, 2 threads / 2 workers): exact 18796.607 / 30 cols / 115.7 s,
+%     ladder 18796.038 / 39 / 116.5 s, both 18796.110 / 44 / 120.0 s.
+%   results/fleet_tree_3d/ladder_both_I_16_15_2_90_k25.json (price_tl 5, 3
+%     sweeps, pool 17): exact final_lp 9.9633e7 with artif 99.554 / 60 cols /
+%     230.8 s, ladder 76839.25 / 103 / 237.3 s with added_exact 0, both
+%     76304.92 / 148 / 241.5 s.  Composition: rung ncomm_mean 10.29 (med 14 of
+%     16) at top_share 0.364 against the exact ARM's 4.70 (med 5) at 0.687 --
+%     different arms, hence different duals.  The same-duals pair is inside the
+%     `both' arm: exact_comp 4.72 / 5 / 0.522, rung_comp 10.17 / 14 / 0.374.
+%   results/fleet_tree_3d/ladder_exact_tl20_I_16_15_2_90_k25.json (price_tl 20,
+%     6 sweeps, 10 threads / 8 workers): 76103.92 / 102 cols / 744.5 s; its
+%     trace reaches artif 0.0 at it 1 with lp 78746.59.
+%   results/fleet_tree_3d/ladder_rung_tl20_I_16_15_2_90_k25.json (same config,
+%     PRODUCTION structure -- the pre-emptive arm skips the oracle at a served
+%     pair, t_exact 386.5 against 744.5): ladder 75983.75 / 185 / 405.6 s with
+%     t_heur 18.85; both 75361.05 / 265 / 799.1 s.
+%   Matched wall from those traces: 78409.83 (exact, 219.9 s) against 76824.77
+%     (ladder, 234.2 s) = 2.02%; 77387.10 (exact, 419.6 s) against 76170.03
+%     (ladder, 405.6 s) = 1.57%.  1.8x = 744.5 / 405.6.
+%   The 5 s and 20 s jobs differ in cores (1.96 against ~8 sampled), so the
+%     cross-budget sentences are labelled as such.
+% "ladder: N pairs served by GRASP" in the root LB trace line of each
+%   tree_3d_*_table_*.json.  Rule and reasoning: docs/DECISIONS.md decision 13.
 
 % ---------------------------------------------------------------
 \subsection{Against the procedure in use}

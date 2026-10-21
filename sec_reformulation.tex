@@ -816,15 +816,95 @@ fills, placed by a shelf packer, together with a re-fill of the slot
 geometry of columns already in the pool --- whose output is pricing
 output, never seeding. A heuristic load \emph{qualifies} only if its
 reduced cost lies below a margin of half a percent of the pair's
-threshold, so that a marginal heuristic column cannot pre-empt a much
-better exact one; the best two qualifying loads per pair are kept, and
-a pair at which nothing qualifies goes to the exact oracle. The oracle
-itself is run in a stop-early mode that returns its first incumbent
-beating the threshold by the same margin. The certifying sweep never
-uses either rung, and neither does the Lagrangian bound
-\eqref{eq:lagr}: a certificate is one uncapped exact sweep, exactly as
-in Section \ref{sec:bounds}, so the ladder changes which columns arrive
-and how fast, and nothing about what may be claimed.
+threshold; the best two qualifying loads per pair are kept, and a pair
+at which nothing qualifies goes to the exact oracle. The oracle itself
+is run in a stop-early mode that returns its first incumbent beating
+the threshold by the same margin.
+
+\paragraph{What the margin does, and what it does not.}
+The margin is worth stating precisely, because the obvious reading of
+it is wrong and we have measured the difference. It tests whether a
+heuristic column is good enough \emph{in its own reduced cost} to be
+worth adding: it discards the near-zero columns a stalled greedy
+produces, which would otherwise enter the pool and pre-empt the oracle
+for nothing. It does \emph{not} compare the heuristic column with the
+column the oracle would have returned at the same duals, and it cannot,
+since that column is exactly what has not been computed. A strongly
+negative heuristic column therefore passes the margin and suppresses
+the oracle at that pair completely. Three sweeps on
+$I\_16\_15\_2\_90\_k25$ at five seconds per call record the extreme
+case: the rung qualified at every pair that had an improving column to
+give, not one priced column entered the pool, and the exact oracle ---
+which in that experiment was run at every pair regardless --- therefore
+contributed nothing.
+
+That matters only because the two generators are
+\emph{complementary rather than substitutable}, which is the same
+$\operatorname{conv}(\Omega^{g})$ argument as
+Figure~\ref{fig:hull}. In the arm that calls both at every pair, and so
+compares them under one dual trajectory, the oracle's columns carry
+$4.72$ distinct commodities on average (median $5$) with $0.522$ of the
+load in the heaviest, and the rung's carry $10.17$ (median $14$ of
+$16$) at $0.374$: pricing returns extreme, concentrated loads because
+its objective is linear, and the rung returns balanced ones because it
+is not optimising that objective at all. So running both is not
+redundant work. At an equal number of sweeps from the same pool,
+running both gives a tighter restricted-master LP than either generator
+alone at either per-call budget --- $76\,304.92$ against the
+pre-emptive ladder's $76\,839.25$ over three sweeps at five seconds,
+and $75\,361.05$ against $75\,983.75$ over six at twenty, the
+exact-only arm being behind both in each case. Lower is tighter: the
+restricted-master value is an upper bound on the master LP until
+pricing converges (Section~\ref{sec:bounds}).
+
+What stops that from being a blanket rule is the price. Running both
+pays an oracle call at every rung-served pair and carries the larger
+pool, and the master LPs then pay for both: $265$ columns against the
+pre-emptive ladder's $185$ at the same budget. Per \emph{second} the
+pre-emptive arrangement is the better one at the short end, reaching
+$75\,983.75$ in $405.6$ s where the additive arrangement stood at
+$76\,498.48$ at a comparable $395.9$ s and needed $799.1$ s for its own
+final value. The rule the implementation therefore applies is a
+condition on the oracle's marginal cost rather than a preference
+between the generators: \textbf{run both while the sweep's mean
+per-pair oracle time is at or under five seconds, and let the rung
+pre-empt above it}, the mean being a quantity the sweep already
+records. Under the per-call budget of the campaign, $20$ s, that
+condition selects pre-emption --- which is the structure the code
+already had --- so \emph{nothing in the results of
+Section~\ref{sec:results} was produced by a different algorithm}. Its
+provenance is two per-call budgets on one instance, and the two
+configurations also differ in cores, so it is a calibration and not a
+law; what the measurements fix unambiguously is its direction.
+
+The certifying sweep never uses either rung, and neither does the
+Lagrangian bound \eqref{eq:lagr}: a certificate is one uncapped exact
+sweep, exactly as in Section \ref{sec:bounds}, so the ladder changes
+which columns arrive and how fast, and nothing about what may be
+claimed.
+% results/fleet_tree_3d/ladder_both_I_16_15_2_90_k25.json (price_tl 5, 3 sweeps,
+%   2 threads / 2 workers, pool 17, oracle run at EVERY pair in all three arms so
+%   that only the column set differs): exact added_exact 43, ladder added_exact 0
+%   / added_rung 86 / final_lp 76839.25 / 103 cols, both final_lp 76304.92 / 148
+%   cols; rung_comp ncomm_mean 10.29 med 14 top_share 0.364 against exact_comp
+%   4.70 / 5 / 0.687 -- but those are DIFFERENT arms and so different duals.
+%   The same-duals pair is inside the `both' arm: exact_comp 4.72 / 5 / 0.522
+%   against rung_comp 10.17 / 14 / 0.374, which is what the text quotes.
+%   rung_pairs 15/14/14 of the 2|T| = 30 pairs, and the exact arm itself added
+%   only 15/14/14 columns in those sweeps, so the pairs the oracle kept were the
+%   ones with nothing to give: hence added_exact = 0 rather than "every pair".
+% results/fleet_tree_3d/ladder_exact_tl20_I_16_15_2_90_k25.json and
+%   ladder_rung_tl20_I_16_15_2_90_k25.json (price_tl 20, 6 sweeps, 10 threads /
+%   8 workers, PRODUCTION structure: the pre-emptive arm skips the oracle at a
+%   served pair, t_exact 386.5 against the exact arm's 744.5): exact 76103.92 /
+%   102 cols / 744.5 s; ladder 75983.75 / 185 cols / 405.6 s; both 75361.05 /
+%   265 cols / 799.1 s, its trace reaching 76498.48 at it 3, wall 395.9 s.
+% The 5 s and 20 s jobs differ in cores (1.96 against ~8 sampled), so every
+%   cross-budget sentence above is labelled as one.
+% The margin's own design evidence is ladder_measure_I_8_5_2_90.json: by the
+%   third iteration the rung's best is -0.01 to -0.1 where the oracle finds -2
+%   to -5 at the same duals.
+% Rule and full reasoning: docs/DECISIONS.md decision 13.
 
 \input{TikzPricingOracle}
 
@@ -1309,8 +1389,13 @@ The starting pool is the placeable single-commodity trucks of Section
 \ref{sec:initcols} and nothing else; every other column comes from the
 pricing ladder or from the relax and fix. On a catalogue where the crush
 limit binds, the restricted master over that pool is not even feasible
---- no combination of pure trucks covers demand within the fleet --- and
-reaching feasibility is the heuristic rung's job
+--- no combination of pure trucks covers demand within the fleet --- so
+clearing the artificials is the first thing column generation has to do.
+\emph{Either} generator does it: at the per-call budget of
+Section~\ref{sec:results} the exact oracle alone clears them in one
+sweep, and so does one rung-fed sweep. What the rung buys is not
+feasibility but a tighter restricted master per unit of work, and
+Section~\ref{sec:res-3d} measures that
 (Table~\ref{tab:ladder}). The root bound is the certified value of the
 volumetric relaxation (Proposition~\ref{prop:inclusion}); geometric
 pricing, given a share of the root budget, supplies columns and nothing

@@ -273,38 +273,75 @@ $I\_12\_12\_2\_90\_k25$ & pure, final & yes & yes & $X\le X^{\star}-1$ first & 3
 \begin{table}[!htbp]
 \centering
 \small
-\caption{The pricing ladder. Top: the heuristic rung measured against the
-exact oracle under the \emph{same duals} over the pure pool, in a
-stand-alone column-generation loop with two threads, two CP-SAT workers and
-a $5$ s exact oracle --- a measurement of which columns each finds, not of
-production speed. \emph{LP} is the restricted-master value after the
-stated number of iterations; on $I\_16\_15\_2\_90\_k25$ the pure-pool master
-is infeasible and the value is dominated by the big-$M$ artificials until
-the pool can cover demand. Bottom: the rung inside the one-commit production runs of
+\caption{The pricing ladder. \textbf{Top: three arms over one pure
+pool}, differing only in which columns enter it --- the exact oracle
+alone, the heuristic rung pre-empting the oracle wherever it qualifies,
+and the two run additively. \emph{LP} is the restricted-master value
+after the stated number of sweeps, and \emph{lower is tighter}, since
+that value is an upper bound on the master LP until pricing converges.
+The $5$ s blocks are a measurement of \emph{which columns each generator
+finds}: the exact oracle is called at every pair in all three arms, so
+their walls differ only by the rung's own cost and are not production
+figures. The $20$ s block is the production structure at the campaign's
+own per-call budget, where the pre-emptive arm does skip the oracle at a
+served pair, so its wall is comparable. The $5$ s and $20$ s jobs ran at
+$1.96$ and ${\sim}8$ sampled cores respectively, so no row of one block
+is comparable with a row of the other. The exact-only arm's
+artificial-laden value at $5$ s is a property of \emph{that cap}: at
+$20$ s the same arm reaches zero artificials at sweep one and finishes
+feasible, so it is not evidence that exact pricing cannot clear this
+master. \textbf{Bottom: the rung inside the one-commit production runs} of
 Table~\ref{tab:3d-onecommit}: pricing calls, calls the rung served
 without the exact oracle, columns it kept, exact-oracle calls, and the
 dispatched trucks of the reported plan (weighted by dispatch count) that
-are the rung's columns. The last column is where the rung matters: it
-contributes no truck to the three plans whose certified gap is under
-$0.05\%$, and $44$ of $54$ and $122$ of $160$ trucks to the two plans on
-the crush-binding catalogue, where the pure pool cannot even make the
-master feasible.}
+are the rung's columns. It contributes no truck to the three plans whose
+certified gap is under $0.05\%$, and $44$ of $54$ and $122$ of $160$
+trucks to the two plans on the crush-binding catalogue --- which are
+also the two on which the pure pool \emph{by itself} cannot cover demand
+within the fleet. No bound in this paper is the rung's: a sweep at which
+it served any pair cannot report \emph{proved}.}
 \label{tab:ladder}
 \begin{tabular}{llrrrr}
 \toprule
-\multicolumn{6}{l}{\emph{Measurement (results/fleet\_tree\_3d/ladder\_measure\_*.json)}} \\
-Instance & mode & iterations & LP & columns & wall (s) \\
+\multicolumn{6}{l}{\emph{Three arms over one pure pool
+(\texttt{ladder\_both\_*.json}, \texttt{ladder\_exact\_tl20\_*.json},
+\texttt{ladder\_rung\_tl20\_*.json})}} \\
+Instance, per-call budget & arm & sweeps & LP & columns & wall (s) \\
 \midrule
-% results/fleet_tree_3d/ladder_measure_I_8_5_2_90.json: exact final_lp 18796.6558, 30 columns, 119.3 s; ladder final_lp 18798.5613, 48 columns, 126.4 s (5 iterations)
-$I\_8\_5\_2\_90$ & exact oracle only & 5 & 18\,796.66 & 30 & 119.3 \\
-$I\_8\_5\_2\_90$ & rung, then oracle & 5 & 18\,798.56 & 48 & 126.4 \\
-% results/fleet_tree_3d/ladder_measure_I_16_15_2_90_k25.json: exact trace it0 1.5508e8, final_lp 3.4049e7, 60 columns, 231.5 s;
-%   ladder trace it0 1.5508e8 (pool 47, wall 78.9), it1 79400.38 (pool 76, wall 158.1),
-%   it2 78111.20, final_lp 76810.49, 104 columns, 237.9 s (3 iterations).  The LP printed on the
-%   one-iteration row is the value AFTER iteration 1, whose pool is 47 and whose wall is 78.9.
-$I\_16\_15\_2\_90\_k25$ & exact oracle only & 3 & $3.40\cdot10^{7}$ (infeasible) & 60 & 231.5 \\
-$I\_16\_15\_2\_90\_k25$ & rung, then oracle & 1 & 79\,400.38 & 47 & 78.9 \\
-$I\_16\_15\_2\_90\_k25$ & rung, then oracle & 3 & 76\,810.49 & 104 & 237.9 \\
+% results/fleet_tree_3d/ladder_both_I_8_5_2_90.json: price_tl 5, 5 sweeps, pool 10,
+%   2 threads / 2 workers, oracle run at every pair in every arm.
+%   exact final_lp 18796.607 / 30 cols / 115.7 s; ladder 18796.038 / 39 / 116.5 s;
+%   both 18796.110 / 44 / 120.0 s.  Spread 0.003%.
+$I\_8\_5\_2\_90$, $5$ s      & exact oracle only & 5 & 18\,796.61 & 30 & 115.7 \\
+                             & rung pre-empts    & 5 & 18\,796.04 & 39 & 116.5 \\
+                             & rung and oracle   & 5 & 18\,796.11 & 44 & 120.0 \\
+\midrule
+% results/fleet_tree_3d/ladder_both_I_16_15_2_90_k25.json: price_tl 5, 3 sweeps,
+%   pool 17, same controlled design.  exact final_lp 9.9633e7 with
+%   final_artificials 99.554 / 60 cols / 230.8 s; ladder 76839.25 / 103 / 237.3 s,
+%   added_exact 0 and added_rung 86; both 76304.92 / 148 / 241.5 s.
+$I\_16\_15\_2\_90\_k25$, $5$ s & exact oracle only & 3 & $9.96\cdot10^{7}$ ($99.6$ artif.) & 60 & 230.8 \\
+                             & rung pre-empts    & 3 & 76\,839.25 & 103 & 237.3 \\
+                             & rung and oracle   & 3 & 76\,304.92 & 148 & 241.5 \\
+\midrule
+% results/fleet_tree_3d/ladder_exact_tl20_I_16_15_2_90_k25.json and
+%   ladder_rung_tl20_I_16_15_2_90_k25.json: price_tl 20 (the campaign's own
+%   per-call budget), 6 sweeps, 10 threads / 8 workers, production structure.
+%   exact 76103.92 / 102 / 744.5 s, its trace artif 0.0 at it 1 (lp 78746.59);
+%   ladder 75983.75 / 185 / 405.6 s (t_heur 18.85, t_exact 386.5);
+%   both 75361.05 / 265 / 799.1 s, trace 76498.48 at it 3, wall 395.9 s.
+$I\_16\_15\_2\_90\_k25$, $20$ s & exact oracle only & 6 & 76\,103.92 & 102 & 744.5 \\
+                             & rung pre-empts    & 6 & 75\,983.75 & 185 & 405.6 \\
+                             & rung and oracle   & 6 & 75\,361.05 & 265 & 799.1 \\
+\midrule
+% Column composition inside the `both' arm of
+%   ladder_both_I_16_15_2_90_k25.json, which calls both generators at every pair
+%   and so compares them under ONE dual trajectory: exact_comp ncomm_mean 4.72,
+%   median 5, top_share 0.522; rung_comp 10.17, median 14 of 16, top_share
+%   0.374.  (The separately run arms give 4.70 and 10.29 -- the same picture
+%   under different duals.)  This is why the additive arm beats either alone.
+\multicolumn{6}{l}{\emph{Distinct commodities per column, both generators under
+one dual trajectory: oracle $4.72$ (median $5$), rung $10.17$ (median $14$ of $16$)}} \\
 \midrule
 \multicolumn{6}{l}{\emph{In the production runs (\texttt{stats.ladder} of the Table~\ref{tab:3d-onecommit} files)}} \\
 Instance & calls & served by rung & kept & exact calls & rung trucks in plan \\

@@ -50,7 +50,14 @@ of \emph{either} the trailer volume or the payload,
 with $\theta_{kt}\in\{0,1\}$ and the supplier direction analogous. The flows
 aggregate as $Q_{nt}=\sum_{k}Q^{k}_{nt}$ and $Q_{rt}=\sum_{k}Q^{k}_{rt}$, and
 the inventory balances, coverage stock and domains are those of
-\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety}, unchanged.
+\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety}, unchanged. The
+truck-symmetry row \eqref{sb:eq:sym-truck} is carried here as well, for
+the same reason and with the same limited effect: the trucks of a
+direction and period are anonymous in both models, and ordering their
+\emph{use} leaves the assignment of loads among the used trucks free.
+Neither compact model is therefore held to an easier standard than the
+other, and the symmetry both retain is what the reformulation of
+Section~\ref{sec:decomp} removes by aggregating the blocks.
 
 Constraint \eqref{eq:A-vol} is the whole of the benchmark's loading model: a
 truck is deemed able to carry any set of RTIs whose volumes fit inside the

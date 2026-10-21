@@ -123,7 +123,7 @@ fleet tree, volumetric oracle (Table~\ref{tab:volumetric}) & 1\,800$^{\sim}$ & $
 % compact volumetric: config blocks of results/compact_ref/compact_ref_*.json
 compact SCPTOP, volumetric reference (Table~\ref{tab:volumetric}) & 1\,800 / 3\,600 & 0 & 10 & 20 & 0 \\
 % compact 3D: config blocks of results/compact_3d/compact3d_*.json
-compact 3D-SCPTOP, $|L|=3$ (Table~\ref{tab:3d-head}) & 1\,800 & 0 & 10 & 20 & 0 \\
+compact 3D-SCPTOP, $n_{\mathrm{LC}}=3$ (Table~\ref{tab:3d-head}) & 1\,800 & 0 & 10 & 20 & 0 \\
 % SCPTOP half of experiments/run_benchmark.py, launcher ft3d-benchmark.sh
 SCPTOP, volumetric benchmark (Tables~\ref{tab:bench}--\ref{tab:summary}) & 900 & $0.02$ & 4 & 20 & 0 \\
 placeability recheck of SCPTOP loads & 120 per load & --- & 4 & 20 & 0 \\
@@ -320,13 +320,19 @@ The comparators are:
       the two bracket a common optimum, and it is the one comparator in
       this study that produces a \emph{proved} optimum.
 \item \textbf{Compact 3D-SCPTOP} --- the model of
-      Section~\ref{sec:model} solved directly at $|L|=3$ loading
-      configurations per direction, warm-started with the
-      matheuristic's plan. $|L|=3$ is a restriction chosen a priori:
-      nothing here computes an over-estimate of $|L|$, and
-      Proposition~\ref{prop:equiv} states the equivalence only for an
-      unrestricted $|L|$. Its \emph{plan} is therefore a legitimate
-      comparator and its dual bound is not an end of any interval.
+      Section~\ref{sec:model} solved directly by Gurobi, warm-started
+      with the matheuristic's plan. Section~\ref{sec:model} lets every
+      truck design its own layout, which puts a complete packing
+      problem on each of the $2|K||T|$ trucks; what is solved here
+      instead shares a catalogue of $n_{\mathrm{LC}}=3$ layouts per
+      direction among them, so that the trucks of a direction must
+      agree on three designs. That is a \emph{restriction} of
+      Section~\ref{sec:model}, chosen a priori: nothing here computes
+      an over-estimate of how many designs suffice. Its \emph{plan} is
+      therefore a legitimate comparator --- a feasible plan of the
+      restriction is a feasible plan of the model --- and its dual
+      bound bounds the restriction and is not an end of any interval
+      for $z^{\star}$.
 \item \textbf{SCPTOP} --- the volumetric benchmark, identical to the
       master in every respect \emph{except} that truck capacity is
       volumetric. It is not used as a yardstick for the 3D method; its
@@ -494,7 +500,7 @@ Table~\ref{tab:3d-head} sets the compact 3D-SCPTOP model against the
 method on four rungs of the ladder, and the finding is a negative one
 that the rest of this section depends on. On $I\_8\_5\_2\_90$ --- the
 one instance on which the compact model returns a plan --- it has three
-configurations per direction, $67\,674$ variables and $92\,092$
+shared layouts per direction, $67\,674$ variables and $92\,092$
 constraints, and stops on its $1\,800$ s time limit at $18\,816.13$ with
 a dual bound of $18\,795.76$, no phantom freight, twelve loads that pass
 the independent verifier, and a peak resident set of $3.8$ GB against
@@ -504,7 +510,7 @@ tree then opens do not improve.
 
 From ten periods on the compact model returns \emph{no feasible
 solution at all}. On $I\_8\_10\_2\_90\_k25$ ($119\,424$ variables,
-$164\,692$ constraints at $|L|=3$), on $I\_12\_12\_2\_90\_k25$
+$164\,692$ constraints at $n_{\mathrm{LC}}=3$), on $I\_12\_12\_2\_90\_k25$
 ($200\,748$ and $256\,180$) and on $I\_16\_15\_2\_90\_k25$ ($322\,734$
 and $393\,412$) it finds none in $1\,800$ s. All three stopped on time,
 not on memory: their peak resident sets were $6.1$, $2.7$ and $4.5$ GB
@@ -516,8 +522,10 @@ there was no solution to leak. Four rungs are four rungs and we do not
 generalise beyond the sizes they cover; what they establish is that
 beyond five periods the compact 3D model supplies neither a plan to
 compare against nor a bound that bounds the problem --- its dual bound
-bounds the $|L|=3$ restriction --- which is why the comparator for the
+bounds the three-layout restriction --- which is why the comparator for the
 3D rows has to be the procedure in use rather than the exact model.
+% Every compact-3D run used n_lc = 3: the `config.n_lc` field of all five files
+%   below, and src/rti3d/models/monolithic.py:42 (the default).
 % compact: results/compact_3d/compact3d_rerun_I_8_5_2_90.json (n_vars 67674, n_cons 92092,
 %   obj 18816.13, bound 18795.757, TIME_LIMIT, peak_rss_gb 3.80, leaked 0, plan_verified True)
 %   compact3d_I_8_10_2_90_k25.json (119424 / 164692, obj inf, bound 36458.753, peak 6.12)
@@ -1222,11 +1230,11 @@ is excluded from the mean gap, and the count of rows behind every mean
 gap in Table~\ref{tab:summary} is printed beside it for that reason.
 
 \paragraph{The compact 3D model's bound is not a bound on the problem.}
-It restricts each direction a priori to $|L|=3$ loading configurations,
-and Proposition~\ref{prop:equiv} states the equivalence only for an
-unrestricted $|L|$. A restriction's optimum is at or above the
-problem's, so its dual bound bounds that restriction and not
-$z^{\star}$. Its \emph{plan} is used as a comparator and its bound
+It restricts each direction a priori to a catalogue of
+$n_{\mathrm{LC}}=3$ layouts shared by all its trucks, where
+Section~\ref{sec:model} lets every truck design its own. A
+restriction's optimum is at or above the problem's, so its dual bound
+bounds that restriction and not $z^{\star}$. Its \emph{plan} is used as a comparator and its bound
 never as an end of an interval. In particular the compact model and the
 method do \emph{not} bracket the optimum on $I\_8\_5\_2\_90$; the
 interval that holds $z^{\star}$ there is $[18\,796.96,\,18\,796.96]$,

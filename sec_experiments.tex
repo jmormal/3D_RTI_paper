@@ -829,6 +829,44 @@ lower bounds on the true difference. And the repaired plan is a
 needs thirteen trucks where twelve is the proved optimum, because
 repairing a fixed assignment of freight to trucks is not the same as
 planning afresh.
+
+\paragraph{A harder volumetric baseline, and what is not yet known about it.}
+The comparison above is against a \emph{plain} volumetric model, and the
+obvious objection is that a planner who had read this section would not
+build one: the mechanism is computable from the catalogue, so the
+capacity could be deflated to reflect it. The honest answer is that a
+step in that direction has been measured and does not close the gap,
+and that the rest of it has not been measured at all. Adding to the
+compact volumetric model the stack-count rows of
+Section~\ref{sec:geo3d} --- an integer number of stacks per footprint,
+each within the crush limit and the height budget, their floor areas
+summed against the trailer floor, which is a valid inequality for every
+placeable load --- raises its answer on $I\_16\_15\_2\_90\_k25$ from
+forty-five trucks to forty-eight, at $71\,072.06$ with a dual bound of
+$70\,435.04$ after $600$ s, and raises the dual bound of the relaxation
+by $2\,303$, about a fifth of the gap the plain bound leaves. On
+$I\_12\_12\_2\_90\_k25$, where the crush limit does not bind, the same
+rows change the truck count not at all.
+
+Two things follow, and we draw only those. The rows are a real
+tightening of the \emph{bound} and are named in the conclusions as the
+next step for it. But forty-eight trucks is still eleven percent below
+the method's verified fifty-four, and \emph{whether those forty-eight
+loads can be placed has not been tested}: the stack rows are necessary
+for placeability, not sufficient, since they say nothing about how the
+stacks tile the floor. Until that test is run, the stack-aware
+volumetric model is not a baseline this paper can report a saving over,
+and claiming one would repeat exactly the error the plain volumetric
+model is being faulted for.
+% results/compact_ref/compact_ab_I_16_15_2_90_k25.json (stack_rows true, obj 71072.06,
+%   bound 70435.0382, 48 trucks, TIME_LIMIT at 600 s, threads 10, soft_mem_gb 20, seed 0)
+%   against compact_ref_I_16_15_2_90_k25.json (no stack rows, OPTIMAL 68139.17, 45 trucks):
+%   bound 70435.04 - 68139.17 = 2295.87 over the proved plain optimum, and 70435.04 -
+%   68131.43 = 2303.61 over the method's certified plain bound, which is the 2303 quoted.
+% results/compact_ref/compact_ab_I_12_12_2_90_k25.json (stack_rows true, 34 trucks,
+%   obj 52117.80) against compact_ref_I_12_12_2_90_k25.json (34 trucks, obj 52116.69)
+% 11% = (54-48)/54 = 11.1%
+
 % results/repacked_volumetric.json (config pack_tl 20, part_tl 90, workers 8, rounds 3):
 %   I_16_15_2_90_k25 volumetric 45 / 68139.17, repacked 74 / 97139.17, loadlocal 86,
 %     method 54, pairs_unpacked 0, over_delivered_units 80, complaints 0

@@ -72,19 +72,57 @@ a consequence of one of its steps.
 
 \paragraph{Blocks.}
 Take the block index to be $\mathcal{B}=G\times K\times T$. Inspect
-Section \ref{sec:model}: every geometric constraint
-\eqref{sb:eq:slot-active}--\eqref{sb:eq:util} carries a single
-direction and a single configuration, every loading and weight
-constraint \eqref{sb:eq:slot-cap}--\eqref{sb:eq:stack-w-sup} carries a
-single direction, a single truck and a single period, and no such row
-couples two values of $g$, of $k$ or of $t$. The remaining rows --- the
-inventory balances \eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety}
-and the flow aggregations
-\eqref{sb:eq:flow-n}--\eqref{sb:eq:flow-r} --- see the blocks
-\emph{only} through the aggregate flows $Q_{nt}$ and $Q_{rt}$. The
-model is therefore block-angular with one independent block per
-(direction, truck, period), and a block whose rows never couple two
-values of an index is the product of its parts over that index.
+Section \ref{sec:model}. Every geometric constraint
+\eqref{sb:eq:slot-active}--\eqref{sb:eq:utilw} carries a single
+direction and a single configuration; every loading, weight and
+runtime full-truckload constraint
+\eqref{sb:eq:slot-cap}--\eqref{sb:eq:stack-w-sup} and
+\eqref{sb:eq:util-run-p}--\eqref{sb:eq:utilw-run-s} carries a single
+direction, a single truck and a single period; and the assignment row
+\eqref{sb:eq:one-lc} relates $Y_{gklt}$ to $Y_{gkt}$ inside one
+(direction, truck, period). None of those rows couples two values of
+$g$, of $k$ or of $t$. The remaining rows --- the inventory balances
+\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety} and the flow
+aggregations \eqref{sb:eq:flow-n}--\eqref{sb:eq:flow-r} --- see the
+blocks \emph{only} through the aggregate flows $Q_{nt}$ and $Q_{rt}$.
+
+\paragraph{The one row that does couple the blocks.}
+Exactly one family is not block-separable as the compact model writes
+it, and the step above would be false if it were passed over. The
+activation row \eqref{sb:eq:lc-active}, $Y_{gklt}\le Z_{gl}$, couples
+every truck and every period of a direction through the shared
+configuration variables $Z_{gl}$: the catalogue $L$ is a global
+resource that all blocks of a direction draw on, and that is precisely
+the ``configuration designed once and used by many trucks'' structure
+the compact model has.
+
+It is discharged, not ignored, and by the hypothesis the equivalence
+already carries. Replace the shared catalogue by a \emph{private} one:
+give every block its own configuration variables, so that a block
+designs the layout of its own truck and $Z$ becomes a variable of the
+block rather than of the direction. One inclusion is immediate --- any
+solution of the shared-catalogue model is a solution of the private one,
+by replicating each used configuration into the blocks that use it,
+at the same cost, since cost counts trucks and not configurations. The
+other is the converse construction of
+Proposition~\ref{prop:equiv}: it introduces \emph{one configuration per
+distinct column used}, which is a solution of the shared-catalogue
+model whenever $|L|$ is not restricted a priori. The two therefore have
+the same optimal value under exactly the hypothesis of
+Proposition~\ref{prop:equiv}, and with the catalogue private the model
+is block-angular with one independent block per (direction, truck,
+period). A block whose rows never couple two values of an index is the
+product of its parts over that index.
+
+This is also where the $|L|$ of the compact model goes. It is not
+dropped as harmless: it is the one place the two formulations can
+differ, and Section \ref{sec:results} says so where it compares against
+a compact 3D-SCPTOP run at $|L|=3$, which is a restriction and whose
+dual bound bounds that restriction only. A block that designs a
+configuration and dispatches no truck is the all-zero point, so inside
+the block the design binary and the dispatch binary are the same
+variable --- which is why the pricing problem of
+Section~\ref{sec:pp} carries one binary $Z$ and not two.
 
 \paragraph{Identical blocks.}
 Nothing in the data distinguishes one element of $K$ from another: $K$
@@ -188,7 +226,7 @@ $e_{\omega}=(e_{\omega r})_{r\in R}$ over folded heights $r_{sr}$,
 folded weights $w^{\mathrm{f}}_{r}$ and folded volumes $\gamma_{sr}$;
 there no product assignment is needed, because the weight of a folded
 RTI depends only on its type. Every non-empty column costs
-$c_{\omega}=cK$, the value of $cK\cdot Y$ at the point; the empty
+$c_{\omega}=cK$, the value of $cK\cdot Z$ at the point; the empty
 column costs nothing.
 
 Three features of this definition carry the method.
@@ -200,10 +238,12 @@ period-exact cap \eqref{sb:eq:stack-w-plant} of the compact model, and
 not the conservative surrogate $\bar w_{r}=\max_{n\in M(r)}w_{n}$ that
 a pool of capacity-only configurations is forced to use.
 
-Second, \eqref{eq:col-truck} is the same disjunction as
-\eqref{sb:eq:util}--\eqref{sb:eq:utilw}, written on the load a truck
-actually carries rather than on the capacity its configuration
-provides. A truck is full when it is full on the \emph{binding}
+Second, \eqref{eq:col-truck} is the compact model's runtime
+disjunction \eqref{sb:eq:util-run-p}--\eqref{sb:eq:utilw-run-s},
+written on the load a truck actually carries; the design-time pair
+\eqref{sb:eq:util}--\eqref{sb:eq:utilw}, written on the capacity a
+configuration provides, is the weaker necessary condition and is
+implied by it. A truck is full when it is full on the \emph{binding}
 resource --- $\alpha$ of volume \emph{or} $\alpha$ of payload, never the
 sum of the two ratios, which is strictly weaker and would accept a
 trailer $35\%$ full by volume and $20\%$ by weight. Both regimes occur:
@@ -253,6 +293,10 @@ subject to
   \overline{V}_{nt},\,\overline{V^{\mathrm{e}}}_{rt}\ \text{free}.
     \nonumber
 \end{align}
+The aggregates are written free because no row bounds them below;
+\eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} equate each to a non-negative
+combination of non-negative $\lambda$, so $\overline{V}\ge0$ is implied
+and an implementation may declare it either way.
 That is the whole master. Objective \eqref{eq:MPObjective} minimises
 transport plus inventory holding cost, where $c_{\omega}=cK$ for every
 non-empty column and $c_{\omega}=0$ for the empty one; since every other
@@ -547,8 +591,10 @@ the block index dropped; $g$ and the duals $\pi,\mu$ are data.}
 \label{tab:NomenclaturePricing3D}\\
 \hline
 \multicolumn{2}{|l|}{\textbf{Decision variables}}\\ \hline
-$Z$              & Binary. The block's loading configuration is designed\\
-$Y$              & Binary. A truck is dispatched under it; $c(x)=cK\cdot Y$\\
+$Z$              & Binary. A truck is dispatched under this column ---
+                   equivalently, the block designs a layout and sends it ---
+                   and $c(x)=cK\cdot Z$; at $Z=0$ the point is the empty
+                   column\\
 $X_{ih}$         & Binary. Slot $i$ holds a stack of type $h$;
                    $\widehat{X}_{i}:=\sum_{h}X_{ih}$ is slot $i$ used\\
 $\mathit{LX}_{ih},\mathit{LY}_{ih}$ & Binary. The stack in slot $i$ is
@@ -571,7 +617,7 @@ $V^{\mathrm{e}}_{r}$ & Integer, $g=\mathrm{s}$ only. Folded RTIs of type $r$
 \subsubsection*{The shared block: geometry}
 
 \begin{align}
-  \min\;\; & cK\cdot Y \;-\; \sum_{c}\pi_{ct}\,\mathrm{image}_{c}
+  \min\;\; & cK\cdot Z \;-\; \sum_{c}\pi_{ct}\,\mathrm{image}_{c}
     && \bar c = z-\mu_{gt} \label{bp:PP-objective}\\
   & \widehat{X}_{i} \le Z && \forall i \in \mathcal{I} \label{bp:PP-slot-active}\\
   & \mathit{LX}_{ih} + \mathit{LY}_{ih} = X_{ih}
@@ -596,7 +642,6 @@ $V^{\mathrm{e}}_{r}$ & Integer, $g=\mathrm{s}$ only. Folded RTIs of type $r$
       \le \mathit{pK} && \forall i \in \mathcal{I} \label{bp:PP-cont-x}\\
   & \mathit{PY}_{i} + \sum_{h}(q_{h}\mathit{LX}_{ih}+p_{h}\mathit{LY}_{ih})
       \le \mathit{qK} && \forall i \in \mathcal{I} \label{bp:PP-cont-y}\\
-  & Y \le Z \label{bp:PP-lc-active}\\
   & \widehat{X}_{i+1} \le \widehat{X}_{i}
     && \forall i \le |\mathcal{I}|-1 \label{bp:PP-sym}
 \end{align}
@@ -616,7 +661,27 @@ At $Z=1$ exactly one of the two is active and the other is vacuous, so
 \eqref{bp:PP-util}--\eqref{bp:PP-utilw} is the disjunction
 \eqref{eq:col-truck} and not the sum of the two ratios, which is
 strictly weaker and would accept a trailer $35\%$ full by volume and
-$20\%$ by weight. Two redundant rows written on the stack
+$20\%$ by weight.
+
+These two rows are also why the block needs no second binary. The
+compact model distinguishes the configuration being designed from a
+truck being dispatched under it \eqref{sb:eq:lc-active}, and the
+pricing problem inherited that distinction; but
+\eqref{bp:PP-util}--\eqref{bp:PP-utilw} is written on the
+\emph{load}, so at $Z=1$ the block must ship at least $\alpha$ of one
+resource and a designed-but-empty truck is infeasible. The dispatch
+binary was therefore equal to $Z$ at every feasible point and
+redundant, and deleting it is a simplification of the formulation and
+not a change to the problem it states. It is worth doing: as two
+variables, $Z=1$ with no truck dispatched admitted a family of
+zero-image, zero-cost points with the slot, orientation and
+non-overlap variables all still free, which is a symmetry a big-$M$
+packing model solved in the inner loop can ill afford. In
+Dantzig--Wolfe the column \emph{is} a truck and how many trucks take it
+is what $\lambda$ counts in the master, so one binary in the block is
+the right number.
+
+Two redundant rows written on the stack
 \emph{capacity} rather than on the load,
 \begin{align}
   & \sum_{h,\,r \in R(h)} \gamma_{gr}\,n_{hr}\,\overline{L}_{hr}
@@ -654,9 +719,9 @@ product $n$:
 \begin{align}
   & \sum_{n \in M(r)} V_{in} \;\le\; \sum_{h\,:\,r \in R(h)} n_{hr}\,L_{ihr}
     && \forall i \in \mathcal{I},\, r \in R \label{bp:PP-p-slot-cap}\\
-  & V_{in} \;\le\; \bar u^{V}_{n}\,Y
+  & V_{in} \;\le\; \bar u^{V}_{n}\,Z
     && \forall i \in \mathcal{I},\, n \in N \label{bp:PP-p-slot-link}\\
-  & \sum_{n \in N} w_{n}\,\overline{V}_{n} \;\le\; \mathit{pK}^{w}\,Y
+  & \sum_{n \in N} w_{n}\,\overline{V}_{n} \;\le\; \mathit{pK}^{w}\,Z
     \label{bp:PP-p-truck-w}\\
   & \sum_{n \in N} w_{n}\,V_{in} \;\le\; W^{\max}
     && \forall i \in \mathcal{I} \label{bp:PP-p-stack-w}
@@ -666,10 +731,10 @@ $\mathrm{image}_{r}=V^{\mathrm{e}}_{r}$:
 \begin{align}
   & V^{\mathrm{e}}_{r} \;\le\; \sum_{h\,:\,r \in R(h)} n_{hr}\,\overline{L}_{hr}
     && \forall r \in R \label{bp:PP-s-empty-cap}\\
-  & V^{\mathrm{e}}_{r} \;\le\; \bar u^{\mathrm{e}}_{r}\,Y
+  & V^{\mathrm{e}}_{r} \;\le\; \bar u^{\mathrm{e}}_{r}\,Z
     && \forall r \in R \label{bp:PP-s-empty-link}\\
   & \sum_{r \in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{r}
-      \;\le\; \mathit{pK}^{w}\,Y \label{bp:PP-s-truck-w}\\
+      \;\le\; \mathit{pK}^{w}\,Z \label{bp:PP-s-truck-w}\\
   & \sum_{h}\sum_{r \in R(h)} w^{\mathrm{f}}_{r}\,n_{hr}\,L_{ihr}
       \;\le\; W^{\max} && \forall i \in \mathcal{I} \label{bp:PP-s-stack-w}
 \end{align}
@@ -681,28 +746,39 @@ weight of a folded RTI depends only on its type, so
 \eqref{bp:PP-s-stack-w} is a statement about the stack and not about
 its contents.
 
-\paragraph{How it is solved.}
-The formulation above is a mixed integer programme, and the hard core of
-it is the disjunctive non-overlap relation
+\paragraph{What the method requires of the oracle, and what it does not.}
+The pricing problem is the mixed integer programme above, and that is
+what the method specifies: the oracle's only obligation is to return an
+optimal point of \emph{this} feasible set for the duals it is handed.
+The method is stated over the subproblem and not over a solver for it,
+and nothing in the master, the bound or the search reads anything else
+about how the point was obtained.
+
+The hard core of the programme is the disjunctive non-overlap relation
 \eqref{bp:PP-nonov-x1}--\eqref{bp:PP-cover}: four big-$M$ rows per pair
 of slots, whose linear relaxation is weak for the same reason it is weak
-in the compact model. The implementation therefore hands the
-subproblem to a constraint programming solver, which propagates
-non-overlap natively through a single global constraint over the
-rectangles $[\mathit{PX}_{i},\mathit{PX}_{i}+\delta^{x}_{i})\times
-[\mathit{PY}_{i},\mathit{PY}_{i}+\delta^{y}_{i})$, whose side lengths
+in the compact model. An equivalent statement avoids those rows
+altogether. Non-overlap of the rectangles
+$[\mathit{PX}_{i},\mathit{PX}_{i}+\delta^{x}_{i})\times
+[\mathit{PY}_{i},\mathit{PY}_{i}+\delta^{y}_{i})$, with side lengths
 $\delta^{x}_{i}=\sum_{h}(p_{h}\mathit{LX}_{ih}+q_{h}\mathit{LY}_{ih})$ and
-$\delta^{y}_{i}=\sum_{h}(q_{h}\mathit{LX}_{ih}+p_{h}\mathit{LY}_{ih})$ are
+$\delta^{y}_{i}=\sum_{h}(q_{h}\mathit{LX}_{ih}+p_{h}\mathit{LY}_{ih})$ ---
 the expressions already appearing in
-\eqref{bp:PP-nonov-x1}--\eqref{bp:PP-cont-y}, and needs no disjunctive
-binaries at all. The two statements are the same
-problem, and Section \ref{sec:results} reports no comparison between
-the two technologies: the one on record was made under an oracle that
-did not implement the composition bounds the method depends on, which
-makes it a comparison between two different subproblems rather than
-between two solvers. What matters for the method is only that the
-oracle solve \emph{this} problem; an earlier variant that imposed the
-full-truckload requirement as the sum of the two ratios in
+\eqref{bp:PP-nonov-x1}--\eqref{bp:PP-cont-y} --- can be imposed as a
+single two-dimensional disjointness relation over those rectangles,
+with no separating binaries $A,B,C,D$ at all. The feasible sets of the
+two statements coincide, so an implementation is free to use either.
+The runs reported in Section \ref{sec:results} were produced by the
+second, through a constraint programming solver that propagates that
+relation natively; Section \ref{sec:protocol} records which solver
+solved what. That is an implementation choice behind those numbers and
+not a part of the method, and Section \ref{sec:results} reports no
+comparison between the two technologies: the one on record was made
+under an oracle that did not implement the composition bounds the
+method depends on, which makes it a comparison between two different
+subproblems rather than between two solvers. What matters is only that
+the oracle solve \emph{this} problem; an earlier variant that imposed
+the full-truckload requirement as the sum of the two ratios in
 \eqref{eq:col-truck} rather than as their disjunction solved a strictly
 weaker one and returned a column that failed verification.
 
@@ -757,12 +833,20 @@ and how fast, and nothing about what may be claimed.
 
 The search starts from the plainest possible pool: one maximally full
 truck per commodity and direction, obtained in the geometric case by
-running the pricing problem for that commodity alone to proof --- so the
-pool truck is the placeable maximum of the commodity, and the same
-number serves as its placeability cap in Section \ref{sec:geo3d} ---
-and in the volumetric case by filling to capacity. No demand mixes, no
+running the pricing problem for that commodity alone --- so that where
+it closes, the pool truck is the placeable maximum of the commodity and
+the same number serves as its placeability cap in Section
+\ref{sec:geo3d} --- and in the volumetric case by filling to capacity.
+The geometric probe carries a time limit like every other, and where it
+expires the pool still gets a column but the count behind it is not
+proved maximal and the analytic cap stays in force, exactly as Section
+\ref{sec:geo3d} states. It is not a formality: on
+$I\_16\_15\_2\_90\_k25$ seventeen of the eighteen (direction,
+commodity) probes closed and one reached its limit. No demand mixes, no
 diversification and no reduced variants are seeded, so whatever the
 search then reaches, it reached by pricing, branching and construction.
+% results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_table_1800.json:
+%   stats.pool_price_proved 17, stats.pool_price_limit 1, config.pool_tl 10.0
 This is a requirement of the method rather than a convenience: a pool
 assembled by hand contaminates every claim about what the search finds,
 and an earlier seeded pool was removed on that ground. The
@@ -951,9 +1035,9 @@ is why the $n+1$ fallback of step 3 stays in the procedure by design.
 The second procedure attacks a different obstruction: the integer
 master over the whole horizon. At twenty periods that monolith is what
 fails. In the eight recorded runs reported below, over final pools of
-between $551$ and $3\,435$ columns, the closing integer master over the
-whole horizon produced no incumbent on \emph{any} run, while the walk
-produced one on six of the eight.
+between $551$ and $3\,518$ columns --- the range over all eight runs ---
+the closing integer master over the whole horizon produced no incumbent
+on \emph{any} run, while the walk produced one on six of the eight.
 
 So commit period by period. Let $w$ be a window width. At step $i$ of
 the walk the dispatch variables $\lambda^{g}_{\omega t}$ are
@@ -1172,6 +1256,21 @@ heuristic and never a validity claim: it cannot make the method report
 an invalid plan, only fail to find one. The two constraints are kept
 separate because they rest on different grounds, and only the first may
 ever be read as knowledge about the instance.
+
+A dominance cut written at the refuted load itself is weaker than it
+needs to be, and the difference matters on a multi-commodity part.
+Before cutting, the refuted load is tightened \emph{along its ray}:
+$\lfloor\sigma v\rfloor$ is probed for $\sigma$ bisected in $(0,1]$,
+and the cut is written at the smallest scaled-down point still
+\emph{proved} unplaceable. Every point of the one-unit-at-a-time
+staircase the partition would otherwise walk down --- $\{R_{1}:272\}$,
+$271$, $270,\dots$ on one measured pair --- dominates that point, so one
+cut removes the staircase instead of its top step. The bisection is
+seven probes at most, its placeable verdicts are cached like any other,
+and an \emph{undecided} probe stops it at the last proof, so the cut is
+never written anywhere that was not proved. Without this step a
+reimplementation reproduces the staircase and exhausts its round cap
+without reaching the answer.
 
 \paragraph{Placeability caps.}
 The maximum count of a single commodity in one truck is a scalar, and by

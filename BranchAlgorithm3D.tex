@@ -26,19 +26,21 @@ vector with the flow-first construction as primal}\label{alg:bp3d}
    \Else
       \State $\mathcal{R}$ carries its parent's bound
    \EndIf
-   \State $(z,\mathbf{n},\bar\Omega) \gets \textsc{Construct}(\bar\Omega,\ \mathcal{R})$
-          \Comment{inside the region; its columns join the shared pool}
+   \State $(z,\hat{\mathbf{n}},\bar\Omega) \gets \textsc{Construct}(\bar\Omega,\ \mathcal{R})$
+          \Comment{inside the region; its columns join the shared pool;
+                   $\hat{\mathbf{n}}$ is the plan just constructed}
    \If{no plan} \State price under the region's duals; \textsc{Construct} once more; \textbf{continue} if still none \EndIf
-   \If{$z < \bar z$} \State $(\bar z,\mathbf{n}^{\star}) \gets (z,\mathbf{n})$
+   \If{$z < \bar z$} \State $(\bar z,\mathbf{n}^{\star}) \gets (z,\hat{\mathbf{n}})$
           \Comment{new incumbent} \EndIf
-   \If{$\mathcal{R}$ does not fix $X$} \State push $\mathcal{R}\cap\{X\ge X_{2}+1\}$, $\mathcal{R}\cap\{X=X_{2}\}$, $\mathcal{R}\cap\{X\le X_{2}-1\}$ with $X_{2}=\sum_{g,t}n_{gt}$
+   \If{$\mathcal{R}$ does not fix $X$} \State push $\mathcal{R}\cap\{X\ge X_{2}+1\}$, $\mathcal{R}\cap\{X=X_{2}\}$, $\mathcal{R}\cap\{X\le X_{2}-1\}$ with $X_{2}=\sum_{g,t}\hat n_{gt}$
           \Comment{level 1 recurses} \EndIf
    \If{$\mathcal{R}$ fixes $X$ and its depth $j$ is below the cap}
       \State $(g,t) \gets$ the $j$-th pair in the fixed order
-      \State push $\mathcal{R}\cap\{n_{gt}\ge n_{gt}+1\}$,\;
-             $\mathcal{R}\cap\{n_{gt}\le n_{gt}-1\}$,\;
-             $\mathcal{R}\cap\{n_{gt}= n_{gt}\}$ onto $\mathcal{S}$
-             \Comment{Murty, around the plan just constructed}
+      \State push $\mathcal{R}\cap\{n_{gt}\ge \hat n_{gt}+1\}$,\;
+             $\mathcal{R}\cap\{n_{gt}\le \hat n_{gt}-1\}$,\;
+             $\mathcal{R}\cap\{n_{gt}= \hat n_{gt}\}$ onto $\mathcal{S}$
+             \Comment{Murty, around the plan just constructed: $n_{gt}$ is the
+                      region's variable, $\hat n_{gt}$ its value in that plan}
    \EndIf
    \State release $\mathcal{R}$
 \EndWhile

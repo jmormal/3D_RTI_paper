@@ -146,12 +146,14 @@ instances were generated to expose.
 % (compact_ref_I_8_10_2_90_k25.json 38851.93; compact_ref_I_16_15_2_90_k25.json
 % 68139.17 proved optimal), otherwise the method's certified volumetric bound.
 % The compact 3D model's own dual bound is printed in its column and never used
-% as an interval end: |L|=3 is an a-priori restriction (Proposition 2).
+% as an interval end: n_LC = 3 shared layouts per direction is an a-priori
+% restriction of Section 4 (Proposition 1, equivalence).
 \begin{table}[!htbp]
 \centering
 \small
-\caption{The compact 3D-SCPTOP model ($|L|=3$ configurations per
-direction, Gurobi, $1\,800$ s) against MATH-3D-SCPTOP on the size
+\caption{The compact 3D-SCPTOP model (a catalogue of
+$n_{\mathrm{LC}}=3$ layouts shared by the trucks of a direction, Gurobi,
+$1\,800$ s) against MATH-3D-SCPTOP on the size
 ladder, the method's rows being those of
 Table~\ref{tab:3d-onecommit}. All runs used ten threads, a $20$ GB
 per-model cap and seed $0$. \textbf{The budgets differ on three rows}:
@@ -167,7 +169,7 @@ truck-by-truck check. No row is an optimum except where footnote~$^{b}$
 applies. The last column is the interval in which $z^{\star}$ lies,
 taking the method's plan as the upper end and, as the lower end, the
 tighter bound \emph{that is a bound on the problem}: the compact 3D
-model's dual bound bounds its own $|L|=3$ restriction and not
+model's dual bound bounds its own three-layout restriction and not
 $z^{\star}$ (Proposition~\ref{prop:equiv}), so it appears in its column
 and never as an interval end, and where a compact \emph{volumetric}
 solve exists its dual bound is used instead, being valid for 3D by

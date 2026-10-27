@@ -8,12 +8,15 @@ placeability censuses differ in oracle as well as in limit: the
 thirty-six instances were put to the constraint programme alone, the
 size ladder to a constructive shelf witness with the constraint
 programme only for refutations, which is why only the first leaves
-loads undecided. Every line but the last is read from the run files
-themselves; the volumetric runs of BP-3D-SCPTOP recorded no
-configuration and theirs is recovered from their launchers, including
-the fact that a thread count asked for on the default Gurobi
-environment did not reach the models, which therefore used all twelve
-cores of the machine.}
+loads undecided. Every line is read from the run files themselves. The
+volumetric parity runs declare their own configuration in each row,
+which is what lets Table~\ref{tab:volumetric} compare like with like;
+the runs they replace recorded none, and a thread count asked for on
+the default Gurobi environment had not reached the models, so those
+used all twelve cores of the machine. No seed is set by that
+implementation, so the solver's default applies --- and no number
+reported here rests on a seed, every stage being either solved to
+proved optimality or stopped on a declared budget.}
 \label{tab:protocol}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llllrrl}
@@ -27,11 +30,7 @@ Compact 3D-SCPTOP, $n_{\mathrm{LC}}=3$ & Gurobi & $1\,800$ & $0$ & 10 & 20 & 0 \
 Fleet-floor certification & Gurobi & to convergence & --- & 1 & 20 & 0 \\
 Placeability census, 36 instances & CP-SAT & $300$ per load & --- & --- & --- & --- \\
 Placeability census, size ladder & shelf + CP-SAT & $60$ per load & --- & --- & --- & --- \\
-\midrule
-Fleet tree, volumetric oracle & Gurobi & $1\,800^{\sim}$ & --- & $12^{\sim}$ & $4^{\sim}$ & --- \\
+BP-3D-SCPTOP, volumetric parity & Gurobi & $3\,600$ & --- & 10 & 20 & not set \\
 \bottomrule
 \end{tabular}}
-\\[2pt]
-{\footnotesize $^{\sim}$ recovered after the fact, not recorded; on one
-of those five runs the time limit is not recoverable either.}
 \end{table}

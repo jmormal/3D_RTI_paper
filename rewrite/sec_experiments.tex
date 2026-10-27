@@ -11,16 +11,23 @@ Table~\ref{tab:protocol} declares, per stage, the five parameters that
 can change a solver's answer: time limit, MIP gap, threads, per-model
 memory cap and seed. Memory is part of the budget --- Gurobi holds its
 tree in memory --- so the time at which a fixed cap is reached licenses
-no inference about difficulty. Every row below is read from a recorded
-% "no time limit on one of the five": results/hp/provenance.json, tree
-% section -- tree_I_24_20_2_90_k80.json has "time_limit": null, the other
-% four 1800.0; threads 10 asked for, 12 effective (see the _memory_cap_note
-% and the launchers in results/hp/provenance/).
-run, with one exception: the volumetric-oracle runs of
-Table~\ref{tab:volumetric} recorded no configuration, and theirs is
-\emph{recovered} from their launchers and the system journal, with no
-seed or commit established and, on one of the five, no time limit. A \emph{gap} is always $(z-\mathrm{LB})/z$ against the method's
-own certified bound; Table~\ref{tab:quantities} defines the rest.
+no inference about difficulty. Every row below is read from a recorded run, each one declaring its
+own budget, thread count, memory cap and commit. A \emph{gap} is
+always $(z-\mathrm{LB})/z$ against the method's own certified bound;
+Table~\ref{tab:quantities} defines the rest.
+
+Two settings that are not budgets also decide what the tables can say.
+Column generation is run to a certificate at the root and at the one
+region that can refute the incumbent outright --- ``is there a plan
+with one truck fewer'' --- and nowhere else, which is the policy every
+run reported here used. Certifying every node instead is affordable on
+the volumetric model and closes far more of the space there, so the
+\emph{open} counts below are a property of that choice and not of the
+method; it is not affordable under 3D loading, where one geometric
+sweep costs minutes, and the two modes are reported under one policy
+so that their columns mean the same thing. The second is that no seed
+is set by the implementation of Table~\ref{tab:volumetric} and the
+size ladder; nothing reported rests on one.
 
 \input{tab_protocol}
 

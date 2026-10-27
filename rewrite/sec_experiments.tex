@@ -16,17 +16,29 @@ own budget, thread count, memory cap and commit. A \emph{gap} is
 always $(z-\mathrm{LB})/z$ against the method's own certified bound;
 Table~\ref{tab:quantities} defines the rest.
 
-Every row is one run, and one run is enough: the procedure is
-deterministic given a build and a machine, which was checked rather
-than assumed --- three runs of $I\_16\_15\_2\_90\_k25$ in 3D at
-the same configuration returned the same plan at the same cost to the
-cent. What a row is \emph{not} is portable. Every phase draws on a
-wall-clock budget, so which phases finish depends on how fast the
-machine runs them, and a plan is the method's answer under one
-schedule rather than a function of the configuration alone. Two
-consequences are taken seriously below: a difference of one or two
-trucks between rows is not read as an effect, and no claim rests on
-one.
+Every row is one run, and one run is reproducible: the procedure is
+deterministic given a build, a machine and the way its code is
+executed. That was checked rather than assumed, and the check is worth
+reporting in full. On $I\_16\_15\_2\_90\_k25$ in 3D, three runs
+with the solver's module compiled in the running process returned the
+same plan at the same cost to the cent, and two runs of the same
+source from its precompiled form also agreed to the cent --- with each
+\emph{other}, at a different plan: $55$ trucks at $79\,608.45$
+against $59$ at $83\,645.86$. Nothing about the model or the
+configuration differs between them; only how fast the machine
+executes the same instructions.
+
+That is what a wall-clock budget costs. Every phase of the procedure
+draws on one, so which phases finish, how many construction attempts
+fit, and which regions the tree opens all depend on execution speed,
+and a plan is the method's answer under one schedule rather than a
+function of its configuration. The effect is largest where a phase
+ends near its deadline: on the largest ladder instance the two
+execution paths differ by whether a plan is found at all. Every run
+reported here was executed the same way, so the table is internally
+comparable, and two consequences are taken seriously throughout: a
+difference of one or two trucks between rows is not read as an effect,
+and no claim rests on one.
 
 Three settings that are not budgets also decide what the tables can
 say.

@@ -26,7 +26,9 @@ price of one period's holding cost, and so is a bound on a
 \emph{single} period's dispatch total; the aggregate with no such
 escape is the horizon total. We therefore branch on the fleet, in two
 levels (Figure~\ref{fig:tree}), keeping the delivery rung as a third
-entered only where the first two have nothing left to say. Master,
+entered only where the first two have nothing left to say --- which, in
+the runs reported here, is nowhere: it is disabled throughout, as
+Section~\ref{sec:res-setup} records. Master,
 pricing problem, construction and tree are together the procedure we
 call BP-3D-SCPTOP (Algorithm~\ref{alg:bp3d}).
 
@@ -94,6 +96,16 @@ pruned node leaves its columns behind. Optimality is claimed
 restart has broken the partition and the incumbent meets the global
 bound. The hierarchy is finite and its levels exhaustive, so those
 conditions are reachable in principle; no run here meets them.
+
+Two levels of the three ran. The delivery level is implemented and was
+left disabled in every run reported here, so what covers a full-depth
+Murty leaf is a certificate rather than a further split --- and a leaf
+whose certificate sits below the incumbent is then bounded but not
+refuted, however much budget remains. That is a property of the
+configuration and not of the procedure: with the delivery level on,
+such a leaf is split again. It is also not what stopped these runs,
+which ended with between six and fifteen regions still on the stack,
+i.e. on their budget and not on the hierarchy.
 
 \input{Alg_tree}
 

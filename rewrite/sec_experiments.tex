@@ -16,7 +16,8 @@ own budget, thread count, memory cap and commit. A \emph{gap} is
 always $(z-\mathrm{LB})/z$ against the method's own certified bound;
 Table~\ref{tab:quantities} defines the rest.
 
-Two settings that are not budgets also decide what the tables can say.
+Three settings that are not budgets also decide what the tables can
+say.
 Column generation is run to a certificate at the root and at the one
 region that can refute the incumbent outright --- ``is there a plan
 with one truck fewer'' --- and nowhere else, which is the policy every
@@ -25,9 +26,13 @@ the volumetric model and closes far more of the space there, so the
 \emph{open} counts below are a property of that choice and not of the
 method; it is not affordable under 3D loading, where one geometric
 sweep costs minutes, and the two modes are reported under one policy
-so that their columns mean the same thing. The second is that no seed
-is set by the implementation of Table~\ref{tab:volumetric} and the
-size ladder; nothing reported rests on one.
+so that their columns mean the same thing. The second is that the branching hierarchy's
+third level --- the deliveries --- is disabled in every run reported
+here, so a full-depth leaf is covered by a certificate rather than
+split again; Section~\ref{sec:branching} says what that costs and what
+it does not. The third is that no seed is set by the implementation of
+Table~\ref{tab:volumetric} and the size ladder; nothing reported rests
+on one.
 
 \input{tab_protocol}
 

@@ -1,9 +1,13 @@
-% Volumetric-oracle rows: results/hp/tree_<instance>.json (configuration RECOVERED in
-% results/hp/provenance.json: 1800 s, 4 GB default cap, 12 cores effective,
-% Murty depth 6; no seed or commit established; the k80 row's limit unknown).
+% Method rows: results/julia/parity_vol.csv, the volumetric parity campaign of
+% 2026-10-27 -- the Julia implementation on all six instances at the compact
+% reference's own budget (3600 s, 20 GB, 10 threads), commit 10e633c.  Every
+% row carries root_proved=true, so none of them rests on the unproved-root
+% bound defect fixed in e85c70c; that fix changes only the case where no
+% certificate exists, and here one always does.  The t column is the `seconds`
+% field, the method's own wall clock.
 % Compact rows: results/compact_ref/compact_ref_<instance>.json, each with its
 % own config block: 3600 s (1800 on I_8_5_2_90), MIP gap 0, 10 threads, 20 GB,
-% seed 0.  Budgets are unequal in both directions; the caption says so.
+% seed 0.
 % NOTE on the compact t column: every row prints the files' `wall` field
 % (0.198167, 3268.92, 1349.52, 1121.83, 2093.27, 2403.21), not `runtime`
 % (0.185, 3242.96, 1349.44, 1112.70, 2087.63, 2399.01).  One field for the
@@ -12,29 +16,28 @@
 % flatter the method by the model-build time it does not charge itself.  The
 % two fields differ by under 1% on every row, so nothing in the comparison
 % turns on the choice -- but a column read off two fields is indefensible.
-% Every \InFlight cell is replaced by the volumetric parity campaign, which runs
-% the procedure on these six instances at the compact reference's own budget
-% (3600 s, 20 GB, 10 threads).
 \begin{table}[!htbp]
 \centering
 \small
 \caption{BP-3D-SCPTOP under its \emph{volumetric} oracle against the
-compact SCPTOP formulation, both
-solving the \emph{volumetric} problem of Appendix~\ref{appendix:A}, so
-that the two bracket one optimum. $z$ is the incumbent at the stop;
-\textsc{opt} marks a proved optimum, $^{\mathrm{m}}$ a stop on the
-memory cap, $^{\mathrm{t}}$ a stop on time. ``bound'' is Gurobi's dual
-bound for the compact model and the certified master-LP bound of
+compact SCPTOP formulation, both solving the \emph{volumetric} problem
+of Appendix~\ref{appendix:A}, so that the two bracket one optimum.
+\textbf{This table is a check on the procedure, not a contest}: the
+volumetric problem is the one case here where an independent optimum
+exists, and the question each row answers is whether the procedure
+reaches it. $z$ is the incumbent at the stop; \textsc{opt} marks a
+proved optimum, $^{\mathrm{m}}$ a stop on the memory cap,
+$^{\mathrm{t}}$ a stop on time. ``bound'' is Gurobi's dual bound for
+the compact model and the certified master-LP bound of
 Section~\ref{sec:bounds} for the method. $\Delta z$ is
 $(z_{\mathrm{DW}}-z_{\mathrm{compact}})/z_{\mathrm{compact}}$;
-negative means the method's plan is cheaper. \textbf{The budgets
-are not equal and the inequality runs both ways}: the compact runs
-recorded $3\,600$ s and a $20$ GB cap, the method's runs had a
-recovered $1\,800$ s and $4$ GB (marked $^{\sim}$, with no time limit
-recoverable on the last row, marked $^{!}$) but ran on twelve cores
-against the compact model's ten (marked $^{\dagger}$), so no row here
-is a timing claim. No plan in this table is verified truck by truck:
-a volumetric column carries no layout.}
+negative means the method's plan is cheaper. Both sides had $3\,600$ s,
+$20$ GB and ten threads --- except that the compact model was given
+$1\,800$ s on $I\_8\_5\_2\_90$, where it proved the optimum in $0.2$ s
+and the budget never bound. The method's wall clock falls short of
+$3\,600$ s because it starts no phase it cannot finish inside the
+budget. No plan in this table is verified truck by truck: a volumetric
+column carries no layout.}
 \label{tab:volumetric}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrrlrrrrr}
@@ -43,12 +46,12 @@ a volumetric column carries no layout.}
 \cmidrule(lr){2-5}\cmidrule(lr){6-9}
 Instance & $z$ & bound & trucks & $t$ (s) & $z$ & bound (cert.) & trucks & $t$ (s) & $\Delta z$ (\%) & tighter bound \\
 \midrule
-$I\_8\_5\_2\_90$ & 18\,796.96\,\textsc{opt} & 18\,796.96 & 12 & 0.198 & \emph{not run} & --- & --- & --- & --- & --- \\
-$I\_8\_10\_2\_90\_k25$ & 38\,855.65$^{\mathrm{m}}$ & 38\,851.93 & 26 & 3269 & \InFlight{38\,853.39$^{\mathrm{t}}$} & \InFlight{38\,791.14} & \InFlight{26} & \InFlight{1817$^{\sim\dagger}$} & \InFlight{$-0.0058$} & 38\,851.93 (compact) \\
-$I\_16\_15\_2\_90\_k25$ & 68\,139.17\,\textsc{opt} & 68\,139.17 & 45 & 1350 & \InFlight{68\,139.59$^{\mathrm{t}}$} & \InFlight{68\,131.43} & \InFlight{45} & \InFlight{1897$^{\sim\dagger}$} & \InFlight{$+0.0006$} & 68\,139.17 (compact) \\
-$I\_16\_15\_2\_90\_k50$ & 134\,346.91$^{\mathrm{m}}$ & 133\,417.47 & 89 & 1122 & \InFlight{133\,503.74$^{\mathrm{t}}$} & \InFlight{133\,484.32} & \InFlight{88} & \InFlight{1827$^{\sim\dagger}$} & \InFlight{$-0.6276$} & \InFlight{133\,484.32 (DW)} \\
-$I\_24\_20\_2\_90\_k50$ & 200\,266.21$^{\mathrm{m}}$ & 199\,518.04 & 137 & 2093 & \InFlight{200\,047.54$^{\mathrm{t}}$} & \InFlight{200\,013.41} & \InFlight{137} & \InFlight{1854$^{\sim\dagger}$} & \InFlight{$-0.1092$} & \InFlight{200\,013.41 (DW)} \\
-$I\_24\_20\_2\_90\_k80$ & 282\,101.77$^{\mathrm{m}}$ & 280\,823.53 & 189 & 2403 & \InFlight{281\,023.77$^{\mathrm{t}}$} & \InFlight{280\,910.02} & \InFlight{188} & \InFlight{868$^{!\dagger}$} & \InFlight{$-0.3821$} & \InFlight{280\,910.02 (DW)} \\
+$I\_8\_5\_2\_90$ & 18\,796.96\,\textsc{opt} & 18\,796.96 & 12 & 0.198 & 18\,796.96$^{\mathrm{t}}$ & 18\,795.56 & 12 & 3064 & $0.0000$ & 18\,796.96 (compact) \\
+$I\_8\_10\_2\_90\_k25$ & 38\,855.65$^{\mathrm{m}}$ & 38\,851.93 & 26 & 3269 & 38\,853.17$^{\mathrm{t}}$ & 38\,791.19 & 26 & 3062 & $-0.0064$ & 38\,851.93 (compact) \\
+$I\_16\_15\_2\_90\_k25$ & 68\,139.17\,\textsc{opt} & 68\,139.17 & 45 & 1350 & 68\,139.21$^{\mathrm{t}}$ & 68\,131.48 & 45 & 3117 & $+0.0001$ & 68\,139.17 (compact) \\
+$I\_16\_15\_2\_90\_k50$ & 134\,346.91$^{\mathrm{m}}$ & 133\,417.47 & 89 & 1122 & 134\,507.47$^{\mathrm{t}}$ & 133\,484.56 & 89 & 3073 & $+0.1195$ & 133\,484.56 (DW) \\
+$I\_24\_20\_2\_90\_k50$ & 200\,266.21$^{\mathrm{m}}$ & 199\,518.04 & 137 & 2093 & 200\,048.69$^{\mathrm{t}}$ & 200\,013.57 & 137 & 3071 & $-0.1086$ & 200\,013.57 (DW) \\
+$I\_24\_20\_2\_90\_k80$ & 282\,101.77$^{\mathrm{m}}$ & 280\,823.53 & 189 & 2403 & 281\,233.28$^{\mathrm{t}}$ & 280\,910.22 & 188 & 3133 & $-0.3079$ & 280\,910.22 (DW) \\
 \bottomrule
 \end{tabular}}
 \end{table}

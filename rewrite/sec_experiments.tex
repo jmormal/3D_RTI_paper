@@ -70,34 +70,58 @@ differ.
 
 \input{tab_volumetric}
 
-The volumetric problem of Appendix~\ref{appendix:A} is where a
-reference optimum exists, because a compact formulation of it can be
-solved exactly. On $I\_16\_15\_2\_90\_k25$ the compact model proves the
-optimum, $68\,139.17$ with forty-five trucks, in $1\,349$ s. The method
-returns $\InFlight{68\,139.59}$ at the same fleet,
-$\InFlight{0.0006\%}$ above a \emph{proved} optimum, and its certified
-bound $\InFlight{68\,131.43}$ lies $\InFlight{0.0114\%}$ below it: both
-ends of its interval are within about a hundredth of a percent of the
-truth. Nothing else in this study can be checked this way.
+The volumetric problem of Appendix~\ref{appendix:A} earns its place
+in this study for one reason: it is the only part of the problem for
+which an independent optimum exists, because a compact formulation of
+it can be solved exactly on the smaller instances. What
+Table~\ref{tab:volumetric} measures is therefore not which method
+wins but whether the procedure arrives where it should on a case whose
+answer is known. Both sides were given the same $3\,600$ s, $20$ GB
+and ten threads.
 
-On the four instances where both ran and neither closed, the compact
-model exhausts its memory cap with its dual bound short of its
-incumbent, the method's plan is cheaper on all four and uses one truck
-fewer on two, and its certified bound is the tighter of the two on
-three. \textbf{The budgets are not equal and the inequality runs both
-ways}, as the caption of Table~\ref{tab:volumetric} sets out, so no row
-of it is a timing claim --- nor is any plan in it executable, a
-volumetric column carrying no layout.
+On the two instances the compact model closes, it does. On
+$I\_8\_5\_2\_90$ the procedure returns $18\,796.96$ with twelve
+trucks --- the proved optimum, to the cent, reached from a different
+formulation by a different search. On $I\_16\_15\_2\_90\_k25$ it
+returns $68\,139.21$ against a proved $68\,139.17$, also at
+forty-five trucks: four cents on sixty-eight thousand, $0.0001\%$
+above the truth, with its own certified bound $0.0113\%$ below it. The
+procedure brackets a known optimum from both sides to within about a
+hundredth of a percent. That is the check this subsection exists to
+report, and it passes.
 
-One statement about the bound needs neither the recovered runs nor
-equal budgets. On $I\_12\_12\_2\_90\_k25$ the method certifies
-$\InFlight{52\,105.25}$ --- a full sweep in which every pair priced
-optimal and nothing priced out, over the volumetric relaxation and so
-valid for the 3D problem by Proposition~\ref{prop:inclusion} ---
-$\InFlight{26.3}$ s into its run, where the compact volumetric model
-still stood at a dual bound of $51\,944.22$ when its $600$ s expired,
-both at ten threads and a $20$ GB cap. Both bound the same relaxation,
-and the decomposition's is $0.310\%$ tighter.
+Where the compact model works it is also far the faster, at $0.2$ s
+and $1\,350$ s against the procedure's roughly $3\,070$ s. On a
+volumetric problem small enough to write down whole, writing it down
+whole is the better plan; the decomposition is built for the problem
+the compact model cannot express, and Section~\ref{sec:res-3d} is
+where that is asked of it.
+
+On the four instances where the compact model exhausts its memory cap
+with its dual bound short of its incumbent, the two agree closely
+enough to say the procedure is solving the same problem well: costs
+within $0.31\%$ on every row, the same fleet on three and one truck
+fewer on $I\_24\_20\_2\_90\_k80$. The procedure's plan is cheaper
+on three and dearer on one, by $0.1195\%$ on
+$I\_16\_15\_2\_90\_k50$, the row where it opened twelve nodes in
+the hour and left its own interval $0.76\%$ wide. At this accuracy the
+two are measuring each other, and neither row is a ranking.
+
+Where the decomposition does separate itself is the bound: on the
+three largest instances its certificate is the tighter of the two, by
+$67$, $496$ and $87$ cost units. The compact model's dual bound
+degrades as its memory cap approaches, while the master LP over a
+finite pool certifies whatever the pool supports.
+
+One such statement needs no comparison of plans at all. On
+$I\_12\_12\_2\_90\_k25$ the method certifies $52\,105.31$ --- a
+full sweep in which every pair priced optimal and nothing priced out,
+over the volumetric relaxation and so valid for the 3D problem by
+Proposition~\ref{prop:inclusion} --- $274$ s into its run, where the
+compact volumetric model still stood at a dual bound of $51\,944.22$
+when its $600$ s expired, both at ten threads and a $20$ GB cap. Both
+bound the same relaxation, and the decomposition's is $0.310\%$
+tighter.
 
 \subsection{What the 3D side gives}
 \label{sec:res-3d}

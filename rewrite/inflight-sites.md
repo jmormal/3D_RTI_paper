@@ -43,13 +43,46 @@ prose quotes from them.
 The first pass of this ladder is kept as
 `results/julia/ladder_3d.prefix-stackpatterns.csv` with its journal beside it.
 It ran before `b85f174`, when a maximality test blind to how many units the
-load actually had refused placeable loads: 175 of 960 pack calls on rung 4,
-which then needed 59 trucks where the reference needs 54, and rung 5 crashed
-outright. Rungs 1 to 3 matched or beat the reference even so. **Those rows are
-valid but pessimistic** --- a refused load is one the search cannot use, every
-plan is still verified truck by truck, and the bound comes from the volumetric
-relaxation and never from a placeability cut --- so they bound what the re-run
-should improve on, and the two files are the before and after.
+load actually had could refuse a placeable load, and rung 5 crashed outright
+when the covering model came back INFEASIBLE for want of a column.
+
+**Correction.** The commit message of `b85f174` and an earlier version of this
+file cited rung 4 as the measure of what that defect cost --- 175 of 960 pack
+calls refused, and 59 trucks where the reference needs 54. That attribution is
+wrong. Re-run under the fix, rung 4 is identical in every counter: same
+incumbent 83 645.86, same 59 trucks, the same 175 of 960 refusals, the same
+751 shelf and 34 constraint-programme packs, the same 2 nodes and 532 columns.
+The fix is inert there, so those refusals are sound ones and rung 4's deficit
+has another cause (below).
+
+Where the defect *was* active: rung 1 went from 56 of 977 refusals to 46 of
+806, rung 2 from 2 of 197 to 4 of 185, and rung 5 ran to completion instead of
+crashing. Its demonstrated cost is the crash and the 18 of 64 sampled classes
+whose enumeration came back empty, not rung 4's five trucks.
+
+**The pre-fix rows are valid but pessimistic** --- a refused load is one the
+search cannot use, every plan is still verified truck by truck, and the bound
+comes from the volumetric relaxation and never from a placeability cut.
+
+### Rung 4's actual deficit, and it is not placeability
+
+From the run's own phase log: a geometric seed pool of **17 columns** for a
+16-product, 15-period instance (27 s), then root column generation that gets
+`root_cg_share * tl = 243` s and completes **one iteration for 13 columns**
+because one geometric sweep is `2|T| = 30` pricing calls, then a construction
+over that ~30-column pool that needs **68 trucks**, which the tree pulls back
+to 59 before the budget ends. `tree.jl` states the mechanism where it sets the
+window: one sweep is "longer than the whole root window on the larger
+instances, so this is the bound a 3D run usually reports while the geometric
+CG only supplies columns". The reference implementation reached 54 trucks *at
+its root*, so this is a difference in how the root budget is spent.
+
+The experiment that follows is rung 4 at `root_cg_share` $0.15$ against $0$ ---
+handing the construction those 243 s and skipping a sweep that cannot finish.
+`CLAUDE.md` records that configuration as sound, the plan coming from the
+seeded pool and the tree and the bound from the volumetric relaxation. It must
+be reported as its own labelled measurement: one ladder table built from two
+configurations is the defect invariant 10 exists to prevent.
 
 `scripts/ladder_values.py` (session scratchpad) derives every cell below from
 `results/julia/ladder_3d.csv`, the run's journal in

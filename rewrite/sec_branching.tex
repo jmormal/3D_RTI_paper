@@ -1,0 +1,267 @@
+\section{Branching, with the flow-first construction inside it}
+\label{sec:branching}
+
+The branching hierarchy is read off the robustness criterion of
+Section~\ref{sec:rmp}. A row with $\phi\equiv1$ --- any bound on a sum of
+dispatch counts, including the per-class total $n_{gt}$ and the fleet
+$X=\sum_{g,t}n_{gt}$ --- has its dual folded into $\mu_{gt}$ exactly as
+\eqref{bp:MP-count} does, and all such aggregates are integer in every
+plan. A row with $\phi$ affine in the image, a bound on
+$\overline{V}_{nt}$ or $\overline{V^{\mathrm{e}}}_{rt}$, is absorbed
+into $\pi_{ct}$, already an input of the pricing problem; these count
+physical RTIs, so they too may carry a dichotomy. Bounding a single
+$\lambda^{g}_{\omega t}$ is neither: honouring it means excluding that
+column from the subproblem
+\autocite{Vanderbeck2000OnIntegerProgramming}, destroying the property
+that one column set serves every period. It is also useless here, the
+master holding many columns that differ in a single RTI, so the
+relaxation answers by shifting the same fractional weight one column
+over --- measured at $3\,000$ branches with no integral relaxation
+reached.
+
+Between the two robust rungs the first binds, because transport cost
+is $cK\cdot X$ and nothing else in the objective counts trucks. A bound
+on a delivery is answered by moving freight between periods at the
+price of one period's holding cost, and so is a bound on a
+\emph{single} period's dispatch total; the aggregate with no such
+escape is the horizon total. We therefore branch on the fleet, in two
+levels (Figure~\ref{fig:tree}), keeping the delivery rung as a third
+entered only where the first two have nothing left to say. Master,
+pricing problem, construction and tree are together the procedure we
+call BP-3D-SCPTOP (Algorithm~\ref{alg:bp3d}).
+
+\paragraph{Level 1: the total fleet.}
+Given an incumbent with fleet vector $\mathbf{n}^{\star}$ and total
+$X^{\star}$, three regions partition the space. $X\ge X^{\star}+1$
+costs a whole truck with no offset and is usually pruned by bound;
+$X=X^{\star}$ fixes transport, so everything inside it is inventory
+allocation and this is where level 2 goes; and $X\le X^{\star}-1$ is
+the only region that can beat the incumbent outright, so it is worth a
+certificate of its own and the stack is ordered to expand it first. A
+plan found \emph{inside} an inequality region splits it on its own
+total the same way, so level 1 recurses.
+
+\paragraph{Level 2: the fleet vector, inside $X=X^{\star}$.}
+Fix an order on the pairs $(g,t)$. The fleet vector of any plan in the
+region differs from $\mathbf{n}^{\star}$ at a first index $j$, or
+nowhere, so branching there gives three children,
+\begin{equation}
+n_{j}\le n^{\star}_{j}-1,
+\qquad
+n_{j}= n^{\star}_{j},
+\qquad
+n_{j}\ge n^{\star}_{j}+1,
+\label{eq:murty}
+\end{equation}
+disjoint and exhaustive, with the equality child partitioned again at
+$j+1$ (Murty's scheme \autocite{Murty1968AnAlgorithm}) and expanded
+first. The partition is taken around the plan \emph{constructed at that
+node}, so a node that improves the incumbent is re-partitioned around
+the better plan at once and nothing is restarted.
+
+\input{Tikz_tree}
+
+\paragraph{Pruning, and what counts as a proof.}
+A node is a region imposed on the RMP as fleet rows. Its LP over the
+current pool is solved first as a filter (Section~\ref{sec:bounds});
+where the filter allows pruning and the certification policy admits the
+node, column generation is run to a certificate, and a certified value
+at or above the incumbent prunes it while a value below becomes that
+region's bound. Every other node carries its parent's, valid because
+the child's region is a subset. An infeasible node relaxation is
+\emph{not} a proof that a region is empty: stock non-negativity is not
+elastic, so a fleet lower bound can force deliveries up through
+whatever columns the pool holds and kill the relaxation for a reason
+internal to the pool. Only arithmetic licenses that sentence, and three
+such arguments are available: the fleet box intersected with the
+interval on $X$, an availability cap telescoped from the sending rows
+\eqref{sb:eq:inve-plant} and \eqref{sb:eq:inv-sup-main} under
+non-negative stock, and the constants of \eqref{eq:covercut} read as a
+requirement floor.
+
+\paragraph{What the tree reports.}
+The incumbent is the cheapest verified plan any construction found. The
+global bound is the minimum over the \emph{frontier}, not the root, a
+region nobody expanded contributing nothing; at the deadline the open
+regions are swept and certified where the filter allows. Under 3D
+loading a region's certificate comes, like the root's, from the
+volumetric relaxation with the region's fleet rows applied, which
+Proposition~\ref{prop:inclusion} covers because those rows bound the
+fleet vector and not the load model. A column, by contrast, is a
+feasible load, so one found in any region is valid in every other and a
+pruned node leaves its columns behind. Optimality is claimed
+\emph{only} when the root is certified, no region remains open, no
+restart has broken the partition and the incumbent meets the global
+bound. The hierarchy is finite and its levels exhaustive, so those
+conditions are reachable in principle; no run here meets them.
+
+\input{Alg_tree}
+
+\subsection{The initial pool}
+\label{sec:initcols}
+The search starts from the plainest possible pool: one maximally full
+truck per commodity and direction, obtained geometrically by pricing
+that commodity alone with every other capped at zero --- so that where
+the probe closes, the pool truck is that commodity's placeable maximum
+and the same number is its placeability cap --- and volumetrically by
+filling to capacity. No demand mixes and no reduced variants are
+seeded, so whatever the search reaches it reached by pricing, branching
+and construction.
+
+\subsection{The flow-first construction}
+\label{sec:relaxfix-flow}
+
+The primal heuristic decides first how much moves and how many trucks
+carry it, and builds the trucks afterwards. It runs inside the region
+$\mathcal{R}$ of the node that calls it and must stay there, or the
+children that node induces would partition around a point it excludes,
+and it runs on a \emph{fresh copy} of the restricted master, step~2
+changing variable types the node's own LP needs intact.
+Figure~\ref{fig:construct} follows one period through the four steps of
+Algorithm~\ref{alg:construct}.
+
+\input{Tikz_construct}
+
+\begin{enumerate}
+\item \emph{Restricted master.} The LP over the pool, inside
+  $\mathcal{R}$, gives the duals and the fractional point.
+
+\item \emph{Aggregate integer master.} Introduce the dispatch totals
+  $n_{gt}$ as explicit integer variables, make
+  $\overline{V}_{nt},\overline{V^{\mathrm{e}}}_{rt}$ integer and leave
+  the column variables \emph{continuous}, with $\mathcal{R}$ imposed on
+  the $n_{gt}$ as well as on the columns and, under 3D loading, the
+  stack-count rows \eqref{eq:stackrows} added. The objective is decided
+  here, and \emph{without a single call to a pricing problem}: the row
+  set is the master's own. Artificial slack above a tolerance means the
+  region is infeasible over this pool, and the node is abandoned.
+
+\item \emph{Partition, as a cover.} For each direction and period,
+  realise the integer deliveries $Q^{\star}_{gt}$ as $n^{\star}_{gt}$
+  legal trucks by an integer programme over per-truck commodity counts
+  $a_{kc}$, $k\le n^{\star}_{gt}$:
+  \begin{align}
+    \min\;\;&\sum_{c}\gamma_{gc}\Bigl(\sum_{k}a_{kc}-Q^{\star}_{gtc}\Bigr)
+      \label{eq:part-obj}\\
+    \text{s.t.}\;\;&\sum_{k}a_{kc}\;\ge\;Q^{\star}_{gtc} &&\forall c
+      \label{eq:part-cover}\\
+    &\textstyle\sum_{c}\gamma_{gc}a_{kc}\le\Gamma_{K},\qquad
+     \sum_{c}w_{c}a_{kc}\le pK^{w} &&\forall k
+      \label{eq:part-cap}\\
+    &\textstyle\sum_{c}\gamma_{gc}a_{kc}\ge\alpha\Gamma_{K}\theta_{k},\qquad
+     \sum_{c}w_{c}a_{kc}\ge\alpha pK^{w}(1-\theta_{k}) &&\forall k
+      \label{eq:part-floor}\\
+    &\textstyle\sum_{c}w_{c}a_{kc}\;\ge\;\sum_{c}w_{c}a_{k+1,c}
+      &&\forall k<n^{\star}_{gt}
+      \label{eq:part-sym}\\
+    &a_{kc}\in\{0,\dots,\bar u_{gc}\},\qquad \theta_{k}\in\{0,1\}.\nonumber
+  \end{align}
+  \eqref{eq:part-cap}--\eqref{eq:part-floor} make each part a legal
+  truck, $\theta_{k}$ selecting the resource on which part $k$ meets the
+  floor; \eqref{eq:part-sym} orders the parts by weight; $\bar u_{gc}$
+  is the placeability cap below. If $n^{\star}_{gt}$ parts cannot be
+  formed, $n^{\star}_{gt}+1$ and $+2$ are tried where $\mathcal{R}$
+  allows --- and a timeout is not a proof that none can be.
+
+\item \emph{Integer master over pool plus parts.} The parts join the
+  pool as columns and the integer master is solved over it,
+  warm-started with the partition; its solution is the node's plan.
+\end{enumerate}
+
+\paragraph{Why the partition must be a cover.}
+This is the step at which the procedure could quietly become wrong.
+With integer $\lambda$ the aggregate
+$\sum_{\omega}b_{\omega n}\lambda^{p}_{\omega t}$ is a sum of placeable
+loads, so an unrealisable delivery vector cannot be requested; step~2
+breaks that link by fixing the aggregates over \emph{continuous}
+$\lambda$. A fractional blend of legal loads need not be realisable as
+legal loads for \emph{any} number of trucks: floor area is consumed in
+whole footprints while \eqref{eq:part-floor} is measured in volume, so
+splitting a vector into more trucks consumes more floor without adding
+volume and splitting it into fewer violates the trailer. On one
+benchmark instance $\{R_{1}\!:\!200,R_{2}\!:\!30\}$ holds $1.83$
+full-truckload floors of volume but needs $35.5\,\mathrm{m}^{2}$ of
+stacks on a $32.64\,\mathrm{m}^{2}$ floor. A cover is sound because
+every part is a legal column and the parts enter step~4 \emph{as
+columns with a warm start}: the integer master may dispatch fewer than
+were built, and over-delivering is feasible, stock having no upper
+bound.
+
+\input{Alg_construct}
+
+\subsection{The construction under 3D loading}
+\label{sec:geo3d}
+
+Rows \eqref{eq:part-cap}--\eqref{eq:part-floor} are exactly the
+volumetric column conditions, so over that oracle every part is a
+column by construction. Under 3D loading a part must also satisfy
+\eqref{eq:col-geom}--\eqref{eq:col-agg}; since the volumetric
+conditions are \emph{necessary} for geometric feasibility
+(Proposition~\ref{prop:inclusion}) the partition programme is kept as a
+\emph{relaxation} of the geometric one, and each part is then tested
+for placeability. Step~2 makes no oracle call, so the objective is
+still decided before any geometry is examined.
+
+Everything here rests on one property. Placeability is \textbf{downward
+closed}: given a layout of $a\ge b$, removing the surplus units from
+their slots leaves positions unchanged, so nothing overlaps, every
+stack is no taller and no heavier, and an emptied slot is dropped. The
+full-truckload floor is no part of placeability, so it does not disturb
+the closure.
+
+\paragraph{Deciding placeability.}
+A part is submitted to an oracle that returns one of three answers. A
+constructive \emph{shelf design} --- a small integer programme laying
+the part's stacks in shelves along the trailer, one integer count per
+shelf, footprint and orientation --- supplies essentially every
+positive answer, and its layout passes the independent verifier of
+Section~\ref{sec:res-setup} before it counts. The pricing problem, in
+feasibility mode with the true slot bound \eqref{sb:eq:Ibound},
+supplies the \emph{infeasibility} proofs.
+
+\paragraph{Two kinds of cut, which must never merge.}
+A part \emph{proved} unplaceable yields a \emph{dominance cut}
+forbidding every load that dominates it componentwise, valid by the
+closure above, so one cut removes the whole up-set of the refuted load
+--- including every point of the one-unit-at-a-time staircase the
+partition would otherwise walk down. Before cutting, the load is
+tightened along its own ray: $\lfloor\sigma a\rfloor$ is probed for
+$\sigma$ bisected in $(0,1]$ and the cut written at the smallest scaled
+point still \emph{proved} unplaceable. A part left \emph{undecided} is
+instead excluded as a single point so that the partition proposes
+something else: a restriction of a primal heuristic, never a validity
+claim. Reading an undecided verdict as a dominance cut is how a method
+comes to forbid its own optimum.
+
+\paragraph{Placeability caps.}
+The largest number of one commodity a truck can hold is a scalar and,
+by the same closure, monotone, so it is computed rather than walked to:
+bisected once per direction and commodity at the start of a run, a
+proved optimum tightening it and an undecided probe leaving the
+analytic cap, then handed to the partition as $\bar u_{gc}$.
+
+\paragraph{A stack relaxation inside the partition.}
+The partition additionally carries, per truck $k$ and footprint class
+$f$, an integer number of stacks
+$s_{kf}\le\lfloor pK\cdot qK/p_{f}q_{f}\rfloor$, the crush limit and
+the height budget imposed per stack and the stacks' areas summed
+against the floor:
+\begin{equation}
+\sum_{c\in f}w_{c}a_{kc}\le W^{\max}s_{kf},
+\qquad
+\sum_{c\in f}r_{gc}\,a_{kc}\le rK\,s_{kf},
+\qquad
+\sum_{f}p_{f}q_{f}\,s_{kf}\le pK\cdot qK ,
+\label{eq:stackrows}
+\end{equation}
+and step~2 carries the same rows per (direction, period) with the area
+right-hand side multiplied by $n_{gt}$. Both are necessary, every truck
+of the period having integer stack counts that satisfy the per-truck
+rows, and they are what the volumetric relaxation omits. Where a class
+carries one RTI type the height row sharpens to
+$\sum_{c\in f}a_{kc}\le\lfloor rK/r_{gr}\rfloor s_{kf}$: the crush
+limit is already carried by the first row with each commodity's own
+weight, so the height row takes the height-limited count, which is what
+the runs reported here used; the smaller of the two counts is also
+valid, and strictly tighter. These aggregates remain a relaxation of
+the per-truck split, which is why step~3 keeps its $n+1$ fallback.

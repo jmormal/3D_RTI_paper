@@ -1,0 +1,64 @@
+% results/fleet_tree_3d/tree_3d_<instance>_table_<budget>.json, every row commit
+% 73411b9, dirty false, 10 threads, 20 GB per model, seed 0, run sequentially;
+% vol_lb_proved true and plan_verified true with no complaint on all five.
+% Every \InFlight cell is replaced by the 3D ladder re-run in the Julia
+% implementation at these same per-rung budgets (900/900/1800/1800/3600 s).
+\begin{table}[!htbp]
+\centering
+\small
+\caption{BP-3D-SCPTOP on the size ladder, every row on one commit
+($73411\mathrm{b}9$), ten
+threads, a $20$ GB per-model cap and seed $0$, run sequentially.
+\emph{root} is the plan the construction returns before any node is
+popped and \emph{tree} the improvement the search then makes on it,
+both read from the same run's trace, so what branching contributes is
+measured within a run rather than across commits. \emph{open} is the
+regions still on the stack at the deadline and \emph{dropped} those
+left with no bound covering them; both $0$ does \emph{not} mean the
+space was refuted, a region closed with a certified bound below the
+incumbent having been bounded and not excluded, which is why row 1
+claims no optimum of its own. The bound is the certified volumetric
+relaxation, valid for 3D by Proposition~\ref{prop:inclusion}; it is
+loose wherever the crush limit binds, so the gap on the last two rows
+is not an optimality gap. LB and \emph{gap} are the \emph{method's own}
+certificate on every row, never a mixture: on rows 2 and 4 the compact
+volumetric model supplies a tighter valid bound ($38\,851.93$ at a
+memory stop, $68\,139.17$ proved optimal), which
+Table~\ref{tab:volumetric} reports and Table~\ref{tab:3d-head} uses as
+an interval end. Row 1 is the paper's only proved optimum and the proof
+is not the method's: the compact volumetric relaxation of that instance
+solves to $18\,796.96$ in $0.198$ s and this verified 3D plan attains
+it. Row 1's instance is also row $I\_8\_5\_2\_90$ of
+Table~\ref{tab:bench}: \textbf{two runs, on two commits} (there
+$0\mathrm{c}0\mathrm{c}16\mathrm{c}$ at $900$ s), agreeing on $z$,
+trucks and bound and differing at $68$ nodes against $67$ here, with the
+gap printed there to two decimals rather than four. The twelve columns
+are set as two blocks of the same five rows in the same order, so that
+the table needs no reduction in type size.}
+\label{tab:3d-onecommit}
+\begin{tabular}{lrrlrr}
+\toprule
+Instance & $z$ & trucks & verified & LB (cert.) & gap \\
+\midrule
+$I\_8\_5\_2\_90$        & \InFlight{\textbf{18\,796.96}} & \InFlight{12}  & \InFlight{12 / 12}   & \InFlight{18\,795.54} & \InFlight{$0.0076\%$} \\
+$I\_8\_10\_2\_90\_k25$  & \InFlight{38\,855.34} & \InFlight{26}  & \InFlight{26 / 26}   & \InFlight{38\,791.14} & \InFlight{$0.165\%$} \\
+$I\_12\_12\_2\_90\_k25$ & \InFlight{52\,129.45} & \InFlight{34}  & \InFlight{34 / 34}   & \InFlight{52\,105.25} & \InFlight{$0.046\%$} \\
+$I\_16\_15\_2\_90\_k25$ & \InFlight{78\,549.14} & \InFlight{54}  & \InFlight{54 / 54}   & \InFlight{68\,131.43} & \InFlight{$13.3\%$} \\
+$I\_24\_20\_2\_90\_k50$ & \InFlight{230\,594.36} & \InFlight{160} & \InFlight{160 / 160} & \InFlight{200\,013.41} & \InFlight{$13.3\%$} \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+
+\begin{tabular}{lrrrrrr}
+\toprule
+Instance & root ($t$) & tree & nodes & dropped & open & wall / budget (s) \\
+\midrule
+$I\_8\_5\_2\_90$        & \InFlight{18\,796.96 ($140$ s)} & \InFlight{$0.00\%$} & \InFlight{67} & \InFlight{0} & \InFlight{0}  & \InFlight{873 / 900} \\
+$I\_8\_10\_2\_90\_k25$  & \InFlight{38\,865.30 ($136$ s)} & \InFlight{$0.03\%$} & \InFlight{68} & \InFlight{0} & \InFlight{35} & \InFlight{883 / 900} \\
+$I\_12\_12\_2\_90\_k25$ & \InFlight{53\,195.84 ($459$ s)} & \InFlight{$\mathbf{2.00\%}$} & \InFlight{11} & \InFlight{0} & \InFlight{10} & \InFlight{1\,761 / 1\,800} \\
+$I\_16\_15\_2\_90\_k25$ & \InFlight{78\,549.14 ($1\,181$ s)} & \InFlight{$0.00\%$} & \InFlight{1}  & \InFlight{0} & \InFlight{2}  & \InFlight{1\,746 / 1\,800} \\
+$I\_24\_20\_2\_90\_k50$ & \InFlight{230\,594.36 ($1\,418$ s)} & \InFlight{$0.00\%$} & \InFlight{2} & \InFlight{0} & \InFlight{4} & \InFlight{3\,492 / 3\,600} \\
+\bottomrule
+\end{tabular}
+\end{table}

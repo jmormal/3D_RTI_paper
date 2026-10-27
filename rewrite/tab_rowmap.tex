@@ -1,0 +1,46 @@
+\begin{longtable}[hbt!]{@{}p{0.30\textwidth}p{0.30\textwidth}p{0.34\textwidth}@{}}
+\caption{The block rows of Section~\ref{sec:model} and the rows of
+$(\mathrm{PP}^{g})$ they become when the $\forall$ over
+$\mathcal{B}=G\times K\times T$ is deleted. The two directions share
+the geometry, so it is written once with $g$ as data; the
+direction-specific rows are those of Section~\ref{sec:pp-dir}. One row
+of $(\mathrm{PP}^{g})$ is not a transcription and is marked as such.}
+\label{tab:rowmap}\\
+\toprule
+Row & Section~\ref{sec:model} & $(\mathrm{PP}^{g})$ \\
+\midrule
+\endfirsthead
+\toprule
+Row & Section~\ref{sec:model} & $(\mathrm{PP}^{g})$ \\
+\midrule
+\endhead
+\multicolumn{3}{@{}l}{\textit{Block rows: the pricing problem}}\\
+Slot active            & \eqref{sb:eq:slot-active} & \eqref{bp:PP-slot-active}\\
+Orientation            & \eqref{sb:eq:orient}      & \eqref{bp:PP-orient}\\
+Stack height           & \eqref{sb:eq:height}      & \eqref{bp:PP-height}\\
+Non-overlap            & \eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2} & \eqref{bp:PP-nonov-x1}--\eqref{bp:PP-nonov-y2}\\
+Cover                  & \eqref{sb:eq:cover}       & \eqref{bp:PP-cover}\\
+Containment            & \eqref{sb:eq:cont-x}--\eqref{sb:eq:cont-y} & \eqref{bp:PP-cont-x}\\
+Full truckload, volume & \eqref{sb:eq:util-p}, \eqref{sb:eq:util-s} & \eqref{bp:PP-util}\\
+Full truckload, payload& \eqref{sb:eq:utilw-p}, \eqref{sb:eq:utilw-s} & \eqref{bp:PP-utilw}\\
+The same on capacity   & \eqref{sb:eq:util-cap} & \eqref{bp:PP-cap}, re-gated on $Z$\\
+Occupied floor area    & --- (no counterpart)      & \eqref{bp:PP-areacut}, a valid inequality\\
+Slot capacity          & \eqref{sb:eq:slot-cap}    & \eqref{bp:PP-p-slot-cap}\\
+Folded capacity        & \eqref{sb:eq:empty-cap}   & \eqref{bp:PP-s-empty-cap}\\
+Dispatch gate, full    & \eqref{fix:slot-link}     & \eqref{bp:PP-p-slot-link}\\
+Dispatch gate, folded  & \eqref{fix:empty-link}    & \eqref{bp:PP-s-empty-link}\\
+Payload, both directions & \eqref{sb:eq:truck-w-plant} & \eqref{bp:PP-p-truck-w}, \eqref{bp:PP-s-truck-w}\\
+Crush limit, plant-bound & \eqref{sb:eq:stack-w-plant} & \eqref{bp:PP-p-stack-w}\\
+Crush limit, supplier-bound & \eqref{sb:eq:stack-w-sup} & \eqref{bp:PP-s-stack-w}\\
+Slot symmetry          & \eqref{sb:eq:sym}         & \eqref{bp:PP-sym}\\
+Transport cost         & \eqref{sb:eq:obj-zK}      & $\eta^{K}cK\cdot Z$ in \eqref{bp:PP-objective}\\
+Dispatch               & \eqref{sb:eq:lc-active}   & deleted; $Z$ carries the truck\\
+Truck symmetry         & \eqref{dec:sym-truck}     & dropped in the aggregation\\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Coupling rows: the master}}\\
+Aggregate flows        & \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} & \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve}\\
+Fleet per class        & $|K|$ trucks per $(g,t)$  & \eqref{bp:MP-count}\\
+Inventory and coverage & \eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty} & verbatim in the master\\
+Holding cost           & \eqref{sb:eq:obj-zK}      & second term of \eqref{eq:MPObjective}\\
+\bottomrule
+\end{longtable}

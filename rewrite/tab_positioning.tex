@@ -1,0 +1,40 @@
+% Table 1 of main.tex (table:ComProTra), re-set one row per line.  The data are
+% those of main.tex:139-284; the only cell changed is 3D-SCPTOP's own RTI entry,
+% which was blank there and is M|F (several types, foldable).
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Procurement transport models with inventory decisions, on the
+  features that separate them from 3D-SCPTOP. \emph{Config.}: SS single
+  source and single destination, MS multi-supplier, MM multi-echelon.
+  \emph{Level}: O operational, T tactical. \emph{Mode}: FTL
+  full-truckload, LTL less-than-truckload, MR milk-run, CES courier
+  express. \emph{Capacity}: V volumetric, W weight, UH a count of
+  loaded units. \emph{RTIs}: S one type, M several, F foldable, NF not.
+  \emph{Framework}: (F)(MO)(I)LP linear programming variants, CCP
+  chance-constrained. A dash is a feature the model does not carry.}
+  \label{table:ComProTra}
+  \begin{adjustbox}{width=\textwidth}
+  \begin{tabular}{llllllllll}
+    \toprule
+    Article & Config. & Level & Mode & Capacity & Tr.\ cost & Inv.\ cap. & RTIs & Inv.\ cost / safety stock & Framework \\
+    \midrule
+    \autocite{Berman2006InboundCost}            & MM & T   & FTL\,$|$\,LTL            & V        & X & ---  & ---      & X / ---  & MINLP  \\
+    \autocite{Sancak2011Multi-itemPolicy}       & ---& O   & LTL\,$|$\,FTL            & V        & X & ---  & ---      & X / X    & MILP   \\
+    \autocite{Schoneberg2010AnNetworks}         & MS & T   & FTL\,$|$\,LTL            & V        & X & X    & ---      & X / ---  & MILP   \\
+    \autocite{Schoneberg2013ANetworks}          & MS & O   & FTL\,$|$\,LTL            & V        & X & X    & ---      & X / ---  & MILP   \\
+    \autocite{Diaz-Madronero2014APlanning}      & SS & O   & FTL                      & UH       & X & ---  & ---      & X / X    & FMOILP \\
+    \autocite{Hein2016QuantitativeProblem}      & MS & O   & MR                       & V        & X & ---  & ---      & X / ---  & MILP   \\
+    \autocite{Diaz-Madronero2017ADecisions}     & MS & T   & FTL\,$|$\,LTL\,$|$\,MR   & V        & X & X    & ---      & X / X    & MILP   \\
+    \autocite{Meyer2018TransportIndustry}       & MS & T, O& MR\,$|$\,FTL             & V        & X & X    & ---      & X / ---  & MILP   \\
+    \autocite{Chitsaz2019ARouting}              & MS & O, T& MR                       & V        & X & X    & ---      & X / ---  & MILP   \\
+    \autocite{Baller2022OptimizingApproach}     & MS & O   & MR\,$|$\,FTL\,$|$\,CES   & V\,$|$\,W& X & X    & ---      & --- / X  & MILP   \\
+    \autocite{Hashemi-Amiri2023IntegratedApproach}& MS & T & MR                       & V        & X & ---  & ---      & --- / --- & CCP   \\
+    \autocite{GUO2024104339}                    & MM & T, O& FTL                      & UH       & X & X    & S\,$|$\,NF & X / --- & MINLP \\
+    \autocite{Zhang17012024}                    & MS & T, O& MR                       & UH       & X & X    & M\,$|$\,NF & X / --- & ILP   \\
+    \midrule
+    \textbf{3D-SCPTOP}                          & SS & O   & FTL & \textbf{3D loading} & X & X & M\,$|$\,F & X / X & MILP \\
+    \bottomrule
+  \end{tabular}
+  \end{adjustbox}
+\end{table}

@@ -1,0 +1,186 @@
+\section{The pricing problem}
+\label{sec:pricing}
+
+By the Blocks and Classes steps of Section~\ref{sec:decomp} the
+pricing problem of class $(g,t)$ \emph{is} the block of 3D-SCPTOP with
+the quantifier over $\mathcal{B}$ removed: the same rows, with $g$
+supplying the data and the master the duals, the only rows below with
+no counterpart in Section~\ref{sec:model} being the valid inequalities
+\eqref{bp:PP-areacut}. There is one such problem per direction, written
+$(\mathrm{PP}^{g})$. With $c$ the commodity index of
+Section~\ref{sec:columns}, $\mathrm{image}_{c}$, $w_{c}$,
+$\gamma_{gc}$ and $r_{gc}$ are
+$\overline{V}_{n},w_{n},\gamma_{p\rho(n)},r_{p\rho(n)}$ respectively
+$V^{\mathrm{e}}_{r},w^{\mathrm{f}}_{r},\gamma_{sr},r_{sr}$; the partition
+programme \eqref{eq:part-obj}--\eqref{eq:part-sym} uses the same
+convention. Figure~\ref{fig:truck} draws what the block designs.
+
+\begin{align}
+  \min\;\; & \eta^{K}cK\cdot Z \;-\; \sum_{c}\pi_{ct}\,\mathrm{image}_{c}
+    && \bar c = z-\mu_{gt} \label{bp:PP-objective}\\
+  & \widehat{X}_{i} \le Z && \forall i \in \mathcal{I} \label{bp:PP-slot-active}\\
+  & \mathit{LX}_{ih} + \mathit{LY}_{ih} = X_{ih}
+    && \forall h \in H,\, i \in \mathcal{I} \label{bp:PP-orient}\\
+  & \sum_{r \in R(h)} r_{gr}\,L_{ihr} \le \mathit{rK}\cdot X_{ih}
+    && \forall h \in H,\, i \in \mathcal{I} \label{bp:PP-height}\\
+  & \mathit{PX}_{i} + \delta^{x}_{i} \le \mathit{PX}_{j} + M^{x}(1-A_{ij}),
+    \quad
+    \mathit{PX}_{j} + \delta^{x}_{j} \le \mathit{PX}_{i} + M^{x}(1-B_{ij})
+    && \forall i<j \label{bp:PP-nonov-x1}\\
+  & \mathit{PY}_{i} + \delta^{y}_{i} \le \mathit{PY}_{j} + M^{y}(1-C_{ij}),
+    \quad
+    \mathit{PY}_{j} + \delta^{y}_{j} \le \mathit{PY}_{i} + M^{y}(1-D_{ij})
+    && \forall i<j \label{bp:PP-nonov-y2}\\
+  & A_{ij}+B_{ij}+C_{ij}+D_{ij} \ge \widehat{X}_{i}+\widehat{X}_{j}-1
+    && \forall i<j \label{bp:PP-cover}\\
+  & \mathit{PX}_{i} + \delta^{x}_{i} \le \mathit{pK},
+    \qquad
+    \mathit{PY}_{i} + \delta^{y}_{i} \le \mathit{qK}
+    && \forall i \in \mathcal{I} \label{bp:PP-cont-x}\\
+  & \widehat{X}_{i+1} \le \widehat{X}_{i}
+    && \forall i \le |\mathcal{I}|-1 \label{bp:PP-sym}\\
+  & \sum_{c}\gamma_{gc}\,\mathrm{image}_{c}
+      \;\ge\;\alpha\,\Gamma_{K}\,(Z-1+\theta) \label{bp:PP-util}\\
+  & \sum_{c} w_{c}\,\mathrm{image}_{c}
+      \;\ge\;\alpha\,\mathit{pK}^{w}\,(Z-\theta) \label{bp:PP-utilw}
+\end{align}
+with $\delta^{x}_{i}=\sum_{h}(p_{h}\mathit{LX}_{ih}+q_{h}\mathit{LY}_{ih})$
+and $\delta^{y}_{i}=\sum_{h}(q_{h}\mathit{LX}_{ih}+p_{h}\mathit{LY}_{ih})$
+the footprint of slot $i$ in its chosen orientation, and
+\eqref{bp:PP-cont-x} naming both containment rows and
+\eqref{bp:PP-nonov-x1}, \eqref{bp:PP-nonov-y2} the four non-overlap
+rows, so that at $Z=1$ the pair
+\eqref{bp:PP-util}--\eqref{bp:PP-utilw} is the disjunction
+\eqref{eq:col-truck}.
+
+Deleting a variable is a claim about the feasible set. With no
+loading-configuration index, $Z_{gkt}$ and $Y_{gkt}$ differ at exactly
+one kind of point, $Z=1$ with $Y=0$: a truck carrying a layout and no
+freight, whose image and cost are both $0$ by
+\eqref{fix:slot-link}--\eqref{fix:empty-link} and
+\eqref{sb:eq:obj-zK} --- precisely those of the empty column.
+Identifying the two binaries therefore removes no element of
+$\Omega^{g}$, and the master, which sees only images and costs, cannot
+tell the difference. The block keeps $Z$, charges it
+$\eta^{K}cK\cdot Z$ and hangs every load gate on it; the empty
+column, analytically known with reduced cost $-\mu_{gt}\ge0$, is
+excluded by fixing $Z=1$.
+
+Four implied rows are available and the oracles behind
+Section~\ref{sec:results} carry the second pair --- two restating the
+floor on the layer \emph{capacity} rather than on the load, and two
+bounding the occupied floor area:
+\begin{align}
+  & \sum_{h,\,r \in R(h)} \gamma_{gr}\,n_{hr}\,\overline{L}_{hr}
+      \;\ge\;\alpha\,\Gamma_{K}\,(Z-1+\theta), \qquad
+    \sum_{h,\,r \in R(h)} \hat w_{gr}\,n_{hr}\,\overline{L}_{hr}
+      \;\ge\;\alpha\,\mathit{pK}^{w}\,(Z-\theta),
+    \label{bp:PP-cap}\\
+  & \sum_{i}\sum_{h} p_{h}q_{h}X_{ih} \;\le\; \mathit{pK}\cdot\mathit{qK},
+    \qquad
+    \sum_{i}\sum_{h} p_{h}q_{h}X_{ih}
+      \;\ge\;\alpha\,\mathit{pK}\cdot\mathit{qK}\,(Z-1+\theta).
+    \label{bp:PP-areacut}
+\end{align}
+\eqref{bp:PP-cap} is \eqref{sb:eq:util-cap} with the block index
+dropped. \eqref{bp:PP-areacut} is a valid inequality rather than a
+transcription, and is where the footprint consistency of
+Section~\ref{sb:sec:symm} earns its place: its first row says the
+footprints lie on the floor, and for the second, multiplying
+\eqref{bp:PP-height} by $p_{h}q_{h}$ and using
+$n_{hr}\gamma_{gr}=p_{h}q_{h}r_{gr}$ gives
+\[
+  \sum_{r\in R(h)} \gamma_{gr}\,n_{hr}\,L_{ihr}
+  \;=\;p_{h}q_{h}\sum_{r\in R(h)} r_{gr}\,L_{ihr}
+  \;\le\;p_{h}q_{h}\,\mathit{rK}\,X_{ih},
+\]
+so the volume the stacks hold is at most $\mathit{rK}$ times the
+occupied area; summing over $i$ and $h$ and chaining through
+\eqref{bp:PP-cap} gives the row, and a truck full by volume therefore
+has at least a fraction $\alpha$ of its floor occupied. Without the
+tiling assumption the step fails and the row can cut off feasible
+layouts.
+
+\subsection{The direction-specific rows}
+\label{sec:pp-dir}
+
+Plant-bound, $g=\mathrm{p}$, with $\mathrm{image}_{n}=\overline{V}_{n}$:
+\begin{align}
+  & \sum_{n \in M(r)} V_{in} \;\le\; \sum_{h\,:\,r \in R(h)} n_{hr}\,L_{ihr}
+    && \forall i \in \mathcal{I},\, r \in R \label{bp:PP-p-slot-cap}\\
+  & V_{in} \;\le\; \bar u^{V}_{n}\,Z
+    && \forall i \in \mathcal{I},\, n \in N \label{bp:PP-p-slot-link}\\
+  & \sum_{n \in N} w_{n}\,\overline{V}_{n} \;\le\; \mathit{pK}^{w}\,Z
+    \label{bp:PP-p-truck-w}\\
+  & \sum_{n \in N} w_{n}\,V_{in} \;\le\; W^{\max}
+    && \forall i \in \mathcal{I} \label{bp:PP-p-stack-w}
+\end{align}
+and supplier-bound, $g=\mathrm{s}$, with
+$\mathrm{image}_{r}=V^{\mathrm{e}}_{r}$:
+\begin{align}
+  & V^{\mathrm{e}}_{r} \;\le\; \sum_{h\,:\,r \in R(h)} n_{hr}\,\overline{L}_{hr}
+    && \forall r \in R \label{bp:PP-s-empty-cap}\\
+  & V^{\mathrm{e}}_{r} \;\le\; \bar u^{\mathrm{e}}_{r}\,Z
+    && \forall r \in R \label{bp:PP-s-empty-link}\\
+  & \sum_{r \in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{r}
+      \;\le\; \mathit{pK}^{w}\,Z \label{bp:PP-s-truck-w}\\
+  & \sum_{h}\sum_{r \in R(h)} w^{\mathrm{f}}_{r}\,n_{hr}\,L_{ihr}
+      \;\le\; W^{\max}
+    && \forall i \in \mathcal{I} \label{bp:PP-s-stack-w}
+\end{align}
+The asymmetry is the compact model's own: the crush limit on a
+plant-bound truck depends on which products ride in the slot, so it
+needs the per-slot assignment $V_{in}$, and a supplier-bound truck does
+not.
+
+\paragraph{What the method requires of the oracle.}
+The oracle's only obligation is to return an optimal point of
+\emph{this} feasible set for the duals it is handed, and three
+conditions make its answer usable. The slot set must be the true bound
+\eqref{sb:eq:Ibound}, an optimum proved over fewer slots bounding a
+different problem. The floor must be imposed on the load carried, with
+each commodity's own weight. And the block must accept a per-commodity
+cap on the image, and an exact image, which is what
+Sections~\ref{sec:initcols} and \ref{sec:geo3d} ask of it: an oracle
+that silently ignores such a request answers a different question. The
+hard core is the disjunctive relation
+\eqref{bp:PP-nonov-x1}--\eqref{bp:PP-cover}, whose linear relaxation
+is weak, and which may equivalently be imposed as one two-dimensional
+disjointness relation over the slot rectangles with no separating
+binaries at all.
+
+\paragraph{The volumetric oracle.}
+The same master is also solved over the loads of the volumetric
+benchmark of Appendix~\ref{appendix:A}, where a load is a column iff
+its volume fits the trailer's, its weight the payload, and it clears
+the floor on the binding resource. Pricing is then a two-constraint
+integer knapsack, which proves optimality routinely and makes a
+certificate affordable at every node. Running both oracles through one
+master makes Section~\ref{sec:res-abstraction} an experiment about the
+loading representation rather than about two solution technologies.
+
+\paragraph{A pricing ladder.}
+Any column of negative reduced cost improves the restricted master; the
+\emph{most} negative one is needed only for the certificate. Geometric
+column generation therefore runs as a ladder whose first rung is a
+randomised greedy construction over enumerated stack fills, placed by a
+shelf packer and run \emph{under the current duals}, keeping the best
+two loads per pair that beat the pair's threshold by half a percent and
+sending the remaining pairs to the exact oracle. That rung is pricing
+output and never seeding, and the certifying sweep never uses it.
+
+\input{Tikz_truck}
+
+\paragraph{What pricing cannot return.}
+For any dual vector \eqref{bp:PP-objective} is linear in the image, so
+it attains its optimum at an extreme point of
+$\operatorname{conv}(\Omega^{g})$: pricing returns extreme loads only.
+A balanced load inside the hull is dominated componentwise by a
+fractional blend of single-commodity trucks --- the relaxation buys
+that blend for one truck where an integer plan pays for each truck it
+mixes --- so no choice of duals returns it, however the search moves
+them (Figure~\ref{fig:hull}). Interior loads are precisely what an
+integer plan needs when a period's demand does not decompose into full
+trucks, which is why the method has a second generator for them.
+
+\input{TikzHullFigure}

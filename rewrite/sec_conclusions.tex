@@ -1,0 +1,32 @@
+\section{Conclusions}
+\label{sec:conclusions}
+
+Procurement transport planning with returnable transport items has
+been formulated with transport capacity as what it physically is --- a
+three-dimensional loading condition on every dispatched truck --- and
+solved by branch and price over complete loaded trucks. Because
+3D-SCPTOP is written over trucks it is block-angular, so the
+Dantzig--Wolfe master is obtained by aggregation and carries no loading
+configuration (Table~\ref{tab:rowmap}), and the equivalence needs no
+hypothesis. Every lower bound reported rests on
+Proposition~\ref{prop:inclusion}, which makes a bound affordable where
+a geometric certificate is not. And a volumetric transport capacity is
+not a conservative simplification: the method plans the same
+quantities with $27.0\%$ and $24.5\%$ fewer trucks than re-packing two
+of its plans needs, and on the industrial catalogue the error runs one
+way only.
+
+Three limits are real, and each names its next step. The method
+certifies no optimum here: the search ends with regions unrefuted, and the
+one optimum reported is established by inclusion from an exactly solved
+relaxation. The bound is loose exactly where the crush limit halves a
+container family's layer count, and the stack-count rows
+\eqref{eq:stackrows} tighten it measurably, so they are the candidate
+for tightening it inside the search as well, once it is known whether
+the loads they admit can be placed. Closing the regions the search
+leaves unrefuted may need a branching rule on \emph{pairs} of columns,
+untested here. And the comparison against a procedure in industrial use is to
+be run on instances a plant solves itself, against a plan supplied to
+it.
+
+

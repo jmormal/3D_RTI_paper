@@ -1,0 +1,40 @@
+% Aggregated by hand from the same 36 files as Table \ref{tab:bench} and from
+% results/loads_recheck.csv.  Totals verified by recomputation: 31/36 plans,
+% 30 gap rows, mean 8.799%; 724 loads = 501 unplaceable + 174 undecided + 49
+% placeable.
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Table~\ref{tab:bench} by instance factor. \emph{plans} counts
+the instances on which BP-3D-SCPTOP returned a verified plan inside the
+$900$ s budget; the mean gap is over those instances and over the rows
+whose bound was proved, and the count of each is given so that the
+denominator is never in doubt. The last three columns are the
+volumetric benchmark's dispatched loads: the share a constraint
+programme \emph{proves} unplaceable, the share it leaves
+\emph{undecided}, and the share it places. The proved share is a
+\emph{floor}, since more oracle effort can only move loads out of the
+undecided column.}
+\label{tab:summary}
+\begin{tabular}{llrrrrrr}
+\toprule
+factor & value & plans & mean gap (rows) & loads & unpl. & und. & placed \\
+\midrule
+$|N|$ & 4 & 16 / 18 & $8.9\%$ (16) & 363 & $67.2\%$ & $26.4\%$ & $6.3\%$ \\
+ & 8 & 15 / 18 & $8.6\%$ (14) & 361 & $71.2\%$ & $21.6\%$ & $7.2\%$ \\
+\midrule
+$|T|$ & 5 & 17 / 18 & $8.4\%$ (17) & 219 & $56.2\%$ & $33.8\%$ & $10.0\%$ \\
+ & 10 & 14 / 18 & $9.4\%$ (13) & 505 & $74.9\%$ & $19.8\%$ & $5.3\%$ \\
+\midrule
+$|R|$ & 2 & 10 / 12 & $9.7\%$ (10) & 246 & $79.3\%$ & $15.4\%$ & $5.3\%$ \\
+ & 3 & 11 / 12 & $8.4\%$ (10) & 235 & $61.7\%$ & $29.4\%$ & $8.9\%$ \\
+ & 4 & 10 / 12 & $8.3\%$ (10) & 243 & $66.3\%$ & $27.6\%$ & $6.2\%$ \\
+\midrule
+$v$ & 60 & 7 / 12 & $19.3\%$ (6) & 182 & $91.8\%$ & $2.7\%$ & $5.5\%$ \\
+ & 90 & 12 / 12 & $5.0\%$ (12) & 239 & $55.2\%$ & $36.4\%$ & $8.4\%$ \\
+ & 120 & 12 / 12 & $7.4\%$ (12) & 303 & $66.7\%$ & $27.1\%$ & $6.3\%$ \\
+\midrule
+all & & 31 / 36 & $8.8\%$ (30) & 724 & $\mathbf{69.2\%}$ & $24.0\%$ & $6.8\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}

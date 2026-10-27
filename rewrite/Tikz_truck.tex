@@ -1,0 +1,88 @@
+% F3 of article/paper-figures.md: what one truck is.  (a) floor plan,
+% (b) one slot lifted to an isometric stack via \drawblock of tikzimports.tex,
+% whose colour argument must be a plain name (it is used as <name>!50).
+% No \resizebox: the panels are drawn at their final size so that \tiny stays
+% legible.
+\definecolor{stkA}{gray}{0.52}
+\definecolor{stkB}{gray}{0.80}
+\begin{figure}[htb]
+\centering
+\begin{subfigure}[b]{0.66\textwidth}
+\centering
+\begin{tikzpicture}[x=0.645cm, y=0.645cm, >=Latex,
+  fp/.style={draw=black!75, fill=black!8, line width=0.4pt},
+  hl/.style={draw=black!75, fill=black!25, line width=0.4pt},
+  tny/.style={font=\tiny, align=center, inner sep=1pt},
+  led/.style={black!55, line width=0.3pt}]
+  % trailer floor, 13.6 x 2.4 (decimetres of the real 13 600 x 2 400 mm)
+  \fill[pattern=north east lines, pattern color=black!16]
+     (0,0) rectangle (13.6,2.4);
+  \draw[line width=0.7pt] (0,0) rectangle (13.6,2.4);
+
+  % 1200 x 1600 footprints
+  \foreach \x in {0,1.2,2.4} \draw[fp] (\x,0) rectangle ++(1.2,1.6);
+  % one rotated 90 degrees: 1600 x 1200
+  \draw[hl] (3.6,0) rectangle ++(1.6,1.2);
+  % 1200 x 800 footprints
+  \foreach \x/\y in {5.2/0, 5.2/0.8, 6.4/0, 6.4/0.8}
+     \draw[fp] (\x,\y) rectangle ++(1.2,0.8);
+  % 2400 x 1200
+  \draw[fp] (7.6,0) rectangle ++(2.4,1.2);
+  % the lifted slot i
+  \draw[hl, line width=0.8pt] (10.0,0) rectangle ++(1.2,1.6);
+
+  % bottom-left corners
+  \foreach \x/\y in {0/0, 3.6/0, 10.0/0} \fill[black] (\x,\y) circle (0.075);
+
+  % dimensions
+  \draw[|<->|, black!65, line width=0.3pt] (0,-0.62) -- (13.6,-0.62);
+  \node[tny, anchor=north] at (6.8,-0.56) {$pK=13\,600$ mm};
+  \draw[|<->|, black!65, line width=0.3pt] (-0.50,0) -- (-0.50,2.4);
+  \node[tny, rotate=90, anchor=south] at (-0.58,1.2) {$qK=2\,400$};
+
+  % annotations outside the floor, with leaders
+  \node[tny, anchor=south] (rot) at (4.4,3.05) {rotated $90^{\circ}$};
+  \draw[led] (rot.south) -- (4.4,1.25);
+  \node[tny, anchor=south] (nov) at (9.1,3.05)
+     {$\mathit{PX}_{i}+\delta^{x}_{i}\le \mathit{PX}_{j}$};
+  \draw[led] (nov.south) -- (8.8,1.25);
+  \node[tny, anchor=north west] (sl) at (10.7,-1.00) {slot $i$};
+  \draw[led] (sl.north) -- (10.6,0.03);
+  \node[tny, anchor=north east] (bl) at (-0.10,-1.00) {$(x_{i},y_{i})$};
+  \draw[led] (bl.north east) -- (0.04,-0.06);
+\end{tikzpicture}
+\caption{the floor, \eqref{bp:PP-nonov-x1}--\eqref{bp:PP-cont-x}}
+\label{fig:truck-floor}
+\end{subfigure}\hfill
+\begin{subfigure}[b]{0.30\textwidth}
+\centering
+\tdplotsetmaincoords{72}{128}
+\begin{tikzpicture}[tdplot_main_coords, scale=0.70, >=Latex,
+  tny/.style={font=\tiny, align=left, inner sep=1pt}]
+  % four homogeneous layers in one slot, two shades: the per-slot assignment
+  \drawblock{0}{0}{0}{1.2}{1.6}{0.62}{stkA}{0}{0}{1}
+  \drawblock{0}{0}{1.24}{1.2}{1.6}{0.62}{stkB}{0}{0}{1}
+  % height budget
+  \draw[|<->|, black!70, line width=0.3pt] (1.55,0,0) -- (1.55,0,2.48);
+  \node[tny, anchor=west] at (2.90,0,1.55)
+     {$\sum_{r} r_{pr}\ell_{ir}$\\ $\le rK$};
+  % crush cap at the base
+  \node[tny, anchor=north] at (0.6,0.8,-0.30)
+     {$\sum_{n}w_{n}v_{in}\le W^{\max}$};
+  \node[tny, anchor=south] at (0.6,0.8,2.95)
+     {$v_{in}$: two products,\\ one per layer};
+\end{tikzpicture}
+\caption{one slot, \eqref{eq:col-height} and \eqref{eq:col-crush}}
+\label{fig:truck-stack}
+\end{subfigure}
+\caption{What the pricing problem designs. A column is a drawing a
+loading crew could execute: footprints placed on the floor without
+overlap and inside $pK\times qK$, each slot a stack of homogeneous
+layers under the height budget \eqref{bp:PP-height} and the per-slot
+crush cap, the load assigned to the slots in the same period so that
+$b_{\omega n}=\sum_{i\le m}v_{in}$, and the whole truck full on the
+binding resource \eqref{bp:PP-util}--\eqref{bp:PP-utilw}: volume
+\emph{or} payload, $\max\{\gamma/\Gamma_{K},\,w/pK^{w}\}\ge\alpha$, and
+never the sum of the two ratios.}
+\label{fig:truck}
+\end{figure}

@@ -1,0 +1,249 @@
+% F5 of article/paper-figures.md: the flow-first construction, one period,
+% top to bottom.  The object passing between the steps is drawn, not named,
+% and every band carries the same two-line statement of what it fixes and
+% what it leaves free.  Greyscale only (fills black!X plus one hatch), so
+% nothing depends on colour.  The libraries used -- patterns,
+% decorations.pathreplacing, arrows.meta -- are all loaded by
+% ../necessarypackages and paper.tex; no new package is needed.
+\begin{figure}[!htb]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[>=Latex, line width=0.5pt,
+  band/.style={draw=black!45, fill=black!2, rounded corners=2pt},
+  ttl/.style={font=\small\bfseries, anchor=west, align=left},
+  bdg/.style={circle, draw=black!70, fill=white, inner sep=0pt,
+              minimum size=4.6mm, font=\scriptsize\bfseries},
+  ann/.style={font=\scriptsize, align=center},
+  annl/.style={font=\scriptsize, align=left},
+  mic/.style={font=\tiny, align=center},
+  micl/.style={font=\tiny, align=left},
+  st/.style={font=\scriptsize, align=left, anchor=west, text width=38mm},
+  barO/.style={draw=black!70, fill=white},         % still continuous
+  qty/.style={draw=black!70, fill=black!25},
+  trk/.style={draw=black!80, fill=white, rounded corners=0.6pt},
+  seg1/.style={draw=black!55, fill=black!30},      % R1 units
+  seg2/.style={draw=black!55, fill=black!10},      % R2 units
+  sur/.style={draw=black!65, pattern=north east lines, pattern color=black!75},
+  glyA/.style={draw=black!55, fill=black!12},      % a column already in the pool
+  glyB/.style={draw=black!70, fill=black!35},      % a part built here
+  rule/.style={draw=black!35, dotted}]
+
+\def\BW{15.2}          % content width
+\def\SX{10.95}         % the fixed/free rule
+\def\GX{2.20}          % x of the between-band arrows
+
+% =====================================================================
+% band 1 -- the node's LP
+% =====================================================================
+\draw[band] (0,0) rectangle (\BW,-2.25);
+\draw[rule] (\SX,-0.12) -- (\SX,-2.13);
+\node[bdg] at (0.55,-0.38) {1};
+\node[ttl] at (0.95,-0.38) {Restricted master, inside $\mathcal{R}$};
+
+\draw[black!55] (0.60,-1.82) -- (4.55,-1.82);
+\foreach \i/\h/\v in {0/0.95/{1.0}, 1/0.86/{0.9}, 2/0.67/{0.7},
+                      3/0.48/{0.5}, 4/0.29/{0.3}} {
+  \pgfmathsetmacro{\x}{0.85+\i*0.72}
+  \draw[barO] (\x,-1.82) rectangle (\x+0.46,-1.82+\h);
+  \node[mic, anchor=south] at (\x+0.23,-1.79+\h) {\v};
+}
+\node[mic] at (2.58,-2.00) {one bar per column $\omega\in\bar\Omega$};
+\node[annl, anchor=west] at (4.80,-1.38)
+  {$\sum_{\omega}\lambda^{g}_{\omega t}=3.4$};
+\node[mic, anchor=north west] at (4.80,-1.62) {not an integer};
+
+\node[ann] at (7.55,-0.98) {duals $\pi_{ct},\,\mu_{gt}$};
+\draw[->] (7.55,-1.20) -- (7.55,-1.76);
+\node[mic, anchor=north] at (7.55,-1.80) {to the pricing problem};
+
+\node[ann, text width=22mm] at (9.60,-1.26)
+  {on a \emph{fresh copy} of the RMP: step~2 changes variable types};
+
+\node[st] at (11.15,-1.12)
+  {\textbf{fixed:} the region $\mathcal{R}$ --- bounds on $n_{gt}$ and $X$\\[2pt]
+   \textbf{free:} every $\lambda^{g}_{\omega t}$, $\overline{V}_{nt}$,
+   $\overline{V^{\mathrm{e}}}_{rt}$, all continuous};
+
+% ---- 1 -> 2 ----------------------------------------------------------
+\draw[->, line width=0.8pt] (\GX,-2.32) -- (\GX,-2.80);
+\node[micl, anchor=west] at (\GX+0.22,-2.56)
+  {the same rows; only the variable types change};
+
+% =====================================================================
+% band 2 -- the aggregate integer master
+% =====================================================================
+\draw[band] (0,-2.87) rectangle (\BW,-5.42);
+\draw[rule] (\SX,-2.99) -- (\SX,-5.30);
+\node[bdg] at (0.55,-3.25) {2};
+\node[ttl] at (0.95,-3.25) {Aggregate integer master};
+
+\draw[black!55] (0.60,-5.00) -- (4.55,-5.00);
+\foreach \i/\h/\v in {0/0.90/{1.2}, 1/0.68/{0.9}, 2/0.60/{0.8},
+                      3/0.53/{0.7}, 4/0.30/{0.4}} {
+  \pgfmathsetmacro{\x}{0.85+\i*0.72}
+  \draw[barO] (\x,-5.00) rectangle (\x+0.46,-5.00+\h);
+  \node[mic, anchor=south] at (\x+0.23,-4.97+\h) {\v};
+}
+\node[ann, anchor=south] at (2.58,-3.92)
+  {$\sum_{\omega}\lambda^{g}_{\omega t}=n^{\star}_{gt}=4$};
+\node[mic] at (2.58,-5.18) {the $\lambda$ themselves stay continuous};
+
+\node[ann, anchor=south] at (6.60,-3.92) {$Q^{\star}_{gt}$, integer};
+\node[mic, anchor=east] at (5.30,-4.33) {$R_{1}$};
+\draw[qty] (5.38,-4.46) rectangle (7.38,-4.20);
+\node[mic, anchor=west] at (7.46,-4.33) {200};
+\node[mic, anchor=east] at (5.30,-4.83) {$R_{2}$};
+\draw[qty] (5.38,-4.96) rectangle (5.68,-4.70);
+\node[mic, anchor=west] at (5.76,-4.83) {30};
+\node[mic] at (6.60,-5.18) {bar length $\propto$ units};
+
+\node[ann, text width=25mm] at (9.48,-4.42)
+  {\emph{no pricing call here}: the rows are the master's own, and the
+   objective is decided now};
+
+\node[st] at (11.15,-4.15)
+  {\textbf{fixed:} $n^{\star}_{gt}$, and the integer deliveries
+   $Q^{\star}_{gt}=(\overline{V}_{nt},\overline{V^{\mathrm{e}}}_{rt})$\\[2pt]
+   \textbf{free:} the columns $\lambda^{g}_{\omega t}$, \emph{still} continuous};
+
+% ---- 2 -> 3 ----------------------------------------------------------
+\draw[->, line width=0.8pt] (\GX,-5.49) -- (\GX,-5.97);
+\node[micl, anchor=west] at (\GX+0.22,-5.73)
+  {$(Q^{\star}_{gt},\,n^{\star}_{gt})$ --- fixed over continuous $\lambda$,
+   so \emph{not} a sum of whole legal loads};
+
+% =====================================================================
+% band 3 -- the partition, as a cover
+% =====================================================================
+\draw[band] (0,-6.04) rectangle (\BW,-11.46);
+\draw[rule] (\SX,-6.16) -- (\SX,-8.98);
+\node[bdg] at (0.55,-6.42) {3};
+\node[ttl] at (0.95,-6.42) {Partition --- a cover, not a split};
+
+% what has to be delivered
+\draw[seg1] (0.72,-8.52) rectangle (1.32,-7.07);
+\draw[seg2] (0.72,-7.07) rectangle (1.32,-6.77);
+\node[mic] at (1.02,-7.80) {$R_{1}$};
+\node[mic, anchor=west] at (1.40,-6.92) {$R_{2}$};
+\node[mic, anchor=north] at (1.02,-8.58) {$Q^{\star}_{gt}$};
+\draw[->] (1.95,-7.80) -- (2.62,-7.80);
+\node[mic, anchor=east] at (2.56,-7.20) {$\alpha\Gamma_{K}$};
+\node[mic, anchor=north] at (2.28,-7.88) {$n^{\star}_{gt}=4$};
+
+% the four parts
+\foreach \k/\f/\r/\s/\z/\b in {%
+   1/1.56/1.12/0.14/{$z_{1}{=}1$}/{full by vol.},
+   2/1.14/0.86/0.12/{$z_{2}{=}0$}/{full by wgt.},
+   3/1.48/1.04/0.22/{$z_{3}{=}1$}/{full by vol.},
+   4/1.06/0.78/0.14/{$z_{4}{=}0$}/{full by wgt.}} {
+  \pgfmathsetmacro{\x}{2.75+(\k-1)*1.60}
+  \pgfmathsetmacro{\yr}{-8.52+\r}
+  \pgfmathsetmacro{\yf}{-8.52+\f}
+  \pgfmathsetmacro{\ys}{\yf-\s}
+  \draw[trk] (\x,-8.52) rectangle (\x+1.30,-6.77);
+  \draw[seg1] (\x+0.06,-8.46) rectangle (\x+1.24,\yr);
+  \draw[seg2] (\x+0.06,\yr) rectangle (\x+1.24,\ys);
+  \draw[sur]  (\x+0.06,\ys) rectangle (\x+1.24,\yf);
+  \draw[dashed, black!85] (\x-0.10,-7.20) -- (\x+1.40,-7.20);
+  \node[mic, text width=15mm, anchor=north] at (\x+0.65,-8.60) {\z\\ \b};
+}
+
+% key
+\draw[sur]  (9.14,-7.14) rectangle (9.44,-6.90);
+\node[mic, anchor=west] at (9.52,-7.02) {surplus};
+\draw[seg2] (9.14,-7.64) rectangle (9.44,-7.40);
+\node[mic, anchor=west] at (9.52,-7.52) {$R_{2}$ units};
+\draw[seg1] (9.14,-8.14) rectangle (9.44,-7.90);
+\node[mic, anchor=west] at (9.52,-8.02) {$R_{1}$ units};
+
+\node[st] at (11.15,-7.50)
+  {\textbf{fixed:} $n^{\star}_{gt}$ trucks ($+1$ or $+2$ if none can be
+   formed), and $Q^{\star}_{gtc}$ as a \emph{lower} bound\\[2pt]
+   \textbf{free:} the counts $a_{kc}\le\bar u_{gc}$, and which resource
+   binds ($z_{k}$)};
+
+\node[ann, text width=144mm, anchor=north] at (7.45,-9.06)
+  {$\textstyle\sum_{k}a_{kc}\ge Q^{\star}_{gtc}$ \eqref{eq:part-cover}:
+   a \textbf{cover}, not a split. Each part is a legal full truck
+   \eqref{eq:part-cap}--\eqref{eq:part-floor}, full on volume \textbf{or}
+   on payload and never on the sum of the two; the surplus is minimised in
+   volume \eqref{eq:part-obj}, and the parts are ordered by weight
+   \eqref{eq:part-sym}.};
+
+\node[ann, text width=139mm, draw=black!45, dashed, fill=black!5,
+      rounded corners=1.5pt, inner sep=4pt, anchor=north] at (7.60,-10.18)
+  {\emph{Why the inequality cannot be made an equality:}
+   $\{R_{1}{:}\,200,\,R_{2}{:}\,30\}$ asks for $35.5\,\mathrm{m}^{2}$ of
+   stacks on a $32.64\,\mathrm{m}^{2}$ floor, so not one truck, and holds
+   $1.83$ full-truckload floors of volume, so not two full ones --- no
+   number of full trucks splits it exactly.};
+
+% ---- 3 -> 4 ----------------------------------------------------------
+\draw[->, line width=0.8pt] (\GX,-11.53) -- (\GX,-12.01);
+\node[micl, anchor=west] at (\GX+0.22,-11.77)
+  {$a_{1},\dots,a_{n^{\star}_{gt}}$ --- each a legal full truck, hence a
+   legal column};
+
+% =====================================================================
+% band 4 -- the integer master over pool and parts
+% =====================================================================
+\begin{scope}[shift={(0,-0.66)}]
+\draw[band] (0,-11.42) rectangle (\BW,-14.30);
+\draw[rule] (\SX,-11.54) -- (\SX,-14.18);
+\node[bdg] at (0.55,-11.80) {4};
+\node[ttl] at (0.95,-11.80) {Integer master over pool and parts};
+
+\draw[draw=black!40, fill=black!3, rounded corners=1.5pt]
+   (0.62,-12.34) rectangle (4.86,-13.06);
+\foreach \i in {0,...,5} {
+  \pgfmathsetmacro{\x}{0.78+\i*0.40}
+  \draw[glyA] (\x,-12.90) rectangle (\x+0.32,-12.50);
+}
+\foreach \i in {6,...,9} {
+  \pgfmathsetmacro{\x}{0.78+\i*0.40}
+  \draw[glyB] (\x,-12.90) rectangle (\x+0.32,-12.50);
+}
+\node[ann, anchor=north] at (1.60,-13.12) {pool $\bar\Omega\,\cup\,\{a_{k}\}$};
+\draw[decorate, decoration={brace, amplitude=3pt, mirror}, black!60]
+   (3.18,-13.14) -- (4.70,-13.14);
+\node[mic, anchor=north] at (3.94,-13.24) {the four parts};
+
+\draw[->, line width=0.8pt] (5.02,-12.70) -- (6.52,-12.70);
+\node[mic, text width=22mm, anchor=north] at (6.02,-12.90)
+  {integer master, warm-started with the partition};
+
+\foreach \k/\f/\l in {1/{glyB}/{$a_{1}$}, 2/{glyB}/{$a_{2}$},
+                      3/{glyB}/{$a_{3}$}, 4/{glyA}/{$\omega\in\bar\Omega$}} {
+  \pgfmathsetmacro{\x}{6.85+(\k-1)*1.00}
+  \draw[\f] (\x,-13.06) rectangle (\x+0.75,-12.34);
+  \node[mic] at (\x+0.375,-12.70) {\l};
+}
+\node[ann, anchor=south] at (8.73,-12.30) {the node's plan};
+
+\draw[draw=black!45, dashed] (7.05,-14.12) rectangle (7.80,-13.62);
+\node[mic] at (7.42,-13.87) {$a_{4}$};
+\node[annl, text width=26mm, anchor=west] at (7.96,-13.87)
+  {built, not dispatched};
+
+\node[st] at (11.15,-12.90)
+  {\textbf{fixed:} the pool $\bar\Omega\cup\{a_{k}\}$, and the region
+   $\mathcal{R}$\\[2pt]
+   \textbf{free:} integer $\lambda^{g}_{\omega t}$ --- how many of each
+   column goes out};
+\end{scope}
+
+\end{tikzpicture}}
+\caption{The flow-first construction over one period, and why its third
+step covers rather than splits. Steps~1 and~2 settle how much moves and
+how many trucks carry it while the column variables stay
+\emph{continuous}, so the delivery vector they fix need not be a sum of
+whole legal loads --- for the vector shown, no number of full trucks
+realises it exactly. Step~3 therefore asks only that the parts
+\emph{cover} it \eqref{eq:part-cover}, paying for the hatched surplus
+\eqref{eq:part-obj}, and makes each part full on volume \emph{or} on
+payload \eqref{eq:part-floor} rather than on the sum of the two. Nothing
+built is binding: the parts enter step~4 as columns with a warm start,
+and the integer master may dispatch fewer of them than the cover
+produced.}
+\label{fig:construct}
+\end{figure}

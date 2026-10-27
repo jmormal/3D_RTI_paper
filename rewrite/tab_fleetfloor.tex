@@ -1,0 +1,27 @@
+% results/fleet_tree_3d/fleet_floor_<instance>_X<X>.json (commit dd5f039,
+% region_infeasible true and region_proved true on all three rows).  The two
+% I_16_15_2_90_k25 rows of the original table are dropped: they were certified
+% against an earlier 53-truck plan and X<=53 was never tested, so they prove
+% nothing about that instance.
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Fleet floors certified offline. The volumetric relaxation's
+master, restricted to $\sum_{g,t}n_{gt}\le X$, is priced to convergence
+on one thread; \textsc{infeasible} means no plan with at most $X$ trucks
+exists, in 3D as well, since every placeable load is volumetrically
+feasible and the fleet row does not depend on the load model
+(Proposition~\ref{prop:inclusion}). \emph{time} is the region
+certification alone; the root certificate it rests on took $4$ to
+$32$ s. These are the only proofs of minimality in this paper.}
+\label{tab:fleetfloor}
+\begin{tabular}{lrrlr}
+\toprule
+Instance & plan's trucks & $X$ tested & verdict & time (s) \\
+\midrule
+$I\_8\_5\_2\_90$        & 12 & $\le11$ & \textsc{infeasible}: 12 is the minimum fleet & 1.5 \\
+$I\_8\_10\_2\_90\_k25$  & 26 & $\le25$ & \textsc{infeasible}: 26 is the minimum fleet & 3.9 \\
+$I\_12\_12\_2\_90\_k25$ & 34 & $\le33$ & \textsc{infeasible}: 34 is the minimum fleet & 16.3 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,37 @@
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Declared budgets, one line per stage that produces a number
+reported below. \emph{gap} is the relative MIP gap at which an integer
+solve may stop and \emph{mem} the per-model soft cap. The two
+placeability censuses differ in oracle as well as in limit: the
+thirty-six instances were put to the constraint programme alone, the
+size ladder to a constructive shelf witness with the constraint
+programme only for refutations, which is why only the first leaves
+loads undecided. Every line but the last is read from the run files
+themselves; the volumetric runs of BP-3D-SCPTOP recorded no
+configuration and theirs is recovered from their launchers, including
+the fact that a thread count asked for on the default Gurobi
+environment did not reach the models, which therefore used all twelve
+cores of the machine.}
+\label{tab:protocol}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllrrl}
+\toprule
+Stage & solver & time (s) & gap & threads & mem (GB) & seed \\
+\midrule
+BP-3D-SCPTOP, 36 instances & Gurobi + CP-SAT & $900$ & --- & 10 & 20 & 0 \\
+BP-3D-SCPTOP, size ladder  & Gurobi + CP-SAT & $900$--$3\,600$ & --- & 10 & 20 & 0 \\
+Compact SCPTOP (volumetric) & Gurobi & $600$--$3\,600$ & $0$ & 10 & 20 & 0 \\
+Compact 3D-SCPTOP, $n_{\mathrm{LC}}=3$ & Gurobi & $1\,800$ & $0$ & 10 & 20 & 0 \\
+Fleet-floor certification & Gurobi & to convergence & --- & 1 & 20 & 0 \\
+Placeability census, 36 instances & CP-SAT & $300$ per load & --- & --- & --- & --- \\
+Placeability census, size ladder & shelf + CP-SAT & $60$ per load & --- & --- & --- & --- \\
+\midrule
+Fleet tree, volumetric oracle & Gurobi & $1\,800^{\sim}$ & --- & $12^{\sim}$ & $4^{\sim}$ & --- \\
+\bottomrule
+\end{tabular}}
+\\[2pt]
+{\footnotesize $^{\sim}$ recovered after the fact, not recorded; on one
+of those five runs the time limit is not recoverable either.}
+\end{table}

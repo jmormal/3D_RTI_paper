@@ -1,0 +1,54 @@
+% Volumetric-oracle rows: results/hp/tree_<instance>.json (configuration RECOVERED in
+% results/hp/provenance.json: 1800 s, 4 GB default cap, 12 cores effective,
+% Murty depth 6; no seed or commit established; the k80 row's limit unknown).
+% Compact rows: results/compact_ref/compact_ref_<instance>.json, each with its
+% own config block: 3600 s (1800 on I_8_5_2_90), MIP gap 0, 10 threads, 20 GB,
+% seed 0.  Budgets are unequal in both directions; the caption says so.
+% NOTE on the compact t column: every row prints the files' `wall` field
+% (0.198167, 3268.92, 1349.52, 1121.83, 2093.27, 2403.21), not `runtime`
+% (0.185, 3242.96, 1349.44, 1112.70, 2087.63, 2399.01).  One field for the
+% whole column, and `wall` is the comparable one: the method's own time is
+% wall-clock, so setting it against the compact model's solver time would
+% flatter the method by the model-build time it does not charge itself.  The
+% two fields differ by under 1% on every row, so nothing in the comparison
+% turns on the choice -- but a column read off two fields is indefensible.
+% Every \InFlight cell is replaced by the volumetric parity campaign, which runs
+% the procedure on these six instances at the compact reference's own budget
+% (3600 s, 20 GB, 10 threads).
+\begin{table}[!htbp]
+\centering
+\small
+\caption{BP-3D-SCPTOP under its \emph{volumetric} oracle against the
+compact SCPTOP formulation, both
+solving the \emph{volumetric} problem of Appendix~\ref{appendix:A}, so
+that the two bracket one optimum. $z$ is the incumbent at the stop;
+\textsc{opt} marks a proved optimum, $^{\mathrm{m}}$ a stop on the
+memory cap, $^{\mathrm{t}}$ a stop on time. ``bound'' is Gurobi's dual
+bound for the compact model and the certified master-LP bound of
+Section~\ref{sec:bounds} for the method. $\Delta z$ is
+$(z_{\mathrm{DW}}-z_{\mathrm{compact}})/z_{\mathrm{compact}}$;
+negative means the method's plan is cheaper. \textbf{The budgets
+are not equal and the inequality runs both ways}: the compact runs
+recorded $3\,600$ s and a $20$ GB cap, the method's runs had a
+recovered $1\,800$ s and $4$ GB (marked $^{\sim}$, with no time limit
+recoverable on the last row, marked $^{!}$) but ran on twelve cores
+against the compact model's ten (marked $^{\dagger}$), so no row here
+is a timing claim. No plan in this table is verified truck by truck:
+a volumetric column carries no layout.}
+\label{tab:volumetric}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrlrrrrr}
+\toprule
+ & \multicolumn{4}{c}{compact SCPTOP} & \multicolumn{4}{c}{BP-3D-SCPTOP (volumetric oracle)} & & \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+Instance & $z$ & bound & trucks & $t$ (s) & $z$ & bound (cert.) & trucks & $t$ (s) & $\Delta z$ (\%) & tighter bound \\
+\midrule
+$I\_8\_5\_2\_90$ & 18\,796.96\,\textsc{opt} & 18\,796.96 & 12 & 0.198 & \emph{not run} & --- & --- & --- & --- & --- \\
+$I\_8\_10\_2\_90\_k25$ & 38\,855.65$^{\mathrm{m}}$ & 38\,851.93 & 26 & 3269 & \InFlight{38\,853.39$^{\mathrm{t}}$} & \InFlight{38\,791.14} & \InFlight{26} & \InFlight{1817$^{\sim\dagger}$} & \InFlight{$-0.0058$} & 38\,851.93 (compact) \\
+$I\_16\_15\_2\_90\_k25$ & 68\,139.17\,\textsc{opt} & 68\,139.17 & 45 & 1350 & \InFlight{68\,139.59$^{\mathrm{t}}$} & \InFlight{68\,131.43} & \InFlight{45} & \InFlight{1897$^{\sim\dagger}$} & \InFlight{$+0.0006$} & 68\,139.17 (compact) \\
+$I\_16\_15\_2\_90\_k50$ & 134\,346.91$^{\mathrm{m}}$ & 133\,417.47 & 89 & 1122 & \InFlight{133\,503.74$^{\mathrm{t}}$} & \InFlight{133\,484.32} & \InFlight{88} & \InFlight{1827$^{\sim\dagger}$} & \InFlight{$-0.6276$} & \InFlight{133\,484.32 (DW)} \\
+$I\_24\_20\_2\_90\_k50$ & 200\,266.21$^{\mathrm{m}}$ & 199\,518.04 & 137 & 2093 & \InFlight{200\,047.54$^{\mathrm{t}}$} & \InFlight{200\,013.41} & \InFlight{137} & \InFlight{1854$^{\sim\dagger}$} & \InFlight{$-0.1092$} & \InFlight{200\,013.41 (DW)} \\
+$I\_24\_20\_2\_90\_k80$ & 282\,101.77$^{\mathrm{m}}$ & 280\,823.53 & 189 & 2403 & \InFlight{281\,023.77$^{\mathrm{t}}$} & \InFlight{280\,910.02} & \InFlight{188} & \InFlight{868$^{!\dagger}$} & \InFlight{$-0.3821$} & \InFlight{280\,910.02 (DW)} \\
+\bottomrule
+\end{tabular}}
+\end{table}

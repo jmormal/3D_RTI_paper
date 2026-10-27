@@ -1,0 +1,30 @@
+\section{Problem description}
+\label{sec:problem}
+
+A plant assembles products supplied by a single supplier over a finite
+horizon. Every product travels in exactly one type of RTI: a rigid
+container, \emph{erected} while it carries product and \emph{folded}
+when empty, so one physical container occupies two different volumes
+depending on which way it is moving. The supplier packs its production
+into erected RTIs and ships them to the plant; the plant consumes the
+product, folds the containers and returns them. Both legs are run with
+identical trailers, every dispatch costs the same whatever it carries,
+and a trailer may be dispatched only if it is full. A dispatch arrives
+$lt$ periods after it leaves and is available at neither end in
+between, and each node must end every period holding enough stock to
+cover the next periods of its own activity. What has to be decided is,
+per direction and period, how many trucks go, what each carries and
+what consequently sits in stock; the cost is the number of dispatches
+plus the inventory held.
+
+Two features separate this from a transport-and-inventory model. The
+two flows are coupled through the containers themselves --- the plant
+can return only empties it has emptied and the supplier can fill only
+containers it has received --- so a shortage on the return leg
+propagates into the delivery leg one lead time later. And the
+admissibility of a truck load is a three-dimensional packing condition
+rather than a capacity inequality: a load whose volume and weight both
+fit may still have no arrangement inside the trailer. Loading is
+represented through \emph{stacks} of whole homogeneous layers rather
+than through the placement of individual RTIs, which makes the stacks
+self-supporting, so no vertical-stability constraint is needed.

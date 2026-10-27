@@ -1,0 +1,90 @@
+\begin{longtable}[hbt!]{|p{0.15\textwidth}|p{0.79\textwidth}|}
+    \caption{Nomenclature. The pricing problem of
+    Section~\ref{sec:pricing} is one block of this model with the index
+    $(g,k,t)$ deleted, so it reuses these symbols with that index
+    dropped; the three variables it adds are listed last.}
+    \label{tab:sb-Nomenclature}\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Indices and sets}}\\\hline
+    $G$            & Supplier and plant nodes, $G=\{s,p\}$; $g=s$ is the folded
+                     direction (plant to supplier), $g=p$ the full one.\\
+    $N$, $R$, $H$  & Products, RTI types, stack types.\\
+    $I$            & Stack-slot indices on a truck floor, bounded by
+                     \eqref{sb:eq:Ibound}.\\
+    $K$, $T$       & Trucks available per direction and period; planning periods.\\
+    $\rho(n)$, $M(r)$ & The RTI type product $n$ travels in; the products type $r$
+                     carries, $M(r)=\{n:\rho(n)=r\}$.\\
+    $R(h)$         & RTI types compatible with stack type $h$.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Parameters}}\\\hline
+    $cK$           & Cost of dispatching one truck.\\
+    $lt$, $SC$     & Lead time, $lt\ge1$; coverage window, in periods.\\
+    $i_{gn}$, $ie_{gr}$ & Initial inventory at $g$ of full RTIs of $n$, of folded RTIs of $r$.\\
+    $ic_{gn}$      & Inventory holding cost of $n$ at $g$.\\
+    $d_{gnt}$      & Production plan for $n$ at $g$ in $t$: filled at $s$, consumed at $p$.\\
+    $a_{nt}$, $ae_{rt}$ & Pipeline arrivals at $p$, respectively $s$, in $t\le lt$.\\
+    $ss_{gnt}$, $sse_{gtr}$ & Coverage stock of full, respectively folded, RTIs
+                     \eqref{sb:eq:coverage}.\\
+    $w_{n}$, $w^{\mathrm{f}}_{r}$ & Weight of a full RTI carrying $n$; of a folded
+                     RTI of type $r$. Both $>0$.\\
+    $pK^{w}$, $W^{\max}$ & Truck payload; per-stack crush-limit cap on the
+                     \emph{total} weight of one stack, over all its layers.\\
+    $pK,qK,rK$     & Truck floor length, floor width, inner height;
+                     $\Gamma_{K}=pK\cdot qK\cdot rK$.\\
+    $\alpha$       & Minimum truck utilisation, on whichever of volume or payload
+                     binds, $0<\alpha\le1$.\\
+    $p_{h},q_{h}$  & Footprint length and width of stack type $h$.\\
+    $r_{gr}$, $a_{r}$, $\gamma_{gr}$ & Height of one RTI of type $r$ at node $g$
+                     (full at $p$, folded at $s$); its footprint area; its volume
+                     $\gamma_{gr}=a_{r}r_{gr}$.\\
+    $n_{hr}$       & RTIs of type $r\in R(h)$ per layer of stack type $h$; one layer
+                     tiles the footprint, $n_{hr}a_{r}=p_{h}q_{h}$.\\
+    $\hat w_{gr}$  & Weight per RTI in the layer-capacity form of the utilisation
+                     floor: $\hat w_{sr}=w^{\mathrm{f}}_{r}$,
+                     $\hat w_{pr}=\max_{n\in M(r)}w_{n}$.\\
+    $\eta^{K},\eta^{I}$ & Weights of the transport and inventory objectives;
+                     both $1$ throughout.\\
+    $M^{x},M^{y}$  & Big-$M$ constants of the non-overlap rows, $M^{x}=pK$, $M^{y}=qK$.\\
+    $\bar u^{V}_{n}$, $\bar u^{\mathrm{e}}_{r}$ & $\lfloor W^{\max}/w_{n}\rfloor$ full
+                     RTIs of $n$ per slot; $\lfloor pK^{w}/w^{\mathrm{f}}_{r}\rfloor$
+                     folded RTIs of $r$ per truck.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Decision variables --- the truck and its layout}}\\\hline
+    $Z_{gkt}$        & $\in\{0,1\}$. Truck $k$ of direction $g$ in $t$ is configured,
+                       i.e.\ carries a layout.\\
+    $Y_{gkt}$        & $\in\{0,1\}$. That truck is dispatched.\\
+    $\theta_{gkt}$   & $\in\{0,1\}$. Selects the resource on which its utilisation
+                       floor is required: volume if $1$, payload if $0$.\\
+    $X_{gihkt}$      & $\in\{0,1\}$. Slot $i$ holds a stack of type $h$.\\
+    $L_{gihktr}$     & $\in\mathbb{Z}_{\ge 0}$. Layers of RTI type $r\in R(h)$ in slot $i$.\\
+    $LX_{gihkt},LY_{gihkt}$ & $\in\{0,1\}$. Stack $h$'s length lies along the $x$-,
+                       respectively $y$-axis in slot $i$.\\
+    $PX_{gikt},PY_{gikt}$ & $\ge 0$. Bottom-left coordinates of slot $i$ on the floor.\\
+    $A,B,C,D$ (on $gijkt$) & $\in\{0,1\}$. Which of the four separating
+                       half-planes resolves the overlap of slots $i$ and $j$.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Decision variables --- load and inventory}}\\\hline
+    $V_{kint}$       & $\in\mathbb{Z}_{\ge 0}$. Full RTIs of $n$ in slot $i$ of
+                       plant-bound truck $k$ in $t$.\\
+    $V^{\mathrm{e}}_{krt}$ & $\in\mathbb{Z}_{\ge 0}$. Folded RTIs of type $r$ on
+                       supplier-bound truck $k$ in $t$.\\
+    $I_{gnt}$, $Ie_{gtr}$ & $\in\mathbb{Z}_{\ge 0}$. End-of-period inventory of full
+                       RTIs of $n$, of folded RTIs of $r$, at $g$.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Derived quantities} (abbreviations, \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-L})}\\\hline
+    $\overline{V}_{nt}$, $\overline{V^{\mathrm{e}}}_{rt}$ & Full RTIs of $n$ delivered
+                       to the plant in $t$; folded RTIs of $r$ returned to the supplier.\\
+    $\overline{V}_{knt}$ & Full RTIs of $n$ on plant-bound truck $k$ in $t$.\\
+    $\widehat{X}_{gikt}$, $\overline{L}_{ghktr}$ & Slot $i$ is used; layers of type $r$
+                       under stack type $h$ on that truck, over all slots.\\
+    \hline
+    \multicolumn{2}{|l|}{\textbf{Added by the reformulation} (Sections \ref{sec:master}--\ref{sec:pricing})}\\\hline
+    $\lambda^{g}_{\omega t}$ & $\in\mathbb{Z}_{\ge0}$. Trucks of class $(g,t)$
+                       dispatched carrying column $\omega$.\\
+    $\pi_{nt},\pi_{rt}$, $\mu_{gt}$ & Duals of \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve},
+                       respectively of \eqref{bp:MP-count} and of every further row a
+                       dispatch variable of $(g,t)$ occupies.\\
+    $n_{gt}$, $X$    & Dispatch total of class $(g,t)$, $n_{gt}=\sum_{\omega}
+                       \lambda^{g}_{\omega t}$; the fleet $X=\sum_{g,t}n_{gt}$.\\
+    \hline
+\end{longtable}

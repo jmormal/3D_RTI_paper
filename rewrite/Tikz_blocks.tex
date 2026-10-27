@@ -1,0 +1,131 @@
+% F1 of article/paper-figures.md: the block-angular constraint matrix of the
+% compact model, and the structural move the derivation rests on.  Greys only,
+% so it survives a greyscale print; the braces need decorations.pathreplacing,
+% loaded in paper.tex.
+\providecommand{\blknohyph}{\hyphenpenalty=10000\exhyphenpenalty=10000\relax}
+\begin{figure}[!t]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[>=Latex, x=1.05cm, y=1.05cm,
+  cpl/.style={fill=black!14, draw=none},
+  blk/.style={fill=black!55, draw=black!80, line width=0.5pt},
+  sep/.style={draw=black!35, dotted, line width=0.4pt},
+  cls/.style={draw=black!55, dashed, line width=0.5pt},
+  brc/.style={decorate, black!70, line width=0.5pt},
+  box/.style={draw=black!75, fill=white, line width=0.6pt, inner sep=4pt,
+              align=left, font=\scriptsize, text width=42mm,
+              execute at begin node=\blknohyph},
+  rl/.style={font=\scriptsize\linespread{1.15}\selectfont, align=right,
+             text width=32mm, anchor=east, execute at begin node=\blknohyph},
+  hd/.style={font=\scriptsize, align=center, anchor=south},
+  nt/.style={font=\scriptsize, align=left, execute at begin node=\blknohyph}]
+
+  % ---- column boundaries (x) and row boundaries (y) ---------------------
+  \def\xa{0}    \def\xb{1.05} \def\xc{2.10} \def\xd{2.60}
+  \def\xe{3.65} \def\xf{4.95} \def\xg{6.10}
+  \def\ya{0}    \def\yb{-1.25}
+  \def\yc{-2.00}\def\yd{-2.75}\def\ye{-3.15}\def\yf{-3.90}\def\yg{-4.95}
+  \def\yh{-5.45}
+
+  % ---- the coupling band, with entries in every column ------------------
+  \fill[cpl] (\xa,\ya) rectangle (\xg,\yb);
+
+  % ---- the diagonal: one block per (g,k,t), nothing off it --------------
+  \fill[blk] (0.085,-1.33) rectangle (0.965,-1.92);
+  \fill[blk] (1.135,-2.08) rectangle (2.015,-2.67);
+  \fill[blk] (2.685,-3.23) rectangle (3.565,-3.82);
+  \node[font=\small] at (2.35,-2.95) {$\ddots$};
+  \node[font=\large] at (4.30,-4.42) {$\ddots$};
+
+  % ---- the one row that is not block-diagonal, struck out ---------------
+  \fill[black!7]  (\xa,\yg)    rectangle (\xg,\yh);
+  \fill[black!55, draw=black!80, line width=0.4pt]
+     (0.425,-5.09) rectangle (0.625,-5.31);
+  \fill[black!55, draw=black!80, line width=0.4pt]
+     (1.475,-5.09) rectangle (1.675,-5.31);
+  \draw[black, line width=1.1pt] (-0.22,-5.20) -- (6.32,-5.20);
+
+  % ---- grid: column groups, and the two row bands -----------------------
+  \foreach \x in {\xb,\xc,\xd} \draw[sep] (\x,\ya) -- (\x,\yh);
+  \draw[cls] (\xe,\ya) -- (\xe,\yh);
+  \draw[cls] (\xf,\ya) -- (\xf,\yh);
+  \draw[cls] (\xa,\yb) -- (\xg,\yb);
+  \draw[cls] (\xa,\yg) -- (\xg,\yg);
+  \draw[black!75, line width=0.6pt] (\xa,\ya) rectangle (\xg,\yh);
+  \draw[black!75, line width=0.7pt]
+     (-0.10,0.13) -- (-0.26,0.13) -- (-0.26,-5.58) -- (-0.10,-5.58);
+  \draw[black!75, line width=0.7pt]
+     (6.20,0.13) -- (6.36,0.13) -- (6.36,-5.58) -- (6.20,-5.58);
+
+  % ---- column headers ---------------------------------------------------
+  \node[hd] at (0.525,0.22) {$k\!=\!1$};
+  \node[hd] at (1.575,0.22) {$k\!=\!2$};
+  \node[hd] at (2.350,0.22) {$\cdots$};
+  \node[hd] at (3.125,0.22) {$k\!=\!|K|$};
+  \node[hd, text width=13mm] at (4.30,0.22) {other\\[2pt]$(g',t')$};
+  \node[hd, text width=12mm] at (5.53,0.22) {shared\\[3pt]$\overline{V},I,Q$};
+  \draw[brc, decoration={brace, amplitude=4pt}] (\xa,0.98) -- (\xe,0.98);
+  \node[font=\scriptsize, anchor=south] at (1.825,1.14)
+     {the $|K|$ trucks of one class $(g,t)$};
+
+  % ---- row labels -------------------------------------------------------
+  \node[rl] at (-0.42,-0.625)
+     {\textbf{coupling rows}\\ inventory and coverage
+      \eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty}, which read a
+      truck only through $\overline{V}_{nt}$, $\overline{V^{\mathrm{e}}}_{rt}$
+      \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve}, and the objective
+      \eqref{sb:eq:obj}, which counts its dispatches};
+  \node[rl] at (-0.42,-3.10)
+     {\textbf{block rows} --- one copy for each $(g,k,t)$\\
+      \eqref{sb:eq:slot-active}--\eqref{sb:eq:sym}: slot activation,
+      orientation, stack height, non-overlap, cover, containment,
+      full truckload, payload, crush, slot symmetry};
+  \node[rl] at (-0.42,-5.20)
+     {$\times$\, \textbf{truck symmetry} \eqref{dec:sym-truck}\\
+      one row per consecutive pair of trucks --- the only rows with entries
+      in two blocks};
+
+  % ---- what each band becomes ------------------------------------------
+  \draw[brc, decoration={brace, mirror, amplitude=4pt}] (6.46,\yb) -- (6.46,\ya);
+  \draw[->, line width=0.8pt] (6.62,-0.625) -- (7.62,-0.625);
+  \node[box, anchor=north west] at (7.68,0.13)
+     {\textbf{kept as they are}\\[2pt]
+      the master \eqref{eq:MPObjective},
+      \eqref{bp:MP-def-V}--\eqref{bp:MP-count}: a truck enters only as the
+      load it adds and as one unit of a count};
+
+  \draw[brc, decoration={brace, mirror, amplitude=4pt}] (6.46,\yg) -- (6.46,\yb);
+  \draw[->, line width=0.8pt] (6.62,-3.10) -- (7.62,-3.10);
+  \node[box, anchor=north west] at (7.68,-1.80)
+     {\textbf{delete the $\forall$ over
+      $\mathcal{B}=G\!\times\!K\!\times\!T$}\\[2pt]
+      \eqref{eq:deletequant}: $g$, $k$ and $t$ leave every variable and $g$
+      becomes data. What is left
+      is a mixed integer programme on one truck --- the pricing problem
+      $(\mathrm{PP}^{g})$, \eqref{bp:PP-objective}--\eqref{bp:PP-utilw}. Its
+      rows read no datum indexed by $t$, so two subproblems serve the whole
+      horizon};
+
+  % ---- the aggregation, under the diagonal ------------------------------
+  \draw[brc, decoration={brace, mirror, amplitude=4pt}] (\xa,-5.70) -- (\xe,-5.70);
+  \node[nt, anchor=north, text width=108mm] at (1.90,-5.94)
+     {\textbf{identical blocks.} The trucks of a class differ in nothing, so
+      the reformulation carries one integer \emph{count} per distinct block
+      solution, bounded by $|K|$ \eqref{bp:MP-count}, in place of one copy of
+      the block per truck. No truck is ever named, so no plan is found twice,
+      and the struck row \eqref{dec:sym-truck} --- which did nothing but order
+      the trucks --- has nothing left to order.};
+
+\end{tikzpicture}}
+\caption{The decomposition is read off the formulation, not chosen by
+analogy. Every geometric, stacking, crush, payload and full-truckload
+row of Section~\ref{sec:model} is confined to one truck, so the matrix
+is block-angular over $\mathcal{B}=G\times K\times T$; deleting the
+quantifier over $\mathcal{B}$ from those rows leaves a mixed integer
+programme on a single truck, and that programme is the pricing
+problem. Nothing is invented for the subproblem and no geometry stays
+behind in the master, which is why a branching row added to the master
+never changes what the subproblem is.
+Table~\ref{tab:rowmap} is the same statement row by row.}
+\label{fig:blocks}
+\end{figure}

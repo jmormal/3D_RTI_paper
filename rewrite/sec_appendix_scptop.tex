@@ -1,0 +1,47 @@
+\section{The SCPTOP benchmark}
+\label{appendix:A}
+
+The volumetric benchmark extends the procurement transport model of
+\autocite{Diaz-Madronero2014APlanning} to the closed-loop two-node
+setting studied here: fuzzy parameters are dropped, transport capacity
+is expressed through the volume of the individual RTIs against the
+truck volume rather than a maximum container count, and a product may
+travel in more than one RTI type. To isolate the effect of the loading
+representation it is identical to the transport and inventory block of
+3D-SCPTOP in every other respect --- same two nodes, closed loop, lead
+time, coverage stock, payload cap, full-truckload floor and objective
+--- and differs in one place: where 3D-SCPTOP asks whether the RTIs can
+be stacked and placed on the floor, SCPTOP asks only whether their
+volumes sum to less than the trailer's. The notation is that of
+Section~\ref{sec:model}, with $\overline{V}_{knt}$ a decision variable
+here rather than the slot sum \eqref{sb:eq:agg-Vk}.
+\begin{align}
+\text{Min } z
+&= \sum_{g\in G}\sum_{k\in K}\sum_{t\in T} cK\,Y_{gkt}
+ + \sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn}I_{gnt}
+ \label{eq:A-obj}
+\end{align}
+subject to, for all $k\in K$ and $t\in T$,
+\begin{align}
+\sum_{n\in N}\gamma_{p\rho(n)}\overline{V}_{knt} &\le \Gamma_{K}\,Y_{pkt},
+ & \sum_{r\in R}\gamma_{sr}V^{\mathrm{e}}_{krt} &\le \Gamma_{K}\,Y_{skt}
+ \label{eq:A-vol}\\
+\sum_{n\in N}w_{n}\overline{V}_{knt} &\le pK^{w}Y_{pkt},
+ & \sum_{r\in R}w^{\mathrm{f}}_{r}V^{\mathrm{e}}_{krt} &\le pK^{w}Y_{skt}
+ \label{eq:A-weight}
+\end{align}
+together with the full-truckload floor on the binding resource, imposed
+exactly as in \eqref{eq:col-truck},
+\begin{align}
+\sum_{n}\gamma_{p\rho(n)}\overline{V}_{knt} \;\ge\; \alpha\Gamma_{K}\bigl(Y_{pkt}-1+\theta_{pkt}\bigr),
+\qquad
+\sum_{n}w_{n}\overline{V}_{knt} \;\ge\; \alpha\,pK^{w}\bigl(Y_{pkt}-\theta_{pkt}\bigr),
+\label{eq:A-ftl}
+\end{align}
+with $\theta_{gkt}\in\{0,1\}$ and the supplier direction analogous. The
+inventory balances, coverage stock and domains are
+\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty} unchanged, and
+\eqref{dec:sym-truck} is carried here too, so neither compact model is
+held to an easier standard. Constraint \eqref{eq:A-vol} is the whole of
+the benchmark's loading model: no footprint, stack height, layer count
+or crush limit appears.

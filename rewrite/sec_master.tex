@@ -1,0 +1,278 @@
+\section{The master problem}
+\label{sec:master}
+
+\subsection{Columns}
+\label{sec:columns}
+
+A column of a direction is the image of a feasible point of that
+direction's pricing problem, together with the point itself as a
+witness; $\Omega^{p}$ and $\Omega^{s}$ are the two column sets, indexed
+by $\omega$. A \emph{plant-bound} column $\omega\in\Omega^{p}$ is a
+vector $b_{\omega}=(b_{\omega n})_{n\in N}$ of full RTIs --- the value
+of $\overline{V}_{n}$ at the point --- for which there exist a slot
+count $m\le|I|$, stack types $h_{1},\dots,h_{m}\in H$, orientations,
+bottom-left coordinates $(x_{i},y_{i})$, layer counts $\ell_{ir}$ and
+per-slot product loads $v_{in}$ such that
+\begin{align}
+&\text{the $m$ footprints, rotated as chosen, do not overlap and lie
+   inside } pK\times qK,
+   \label{eq:col-geom}\\
+&\textstyle\sum_{r\in R(h_{i})} r_{pr}\ell_{ir}\;\le\;rK
+   &&\forall i\le m,
+   \label{eq:col-height}\\
+&\textstyle\sum_{n\in M(r)} v_{in}\;\le\;n_{h_{i}r}\ell_{ir}
+   &&\forall i\le m,\;r\in R,
+   \label{eq:col-assign}\\
+&\textstyle\sum_{n\in N} w_{n}v_{in}\;\le\;W^{\max}
+   &&\forall i\le m,
+   \label{eq:col-crush}\\
+&\textstyle\sum_{n\in N} w_{n}b_{\omega n}\;\le\;pK^{w},
+   \qquad
+   \max\Bigl\{\tfrac{\sum_{n}\gamma_{p\rho(n)}b_{\omega n}}{\Gamma_{K}},\;
+              \tfrac{\sum_{n}w_{n}b_{\omega n}}{pK^{w}}\Bigr\}\;\ge\;\alpha,
+   \label{eq:col-truck}\\
+&b_{\omega n}=\textstyle\sum_{i\le m} v_{in}
+   &&\forall n\in N.
+   \label{eq:col-agg}
+\end{align}
+These are the block rows of Section~\ref{sec:model} read on one truck
+(Table~\ref{tab:rowmap}); in \eqref{eq:col-assign} $n_{h_{i}r}\ell_{ir}$
+is read as $0$ for $r\notin R(h_{i})$, and it is an \emph{inequality}
+because a partly filled layer is a legal compact layout.
+
+A \emph{supplier-bound} column is the analogous object
+$e_{\omega}=(e_{\omega r})_{r\in R}$ over folded heights, weights and
+volumes, with \eqref{sb:eq:stack-w-sup} as its per-slot crush condition
+and $e_{\omega r}\le\sum_{i\le m}n_{h_{i}r}\ell_{ir}$, which is
+\eqref{sb:eq:empty-cap}, in place of \eqref{eq:col-assign} and
+\eqref{eq:col-agg}; the weight of a folded RTI depends only on its
+type, so no product assignment is needed. We write
+\eqref{eq:col-geom}--\eqref{eq:col-agg} from here on for either
+direction, writing $\mathrm{image}_{c}(\omega)$ for the entry of
+$b_{\omega}$ or $e_{\omega}$ at the \emph{commodity} $c$ --- a
+product when $g=\mathrm{p}$, an RTI type when $g=\mathrm{s}$. Every column costs $c_{\omega}=\eta^{K}cK$, and
+$\Omega^{g}$ holds the \emph{non-empty} columns only, the all-zero
+point being the slack of \eqref{bp:MP-count}.
+
+Two features of this definition carry the method: the column holds the
+per-slot assignment $v_{in}$, so \eqref{eq:col-crush} is the
+period-exact cap \eqref{sb:eq:stack-w-plant} and not the family
+surrogate a catalogue of capacity-only configurations must use, and it
+retains its witnessing placement, so a plan is a set of drawings.
+
+\subsection{The master}
+\label{sec:mp}
+
+Let $\lambda^{g}_{\omega t}\in\mathbb{Z}_{\ge0}$ be the number of
+trucks of class $(g,t)$ dispatched carrying column $\omega$. The master
+problem (MP) is
+\begin{align}
+  \min\;\; & \sum_{g\in G}\sum_{t\in T}\sum_{\omega\in \Omega^{g}}
+                c_{\omega}\,\lambda^{g}_{\omega t}
+    \;+\;\eta^{I}\sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn} I_{gnt}
+    \label{eq:MPObjective}
+\end{align}
+subject to
+\begin{align}
+  \overline{V}_{nt}
+    &= \sum_{\omega\in \Omega^{p}} b_{\omega n}\,\lambda^{p}_{\omega t}
+    &&\forall n\in N,\;t\in T \label{bp:MP-def-V}\\
+  \overline{V^{\mathrm{e}}}_{rt}
+    &= \sum_{\omega\in \Omega^{s}} e_{\omega r}\,\lambda^{s}_{\omega t}
+    &&\forall r\in R,\;t\in T \label{bp:MP-def-Ve}\\
+  \sum_{\omega\in \Omega^{g}} \lambda^{g}_{\omega t} &\le |K|
+    &&\forall g\in G,\;t\in T \label{bp:MP-count}\\
+  &\text{\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty}}
+    &&\text{verbatim} \nonumber\\
+  \lambda^{g}_{\omega t}&\in\mathbb{Z}_{\ge0},\quad
+  I_{gnt},\,Ie_{gtr}\in\mathbb{Z}_{\ge0},\quad
+  \overline{V}_{nt},\,\overline{V^{\mathrm{e}}}_{rt}\in\mathbb{Z}_{\ge0}
+  \ \text{(implied by \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve})}.
+    \nonumber
+\end{align}
+That is the whole master: every column costs the same, so the transport
+term is $cK$ times the number dispatched, and
+\eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} are
+\eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} with each truck's load
+replaced by its column's image. Since $\Omega^{g}$ holds the non-empty
+columns only, $\overline{\lambda}_{gt}=\sum_{\omega}\lambda^{g}_{\omega
+t}$ is the number \emph{dispatched} by class $(g,t)$, which is what
+Section~\ref{sec:branching} branches on.
+
+\begin{proposition}[equivalence]
+\label{prop:equiv}
+MP and 3D-SCPTOP have the same optimal value.
+\end{proposition}
+\begin{proof}
+Each used truck $(g,k,t)$ of a 3D-SCPTOP solution induces a load vector
+satisfying its direction's column conditions, read off its own layout
+with $\ell_{ir}=L_{g,i,h_{i},k,t,r}$ and, at the plant,
+$v_{in}=V_{kint}$; every one of those conditions is a row the truck
+already satisfies. Counting trucks by load vector gives a feasible MP
+solution of equal cost, since transport cost depends only on the number
+of used trucks and the inventory rows see only the aggregates
+\eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} reproduce. Conversely, give
+each truck of an MP solution the layout witnessing its column: the
+blocks are identical, so any assignment serves, and in index order the
+result also satisfies \eqref{dec:sym-truck}.
+\end{proof}
+
+\noindent No hypothesis is needed because there is no catalogue of
+layouts to be sized: in Section~\ref{sec:model} a truck's layout is
+its own. MP is therefore the same problem written differently, and any
+bound derived from it bounds the original.
+
+\subsection{The restricted master and the reduced cost}
+\label{sec:rmp}
+
+$|\Omega^{g}|$ is astronomical, so MP is solved over a subset
+$\bar\Omega^{g}$ with integrality relaxed --- the restricted master
+problem (RMP) --- whose duals the pricing problems use to look for
+columns of negative reduced cost (Figure~\ref{fig:loop}). With
+$\pi_{nt},\pi_{rt}$ the duals of
+\eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} and $\mu_{gt}\le0$ that of
+\eqref{bp:MP-count}, the reduced cost of a plant-bound column
+dispatched in $t$ is
+\begin{equation}
+\bar c(\omega,t)\;=\;c_{\omega}-\sum_{n\in N}\pi_{nt}\,b_{\omega n}
+                              -\mu_{pt},
+\label{eq:redcost}
+\end{equation}
+and analogously at the supplier. The pricing problem of class $(g,t)$
+minimises $c(x)-\sum_{c}\pi_{ct}\,\mathrm{image}_{c}(x)$ over the
+feasible points of the direction's block, so with optimal value
+$z^{\star}_{gt}$ it gives
+$\min_{\omega}\bar c(\omega,t)=z^{\star}_{gt}-\mu_{gt}$, and a column
+enters when that is negative.
+
+\input{Tikz_loop}
+
+The prices, irrational in general, must be rounded \emph{upwards}
+before entering an integer-coefficient subproblem, never to nearest, so
+that the rounded objective dominates the true one and the subproblem's
+value stays an over-estimate of the true maximum, as the certificate
+below requires. Rounding to nearest invalidates that certificate and,
+with reduced costs near zero, returns a value just above the threshold
+so that convergence is never declared.
+
+The RMP is \emph{elastic}: non-negative artificials sit on
+\eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve}, on the coverage rows and on
+the cuts below at a large price, so it is feasible for any pool and
+always yields duals, and a solution with positive artificials is not a
+plan. The elasticity is one-sided where it matters: a definition row
+reads $\overline{V}=\sum_{\omega}b\lambda+\text{art}$,
+$\text{art}\ge0$, so slack can only enlarge a delivery --- which is
+why stock non-negativity stays rigid against a fleet lower bound.
+
+It also carries cumulative cover cuts. With $\rho^{g}_{ct}$ the
+cumulative requirement of commodity $c$ at the receiving node $g$
+through $t$ --- demand to date plus the coverage stock of $t$, net of
+initial stock and freight in transit, floored at zero --- and
+$\bar u^{g}=\min\{\lfloor pK^{w}/\min_{c}w_{c}\rfloor,\,
+\lfloor\Gamma_{K}/\min_{c}\gamma_{gc}\rfloor\}$ an upper bound on the
+units one truck holds, every $t>lt$ gives
+\begin{equation}
+\sum_{\tau\le t-lt}\ \sum_{\omega\in\Omega^{g}}\lambda^{g}_{\omega\tau}
+\;\ge\;
+\max\Bigl\{\Bigl\lceil\tfrac{\sum_{c}\gamma_{gc}\rho^{g}_{ct}}{\Gamma_{K}}\Bigr\rceil,\;
+\Bigl\lceil\tfrac{\sum_{c}w_{c}\rho^{g}_{ct}}{pK^{w}}\Bigr\rceil,\;
+\Bigl\lceil\tfrac{\sum_{c}\rho^{g}_{ct}}{\bar u^{g}}\Bigr\rceil\Bigr\}.
+\label{eq:covercut}
+\end{equation}
+Each ratio divides a requirement by the most one truck can carry of
+that resource, so over-estimating $\bar u^{g}$ only weakens the cut
+while the shift by $lt$ is mandatory. Its duals fold into $\mu_{gt}$
+and leave \eqref{eq:redcost} exact, which is possible exactly when a
+row $\sum_{\omega}\phi(\omega)\lambda_{\omega}\lessgtr\beta$ has $\phi$
+constant within a class or affine in the column's image. Such a row is
+\emph{robust}: it changes the duals and nothing else. Every row this
+paper adds is of that kind, which is why no branching decision reaches
+a pricing problem.
+
+Finally the RMP is \emph{period-scoped}: a column priced at $t$
+receives a dispatch variable at $t$ alone. That changes the restricted
+master's size and not the master's, so a sweep that finds nothing
+anywhere still proves the restricted LP equal to the master LP.
+
+\subsection{What may be reported as a lower bound}
+\label{sec:bounds}
+
+The natural candidate is not a bound at all. The RMP is a
+\emph{restriction} of MP, so $z_{\mathrm{RMP}}\ge z_{\mathrm{MP}}$:
+until column generation converges the RMP value is an \emph{upper}
+bound on the master LP. Its one legitimate use is as a filter.
+
+\paragraph{A certificate needs a full sweep.}
+When the pricing problem has \emph{proved} that
+\begin{equation*}
+\zeta_{gt}\;:=\;\max_{\omega\in\Omega^{g}}\sum_{c}\pi_{ct}\,\mathrm{image}_{c}(\omega)
+\;\le\;\eta^{K}cK-\mu_{gt}
+\qquad\forall g\in G,\; t\in T,
+\end{equation*}
+nothing outside
+$\bar\Omega^{g}$ prices out, the duals are feasible for the dual of the
+full MP, and weak duality gives
+$z_{\mathrm{RMP}}=z_{\mathrm{MP}}\le z^{\star}_{\text{3D-SCPTOP}}$:
+a bound as good as the sweep behind it (Algorithm~\ref{alg:certify}).
+Memoising duals, and pricing only the pairs whose aggregates are
+fractional, are legitimate while columns are still arriving and forfeit
+the right to certify; so does one pair stopped on its time limit. One
+case looks like a time limit and is not: a call stopped by a cutoff
+\emph{without} returning a point ran out of search tree rather than out
+of time and does prove that no column beats the threshold, the two
+being separated only by whether a point came back. Every branching fix
+must be released before the sweep, a restricted LP sitting above the
+region's own. The bound is then the \emph{raw} LP value, penalty
+included; positive artificials at convergence mean the region admits no
+plan at all and it is pruned as infeasible.
+
+\input{Alg_certify}
+
+\paragraph{A bound without convergence.}
+A complete sweep that finds columns still yields a Lagrangian bound,
+$\bar z+\sum_{g,t}|K|\min(0,\bar c^{\star}_{gt})$ with the count row
+\eqref{bp:MP-count} as multiplier, provided each $\bar c^{\star}_{gt}$
+bounds the pricing \emph{maximum} from above --- for which dropping the
+geometry, the integrality and the floor leaves a two-resource knapsack.
+It is too weak to rely on here: a reduced cost of $-\varepsilon$ at
+every pair subtracts $2|T||K|\varepsilon$ from $\bar z$, where the
+distance to make up is a fraction of one truck.
+
+\paragraph{A bound by inclusion.}
+Every 3D lower bound in this paper is an instance of the following,
+which is affordable where the certificate above --- with the geometric
+pricing problem as oracle --- is not.
+
+\begin{proposition}[bound by inclusion]
+\label{prop:inclusion}
+Let $\Omega^{g}_{\mathrm{vol}}\supseteq\Omega^{g}$ be the loads that
+fit the trailer's volume and the payload and clear the full-truckload
+floor on the binding resource, and $z_{\mathrm{vol}}$ the certified LP
+value of the master \eqref{eq:MPObjective}--\eqref{bp:MP-count} over
+them. Then $z_{\mathrm{vol}}\le z^{\star}_{\text{3D-SCPTOP}}$, and the
+same holds inside any region defined by bounds on the fleet vector.
+\end{proposition}
+\begin{proof}
+The inclusion rests on two conventions of Section~\ref{sec:model}:
+$\Gamma_{K}=pK\cdot qK\cdot rK$, and the volume $\gamma_{gr}$ charged
+to an RTI is its bounding box, with no allowance for void space inside
+it or clearance between stacks, so that by footprint consistency one
+layer of stack type $h$ occupies exactly
+$n_{hr}\gamma_{gr}=p_{h}q_{h}r_{gr}$. A placement satisfying
+\eqref{eq:col-geom}--\eqref{eq:col-agg} puts its RTIs in disjoint boxes
+inside the trailer --- footprints non-overlapping and inside
+$pK\times qK$, each stack under $rK$ by \eqref{eq:col-height} --- so
+their bounding-box volumes sum to at most $\Gamma_{K}$, its weight is
+at most $pK^{w}$, and \eqref{eq:col-truck} is the same floor in both
+sets; hence $\Omega^{g}\subseteq\Omega^{g}_{\mathrm{vol}}$. Only the
+column set depends on the load model, so the 3D master is the
+volumetric master with columns removed: its LP value is at least
+$z_{\mathrm{vol}}$, and its optimum at least its LP value.
+\end{proof}
+
+The consequence is a division of labour. A geometric sweep costs
+$2|T|$ calls at the pricing limit; over the volumetric relaxation the
+same sweep is a two-constraint knapsack oracle and closes in seconds.
+The method therefore asks geometric pricing only for columns and takes
+its bound from the volumetric relaxation, so the gap between them is a
+genuine optimality gap for the 3D problem.

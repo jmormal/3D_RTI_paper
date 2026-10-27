@@ -1,0 +1,69 @@
+\section{Introduction}
+\label{sec:intro}
+
+Taking transport, inventory and production decisions jointly improves
+supply chain performance \autocite{Stadtler2015SupplyPlanning,
+Diaz-Madronero2017ADecisions}. Responsibility for transport planning
+usually lies with the supplier
+\autocite{Fleischmann2015TransportDistribution}, but in the automotive
+industry the manufacturer frequently plans its own inbound transport,
+and it does so around an asset material requirements planning does not
+represent: the returnable transport item (RTI), the tertiary packaging
+in which parts move. The plant returns folded empty RTIs and the
+supplier sends them back erected and full, so each flow is the other's
+supply and neither can be planned alone. Algorithm-based planning
+outperforms a planner's intuition here
+\autocite{Diaz-Madronero2014AChain}, most where intuition is weakest:
+deciding how many trucks to dispatch when whether a given set of
+containers fits inside one is itself a combinatorial question.
+
+That last question is the one the literature does not ask. Transport
+capacity in procurement transport planning is a scalar --- freight
+volume, or a count of loaded units
+\autocite{Hashemi-Amiri2023IntegratedApproach,
+Diaz-Madronero2014AChain} --- but containers are not fluid: they stack
+in whole layers under a height budget and a crush limit, and their
+footprints tile a floor in whole rectangles. A plan drawn against a
+volumetric capacity can therefore prescribe loads that no arrangement
+of the trailer admits, and the shortfall is discovered on the loading
+dock rather than in the model.
+Section~\ref{sec:res-abstraction} measures how often, by placeability
+proof rather than by argument.
+
+This paper makes four contributions, listed in the order of the
+evidence behind them.
+
+\begin{enumerate}
+\item A mixed integer formulation, 3D-SCPTOP
+  (Section~\ref{sec:model}), joining procurement transport, RTI
+  closed-loop and inventory decisions to a full-truckload condition
+  stated as a stack-based 3D loading problem, with the per-stack crush
+  cap evaluated on the product mix actually loaded in each slot rather
+  than on a worst case for its container family.
+
+\item A Dantzig--Wolfe reformulation \autocite{DantzigWolfe1960} and a
+  branch-and-price procedure, BP-3D-SCPTOP
+  (Sections~\ref{sec:decomp}--\ref{sec:branching}), derived
+  structurally rather than by analogy: deleting the quantifier over
+  (direction, truck, period) from the block rows \emph{is} the pricing
+  problem. The procedure branches over the fleet vector with a
+  flow-first relax-and-fix construction as primal heuristic, and its
+  lower bounds rest on one proposition: a certified bound of the
+  volumetric relaxation is valid for the 3D problem.
+
+\item Accuracy against a reference optimum
+  (Section~\ref{sec:res-vol}): on the volumetric problem, where a
+  compact formulation solves to proved optimality, the procedure's plan
+  and its certified bound bracket that optimum within about a hundredth
+  of a percent.
+
+\item A measurement of what a volumetric transport capacity costs
+  (Section~\ref{sec:res-abstraction}), with the mechanism behind it and
+  a test on the industrial container catalogue that a planner can run
+  before solving anything.
+\end{enumerate}
+
+The branching hierarchy is finite and exhaustive and every prune is a
+proof, so BP-3D-SCPTOP is an exact procedure run under a budget rather
+than a heuristic; on the sizes reported here it returns a verified plan
+and a certified bound, and proves no optimum.

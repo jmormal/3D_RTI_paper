@@ -1,0 +1,52 @@
+\section{Related work}
+\label{sec:lit}
+
+\paragraph{Procurement transport with inventory decisions.}
+\autocite{Berman2006InboundCost} and
+\autocite{Sancak2011Multi-itemPolicy} price full and
+less-than-truckload service against inventory under a volumetric
+capacity; \autocite{Schoneberg2010AnNetworks} and
+\autocite{Schoneberg2013ANetworks} do so for multi-supplier inbound
+networks; \autocite{Diaz-Madronero2014APlanning} formulate the
+operational single-supplier full-truckload problem that the benchmark
+of Appendix~\ref{appendix:A} extends, with capacity as a maximum
+container count; \autocite{Hein2016QuantitativeProblem},
+\autocite{Diaz-Madronero2017ADecisions},
+\autocite{Meyer2018TransportIndustry}, \autocite{Chitsaz2019ARouting},
+\autocite{Baller2022OptimizingApproach} and
+\autocite{Hashemi-Amiri2023IntegratedApproach} extend the setting to
+milk-runs, routing and uncertainty. In every case the trailer is a
+scalar: a volume, a weight, or a number of units. Table
+\ref{table:ComProTra} positions these models on the features that
+matter here, and in no prior row is the capacity a condition on
+placement.
+
+\paragraph{RTIs.}
+The closed loop itself is modelled at a tactical or network level.
+\autocite{SOYSAL2023101504} plan vendor-managed inventory of agro-food
+crates with forward and reverse flows; \autocite{GUO2024104339}
+optimise a two-tier container management network with return penalties;
+\autocite{Zhang17012024} formulate a perishable inventory-routing
+problem with several RTI types. These carry the reverse flow but
+represent the vehicle as a capacity, so a folded container's occupying
+a different volume from an erected one changes a coefficient and not
+the structure of the problem.
+
+\paragraph{Container loading.}
+The loading side is surveyed by the typology of
+\autocite{Wascher2007AnProblems}, the review of practically relevant
+constraints of \autocite{Bortfeldt2013ConstraintsReview} and the
+exact-method survey of \autocite{Silva2019ExactProblems}. Our loading
+requirements --- orientation, stacking with load bearing, weight limits
+--- are those studied as side constraints of a single-container problem
+by \autocite{Junqueira2012Three-dimensionalConstraints} and
+\autocite{Alonso2020AConstraints}. The nearest methodological
+precedent is \autocite{Mahvash2018}, who solve three-dimensional bin
+packing by column generation in which a column is a packing
+configuration of one bin: we take the same unit of decision, but the
+master it feeds is a multi-period transport and inventory problem
+rather than a set-covering model, so the columns of a direction are
+generated once and priced against duals that move with the inventory
+balance.
+
+\input{tab_positioning}

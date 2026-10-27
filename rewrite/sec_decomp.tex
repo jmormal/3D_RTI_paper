@@ -1,0 +1,92 @@
+\section{Why branch and price, and why this decomposition}
+\label{sec:decomp}
+
+Two structural difficulties stand between the formulation of
+Section~\ref{sec:model} and an industrial instance. The model carries a
+complete two-dimensional packing problem for every truck of every
+direction and period --- $2|K||T|$ replicas, each contributing
+$4\binom{|I|}{2}$ big-$M$ disjunctions
+\eqref{sb:eq:nonov-x1}--\eqref{sb:eq:nonov-y2} whose linear relaxation
+is weak --- and those replicas are interchangeable, any two used trucks
+of one direction and period being able to swap layouts and loads, so
+every solution appears a factorial number of times. The second
+difficulty scales worst and does not depend on the loading geometry at
+all, being present in the volumetric benchmark of
+Appendix~\ref{appendix:A} exactly as in 3D-SCPTOP.
+
+The Dantzig--Wolfe reformulation below \autocite{DantzigWolfe1960,
+Barnhart1998BranchAndPrice,Desaulniers2005ColumnGeneration} removes both, and removes the first without
+restricting anything. Figure~\ref{fig:blocks} is the picture,
+Table~\ref{tab:rowmap} the row-by-row detail.
+
+\input{Tikz_blocks}
+
+\paragraph{Blocks.}
+Take the block index to be $\mathcal{B}=G\times K\times T$. Every row
+from \eqref{sb:eq:slot-active} to \eqref{dec:sym-truck} --- the first
+column of Table~\ref{tab:rowmap} names them --- carries a single
+direction, truck and period as a fixed $\forall$ index or a literal,
+and none couples two values of $g$, $k$ or $t$; the exception is
+\eqref{dec:sym-truck}, relating truck $k+1$ to truck $k$. The remaining
+rows are the objective, the inventory and coverage block
+\eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty} and the two
+definitions \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve}, and they see
+the blocks \emph{only} through those aggregates and the count of
+dispatches $z^{K}$ charges for. Block-angularity over $\mathcal{B}$ is
+therefore a property of the formulation, not a discovery about it.
+
+\paragraph{Delete the quantifier.}
+Fix a class $(g,t)$, take the block rows, and \emph{remove the
+$\forall$ over $\mathcal{B}$}: drop the indices $g$, $k$ and $t$ from
+every variable and read $g$ as data. The stack-height row, for
+instance, goes
+\begin{equation}
+\underbrace{\sum_{r\in R(h)} r_{gr}L_{gihktr}\le rK\,X_{gihkt}
+  \quad\forall g,h,i,k,t}_{\text{3D-SCPTOP, }\eqref{sb:eq:height}}
+\;\longmapsto\;
+\underbrace{\sum_{r\in R(h)} r_{gr}L_{ihr}\le rK\,X_{ih}
+  \quad\forall h,i}_{(\mathrm{PP}^{g}),\ \eqref{bp:PP-height}},
+\label{eq:deletequant}
+\end{equation}
+and every other block row the same way; what is left is a mixed integer
+programme over one truck, the $(\mathrm{PP}^{g})$ of
+Section~\ref{sec:pricing}. Nothing is invented for the subproblem and
+nothing of the geometry is left behind in the master. Two rows do not
+make the journey: \eqref{dec:sym-truck}, which the aggregation
+disposes of, and \eqref{sb:eq:lc-active}, whose two binaries collapse
+into one (Section~\ref{sec:pricing}).
+
+
+\paragraph{Identical blocks.}
+$K$ is anonymous, so the blocks of a fixed $(g,t)$ are identical and
+are aggregated: in place of one copy per truck, the reformulation
+carries one non-negative integer variable per block \emph{solution},
+counting how many of the class's blocks take it, and one row per class
+bounding that count by $|K|$. This is where the second difficulty
+disappears --- the trucks are never distinguished, so there is no
+permutation to search --- and it is why the dropped row costs nothing:
+counts carry no order, so the master has no variable in which to
+express \eqref{dec:sym-truck}. The converse direction of
+Proposition~\ref{prop:equiv} assigns trucks \emph{in index order}, so
+the equivalence holds against the compact model \emph{with} that row in
+force.
+
+\paragraph{Classes.}
+The classes are the pairs $(g,t)$, and within a class the block rows
+are pinned to the class's $g$, so there is one pricing problem per
+\emph{direction}. The pricing rows read no datum indexed by $t$ --- the
+trailer, the stack types, the crush limit and the floor are
+time-invariant --- so the periods of one direction differ \emph{only in
+their duals}, one column set serves them all, and the whole horizon
+costs two pricing problems rather than $2|T|$.
+
+\paragraph{Discretisation.}
+Every block variable that reaches the master is integer, so a block
+solution may be taken to be an \emph{integer} point of its pricing
+problem completed by placement coordinates. The multipliers are then
+integer rather than merely non-negative, and a fractional one is a
+genuine integrality violation.
+
+\input{tab_rowmap}
+
+\FloatBarrier

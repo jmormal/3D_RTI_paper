@@ -1,0 +1,29 @@
+\begin{algorithm}[!htb]
+\caption{$\textsc{Certify}(\bar\Omega,\mathcal{R})$ --- the sweep a
+lower bound rests on. No memoisation, no restriction to the pairs a
+branch has touched, every branching fix released.}
+\label{alg:certify}
+\begin{algorithmic}[1]
+\State release every branching fix; impose $\mathcal{R}$ on the RMP as fleet rows
+\Loop
+  \State solve the LP over $\bar\Omega$ inside $\mathcal{R}$
+  \If{infeasible} \State \Return $(\infty,\ \text{true})$
+     \Comment{region refuted} \EndIf
+  \State $\text{proved}\gets\text{true}$
+  \ForAll{$(g,t)\in G\times T$}
+     \State $\zeta_{gt}\gets\textsc{Price}(\pi,\mu,g,t)$ to proven optimality,
+            duals rounded \emph{up}
+     \If{the call returned neither \textsc{optimal} nor \textsc{infeasible},
+         and was not an objective-limit stop with \emph{no} point returned}
+        \State $\text{proved}\gets\text{false}$
+        \Comment{a cutoff that returns nothing is still a proof} \EndIf
+  \EndFor
+  \If{some $\zeta_{gt}$ prices out} \State add its columns to $\bar\Omega$ and
+     \textbf{continue} \EndIf
+  \If{artificials $>0$} \State \Return $(\infty,\ \text{true})$
+     \Comment{no plan over $\Omega^{g}$ lies in $\mathcal{R}$} \EndIf
+  \State \Return (raw LP value, $\text{proved}$)
+     \Comment{a bound only if $\text{proved}$}
+\EndLoop
+\end{algorithmic}
+\end{algorithm}

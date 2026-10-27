@@ -1,0 +1,178 @@
+% The master problem (step 2), drawn as the incidence pattern of its rows:
+% what a column writes into, what the artificials sit on, and -- the point --
+% the row family that is not there.  The generation loop survives as the two
+% margin arrows: columns enter top left, duals leave top right.
+% Uses only tikz with calc/positioning/arrows.meta, all loaded by
+% ../necessarypackages.  Drawn at final size (<= 15.1 cm against a 15.24 cm
+% \textwidth): no \resizebox, so \scriptsize stays \scriptsize on the page.
+% Every qualifier lives in the row label, never in a cell, so no cell can
+% outgrow its row; the row heights below are set to the label line counts,
+% and the column heads are at most three lines so they clear the head rule.
+\begin{figure}[htb]
+\centering
+\hbadness=10000
+\begin{tikzpicture}[x=1cm, y=1cm, >=Latex, line width=0.5pt,
+  rl/.style  ={font=\scriptsize, align=right, text width=52mm, anchor=east},
+  ce/.style  ={font=\small,      align=center},
+  hd/.style  ={font=\footnotesize, align=center, text width=14mm,
+               anchor=north, inner sep=1pt},
+  nt/.style  ={font=\scriptsize, align=center, text width=18mm},
+  dot/.style ={font=\small, color=black!45}]
+
+% ---------------------------------------------------------------- geometry
+\def\xS{5.55}\def\xB{12.85}                 % body left / right edge
+\def\xa{6.28}\def\xb{7.74}\def\xc{9.20}\def\xd{10.66}\def\xe{12.12}
+\def\xD{13.05}\def\xE{14.95}                % the dual strip
+\def\yH{-2.25}
+\def\yA{-2.95}\def\yB{-3.85}\def\yC{-4.75}\def\yD{-5.65}\def\yE{-6.80}
+\def\yF{-7.70}\def\yG{-8.55}
+
+% ------------------------------------------------------- shading and rules
+\fill[black!7]  (\xS,\yH) rectangle (8.47,\yG);          % the column block
+\fill[black!11] (\xD,\yA) rectangle (\xE,\yE);           % what pricing gets
+\draw[line width=0.8pt] (0,\yH) -- (\xB,\yH);
+\draw[line width=0.8pt] (0,\yG) -- (\xB,\yG);
+\foreach \y in {\yA,\yB,\yC,\yD,\yE,\yF}
+   \draw[black!35, line width=0.3pt] (0,\y) -- (\xB,\y);
+\draw[black!35, line width=0.3pt] (\xS,\yH) -- (\xS,\yG);
+\draw[black!70, line width=0.6pt] (8.47,\yH) -- (8.47,\yG);
+
+% ------------------------------------------------------ the two pictograms
+% a plant-bound load: stacks of full RTIs; a supplier-bound load: the same
+% floor carrying folded ones.  That is the whole difference between the two
+% directions as far as the master is concerned.
+\draw[black!75, fill=white, line width=0.6pt]
+   (\xa-0.66,-0.95) rectangle (\xa+0.66,-0.32);
+\foreach \i in {0,1,2,3}{\foreach \j in {0,1}{
+   \draw[black!70, fill=black!45, line width=0.3pt]
+      (\xa-0.60+\i*0.31,-0.91+\j*0.255) rectangle ++(0.26,0.24);}}
+\draw[black!75, fill=white, line width=0.6pt]
+   (\xb-0.66,-0.95) rectangle (\xb+0.66,-0.32);
+\foreach \i in {0,1,2,3}{\foreach \j in {0,1,2,3,4}{
+   \draw[black!60, fill=black!18, line width=0.3pt]
+      (\xb-0.60+\i*0.31,-0.91+\j*0.108) rectangle ++(0.26,0.09);}}
+
+% --------------------------------------------- columns in, duals out (loop)
+\node[rl, text width=46mm] at (4.78,-0.62)
+   {each column comes from the pricing problem
+    (Figure~\ref{fig:truck}): one truck load, with its layout};
+\draw[->, line width=0.6pt] (4.90,-0.62) -- (5.50,-0.62);
+
+\draw[->, line width=0.6pt] (14.00,\yA) -- (14.00,-1.74);
+\node[nt, text width=21mm, anchor=south] at (13.95,-1.70)
+   {to the pricing problem, rounded up};
+
+% ------------------------------------------------------------ column heads
+\node[hd] at (\xa,-1.10) {$\lambda^{p}_{\omega t}$\\[1pt]
+   {\scriptsize full RTIs}};
+\node[hd] at (\xb,-1.10) {$\lambda^{s}_{\omega' t}$\\[1pt]
+   {\scriptsize folded RTIs}};
+\node[hd] at (\xc,-1.10) {$\overline{V}_{nt}$,\\ $\overline{V^{\mathrm{e}}}_{rt}$\\[1pt]
+   {\scriptsize aggregate}};
+\node[hd] at (\xd,-1.10) {$I_{gnt}$,\\ $Ie_{gtr}$\\[1pt]
+   {\scriptsize stock}};
+\node[hd] at (\xe,-1.10) {artificial\\ columns$^{\dagger}$\\[1pt]
+   {\scriptsize priced $M$}};
+
+% ------------------------------------------------------------- row 1: cost
+\node[rl] at (5.40,-2.60) {\textbf{objective} \eqref{eq:MPObjective}};
+\node[ce]  at (\xa,-2.60) {$cK$};
+\node[ce]  at (\xb,-2.60) {$cK$};
+\node[dot] at (\xc,-2.60) {$\cdot$};
+\node[ce]  at (\xd,-2.60) {$ic_{gn}$};
+\node[ce]  at (\xe,-2.60) {$M$};
+
+% ------------------------------------------ rows 2-3: the only link to load
+\node[rl] at (5.40,-3.40) {\textbf{aggregate flow} \eqref{bp:MP-def-V}\\
+   one row per product $n$, period $t$};
+\node[ce]  at (\xa,-3.40) {$b_{\omega n}$};
+\node[dot] at (\xb,-3.40) {$\cdot$};
+\node[ce]  at (\xc,-3.40) {$-1$};
+\node[dot] at (\xd,-3.40) {$\cdot$};
+\node[ce]  at (\xe,-3.40) {$+1$};
+\node[ce]  at (14.00,-3.40) {$\pi_{nt}$};
+
+\node[rl] at (5.40,-4.30) {\textbf{aggregate flow} \eqref{bp:MP-def-Ve}\\
+   one row per RTI type $r$, period $t$};
+\node[dot] at (\xa,-4.30) {$\cdot$};
+\node[ce]  at (\xb,-4.30) {$e_{\omega' r}$};
+\node[ce]  at (\xc,-4.30) {$-1$};
+\node[dot] at (\xd,-4.30) {$\cdot$};
+\node[ce]  at (\xe,-4.30) {$+1$};
+\node[ce]  at (14.00,-4.30) {$\pi_{rt}$};
+
+% ------------------------------------------------------- row 4: truck count
+\node[rl] at (5.40,-5.20) {\textbf{truck count} \eqref{bp:MP-count}\\
+   one row per direction and period};
+\node[ce]  at (\xa,-5.20) {$1$};
+\node[ce]  at (\xb,-5.20) {$1$};
+\node[dot] at (\xc,-5.20) {$\cdot$};
+\node[dot] at (\xd,-5.20) {$\cdot$};
+\node[dot] at (\xe,-5.20) {$\cdot$};
+\node[ce]  at (14.00,-5.20) {$\mu_{gt}$};
+
+% -------------------------------------------------------- row 5: cover cuts
+\node[rl] at (5.40,-6.225) {\textbf{cumulative cover cut}
+   \eqref{eq:covercut}$^{\dagger}$\\
+   one row per direction and period, over the dispatches with $\tau\le t-lt$};
+\node[ce]  at (\xa,-6.225) {$1$};
+\node[ce]  at (\xb,-6.225) {$1$};
+\node[dot] at (\xc,-6.225) {$\cdot$};
+\node[dot] at (\xd,-6.225) {$\cdot$};
+\node[ce]  at (\xe,-6.225) {$+1$};
+\node[nt]  at (14.00,-6.225) {folds into $\mu_{gt}$};
+
+% -------------------------------------------- rows 6-7: inventory, coverage
+\node[rl] at (5.40,-7.25) {\textbf{inventory balance}
+   \eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:inve-sup-init}\\
+   the receiver's arrival lagged by $lt$};
+\node[dot] at (\xa,-7.25) {$\cdot$};
+\node[dot] at (\xb,-7.25) {$\cdot$};
+\node[ce]  at (\xc,-7.25) {$\pm1$};
+\node[ce]  at (\xd,-7.25) {$\pm1$};
+\node[dot] at (\xe,-7.25) {$\cdot$};
+
+\node[rl] at (5.40,-8.125) {\textbf{coverage stock}
+   \eqref{sb:eq:safety-full}--\eqref{sb:eq:safety-empty}};
+\node[dot] at (\xa,-8.125) {$\cdot$};
+\node[dot] at (\xb,-8.125) {$\cdot$};
+\node[dot] at (\xc,-8.125) {$\cdot$};
+\node[ce]  at (\xd,-8.125) {$+1$};
+\node[ce]  at (\xe,-8.125) {$+1$};
+
+\draw[black!55, line width=0.4pt] (12.95,\yE) -- (12.95,\yG);
+\node[nt, text width=18mm, align=left, anchor=west] at (13.10,-7.675)
+   {no $\lambda$: pricing feels these rows only through $\pi$};
+
+% ------------------------------------------------- the rows that are absent
+\node[rl] at (5.40,-9.45) {\textbf{rows a catalogue of loading\\
+   configurations would add}};
+\draw[dashed, black!55, line width=0.5pt] (\xS,-8.80) rectangle (\xB,-10.10);
+\node[font=\scriptsize, align=center, text width=68mm] at (9.20,-9.45)
+   {\textbf{none.} No slot, stack type, orientation, \mbox{coordinate} or
+    layer count is a variable of the master: the geometry stays inside the
+    \mbox{column}, with its witnessing layout (Figure~\ref{fig:truck}).};
+
+% ----------------------------------------------------------------- the note
+\node[font=\scriptsize, align=left, text width=149mm, anchor=north west]
+   at (0,-10.38)
+   {$^{\dagger}$ Rows and columns of the \emph{restricted} master;
+    \eqref{eq:MPObjective}--\eqref{bp:MP-count} together with
+    \eqref{sb:eq:inv-plant-main}--\eqref{sb:eq:safety-empty} are the master
+    itself.};
+
+\end{tikzpicture}
+\caption{The master is a flow model that has never seen a box. A column is
+one truck load, and the only rows it enters are the two aggregate-flow
+definitions, one truck count per direction and period, and the cumulative
+cover cut --- every one of which merely counts or sums what the load
+contains. No slot, stack type, orientation, coordinate or layer count is a
+variable here, so there is no catalogue of loading configurations to
+enumerate, and no row written over these variables can reach the geometry;
+the inventory and coverage rows see the trucks only through $\overline{V}$
+and $\overline{V^{\mathrm{e}}}$, and all that ever reaches the pricing
+problem is $\pi$ and $\mu$. The non-negative artificials keep the restricted
+master feasible, and its duals defined, for any pool --- a solution that uses
+them is not a plan.}
+\label{fig:loop}
+\end{figure}

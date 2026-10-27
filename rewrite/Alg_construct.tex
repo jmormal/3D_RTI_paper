@@ -1,0 +1,47 @@
+\begin{algorithm}[!htb]
+\caption{$\textsc{Construct}(\bar\Omega,\mathcal{R})$ --- the flow-first
+relax and fix. Lines 9--14 run under 3D loading only. $\varepsilon_{2}$
+is step~2's relative MIP gap and \emph{tol} the tolerance above which
+artificial slack means the region admits no plan over this pool.}
+\label{alg:construct}
+\begin{algorithmic}[1]
+\State $\bar\Omega'\gets$ a fresh copy of the RMP over $\bar\Omega$
+   \Comment{not the node's own LP: step 2 changes variable types}
+\State solve $\mathrm{LP}(\bar\Omega',\mathcal{R})$
+   \Comment{duals $\pi,\mu$ and the fractional point the node stands on}
+\State make $n_{gt},\overline{V}_{nt},\overline{V^{\mathrm{e}}}_{rt}$ integer;
+   keep $\lambda$ continuous; impose $\mathcal{R}$ on $n_{gt}$ and on $\lambda$
+\State add the aggregate form of \eqref{eq:stackrows}
+   \Comment{3D only; layer coefficient $=$ the height count, the crush
+      limit being its own row}
+\State solve to relative gap $\varepsilon_{2}$
+\If{no solution, or artificials $>$ tol}
+   \State \Return $\bot$ \Comment{node abandoned; the region is infeasible over this pool} \EndIf
+\State $(Q^{\star},n^{\star})\gets$ the integer deliveries and fleet
+\ForAll{$(g,t)\in G\times T$}
+   \For{$m=n^{\star}_{gt},\,n^{\star}_{gt}+1,\,n^{\star}_{gt}+2$ while
+        $\mathcal{R}$ allows}
+      \State solve $\textsc{Partition}(Q^{\star}_{gt},m)$,
+             \eqref{eq:part-obj}--\eqref{eq:part-sym}, with $\bar u_{gc}$ as
+             variable bounds
+      \State \textbf{break} if feasible
+      \Comment{a timeout is not a proof of infeasibility}
+   \EndFor
+   \ForAll{parts $a_{k}$ of the cover}
+      \State $(\text{verdict},\text{layout})\gets\textsc{Pack}(a_{k})$
+      \If{placeable} \State verify the layout;
+          $\bar\Omega\gets\bar\Omega\cup\{(a_{k},\text{layout})\}$ \EndIf
+      \If{\emph{proved} unplaceable} \State bisect $\sigma\in(0,1]$ and cut
+          every load dominating $\lfloor\sigma a_{k}\rfloor$
+          \Comment{validity} \EndIf
+      \If{undecided} \State exclude $a_{k}$ as a single point
+          \Comment{heuristic restriction, never validity} \EndIf
+   \EndFor
+   \State re-solve the partition if a cut was written and rounds remain
+\EndFor
+\State $\bar\Omega\gets\bar\Omega\cup\{\text{the parts}\}$; solve the integer
+   master over $\bar\Omega$, warm-started with the partition
+\State \Return $(z,\hat{\mathbf{n}},\bar\Omega)$
+   \Comment{the parts are kept even when no plan is returned}
+\end{algorithmic}
+\end{algorithm}

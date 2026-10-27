@@ -1,0 +1,134 @@
+% F6 of article/paper-figures.md, redrawn, and the only drawing of the
+% branching scheme.  One picture for the whole hierarchy: the three rungs,
+% nested (level 2 inside the equality child of level 1, level 3 inside the
+% Murty leaf); an integer line under the first split, so that "disjoint and
+% exhaustive" is shown rather than asserted and the later rungs can be read
+% off it; the construction as what happens at every node; and the rung that
+% is deliberately not taken.  Greyscale only, straight edges only, every
+% label clear of every edge, and the spine of the tree runs at x=7.5 -- the
+% heading blocks are 66mm wide so that none of them reaches it.
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[>=Latex, x=1cm, y=1cm,
+  nd/.style={rectangle, draw=black!75, fill=white, line width=0.5pt,
+             inner sep=3pt, minimum width=26mm, minimum height=6mm,
+             font=\footnotesize},
+  fx/.style={nd, fill=black!12},
+  rt/.style={nd, minimum width=52mm},
+  rep/.style={rectangle, draw=black!60, densely dashed, fill=white,
+              line width=0.5pt, inner sep=3pt, text width=40mm,
+              align=flush center, font=\scriptsize},
+  an/.style={font=\scriptsize, align=flush center, text width=60mm, anchor=north},
+  hd/.style={font=\scriptsize, align=flush left, anchor=north west,
+             text width=66mm},
+  bnr/.style={rectangle, draw=black!45, fill=black!5, rounded corners=1pt,
+              inner sep=4pt, text width=142mm, align=flush left, font=\scriptsize,
+              anchor=north},
+  bnx/.style={bnr, draw=black!60, densely dashed, fill=white},
+  sp/.style={draw=black!75, line width=0.5pt},
+  ed/.style={sp, ->},
+  ax/.style={draw=black!55, line width=0.4pt},
+  seg/.style={draw=black!85, line width=1.5pt},
+  tk/.style={font=\tiny, inner sep=1pt}]
+
+% ---------------------------------------------------------------- banner --
+\node[bnr] (ban) at (7.5,1.62) {\textbf{At every node} the construction
+  (Algorithm~\ref{alg:construct}) builds the plan that node is partitioned
+  around, and its trucks join one shared pool: a column is valid in every
+  region, so a pruned node leaves its columns behind.};
+
+% =============================================================== level 1 ==
+\node[hd] at (0.4,0.62) {\textbf{level 1} --- the total fleet
+  $X=\sum_{g,t}n_{gt}$};
+
+\node[rt] (root) at (7.5,-0.45)
+  {root: the constructed plan $\mathbf{n}^{\star}$, $X^{\star}$ trucks};
+
+\node[nd] (a1) at (3.0,-1.70) {$X\le X^{\star}-1$};
+\node[fx] (b1) at (7.5,-1.70) {$X=X^{\star}$};
+\node[nd] (c1) at (12.0,-1.70) {$X\ge X^{\star}+1$};
+\coordinate (j1) at (7.5,-1.07);
+\draw[sp] (root.south) -- (j1);
+\draw[ed] (j1) -- (a1.north);
+\draw[ed] (j1) -- (b1.north);
+\draw[ed] (j1) -- (c1.north);
+
+% the integer line: the three children abut at $X^\star$ and leave no gap
+\draw[ax] (0.95,-2.55) -- (14.05,-2.55);
+\foreach \i in {0,...,14} {\draw[ax] (1.2+\i*0.9,-2.55) -- ++(0,0.075);}
+\draw[seg] (1.2,-2.55) -- (6.6,-2.55);
+\draw[seg] (8.4,-2.55) -- (13.8,-2.55);
+\fill (7.5,-2.55) circle (1.7pt);
+\node[tk, anchor=east] at (1.05,-2.55) {$\cdots$};
+\node[tk, anchor=west] at (13.95,-2.55) {$\cdots$};
+\node[tk] at (6.6,-2.82) {$X^{\star}\!-\!1$};
+\node[tk] at (8.4,-2.82) {$X^{\star}\!+\!1$};
+\node[tk, anchor=west] at (7.66,-2.42) {$X^{\star}$};
+\node[tk, anchor=east] at (13.8,-2.82) {$X\in\mathbb{Z}$};
+
+\node[an] at (3.0,-3.07) {the only region that can hold a cheaper plan:
+  popped first, and split again on its own total};
+\node[an] at (12.0,-3.07) {a whole truck more, with nothing in the objective
+  to offset it: usually pruned by bound};
+
+% =============================================================== level 2 ==
+\node[hd] at (0.4,-4.00) {\textbf{level 2} --- the fleet vector, inside
+  $X=X^{\star}$: Murty at the first pair $j$ that may differ};
+
+\node[nd] (a2) at (3.0,-5.45) {$n_{j}\le n^{\star}_{j}-1$};
+\node[fx] (b2) at (7.5,-5.45) {$n_{j}=n^{\star}_{j}$};
+\node[nd] (c2) at (12.0,-5.45) {$n_{j}\ge n^{\star}_{j}+1$};
+\coordinate (j2) at (7.5,-4.85);
+\draw[sp] (b1.south) -- (7.5,-2.55);
+\draw[sp] (7.5,-2.55) -- (j2);
+\draw[ed] (j2) -- (a2.north);
+\draw[ed] (j2) -- (b2.north);
+\draw[ed] (j2) -- (c2.north);
+
+\node[an, text width=38mm] at (3.0,-5.95) {the same trichotomy, one pair at
+  a time; empty when $n^{\star}_{j}=0$};
+\node[an, text width=38mm] at (12.0,-5.95) {the total is fixed here, so a pair
+  that moves up forces another down};
+
+\node[rep] (rep) at (7.5,-6.37) {split again at the next pair,\\
+  until every $n_{gt}$ is fixed};
+\draw[ed] (b2.south) -- (rep.north);
+
+% =============================================================== level 3 ==
+\node[hd] at (0.4,-7.20) {\textbf{level 3} --- one delivery, once every
+  $n_{gt}$ is fixed: the one furthest from an integer};
+
+\node[nd, minimum width=32mm] (a3) at (4.9,-8.65)
+  {$\overline{V}_{nt}\le\lfloor v\rfloor$};
+\node[nd, minimum width=32mm] (c3) at (10.1,-8.65)
+  {$\overline{V}_{nt}\ge\lceil v\rceil$};
+\coordinate (j3) at (7.5,-8.05);
+\draw[sp] (rep.south) -- (j3);
+\draw[ed] (j3) -- (a3.north);
+\draw[ed] (j3) -- (c3.north);
+
+\node[an, text width=104mm] at (7.5,-9.25) {a delivery counts physical RTIs,
+  so the two children are disjoint and cover $\mathbb{Z}$ between them; this
+  rung is entered only where the first two have nothing left to say};
+
+% --------------------------------------------------------- the non-rung --
+\node[bnx] (ban2) at (7.5,-10.19) {\textbf{Not a level:} a single column
+  variable $\lambda^{g}_{\omega t}$. A bound on one is not a row of the
+  master --- honouring it means excluding that column from the pricing
+  problem --- and the relaxation answers by moving the same weight to a
+  column that differs in one RTI: $3\,000$ branches, no integral relaxation
+  reached.};
+
+\end{tikzpicture}
+\caption{Every rung bounds an integer quantity the master already prices,
+so the children of a split are disjoint and together exhaustive and the search
+gives up nothing by taking them. The order is forced by the objective:
+transport costs $cK\cdot X$ and nothing else in the model counts trucks, so
+the horizon total is the one aggregate that cannot be answered by moving
+freight between periods for one period's holding cost, as a single dispatch
+count or a single delivery can. And because these are rows of the master and
+not restrictions on the subproblem, branching moves the duals and leaves the
+pricing problem alone --- which is also how a load no dual vector would have
+asked for (Figure~\ref{fig:hull}) comes to be priced at all.}
+\label{fig:tree}
+\end{figure}

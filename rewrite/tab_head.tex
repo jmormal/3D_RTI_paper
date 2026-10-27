@@ -1,0 +1,47 @@
+% Compact 3D columns: results/compact_3d/compact3d_*.json (1800 s, MIP gap 0,
+% 10 threads, 20 GB, seed 0, n_lc 3); row 1 is compact3d_rerun_I_8_5_2_90.json,
+% taken after the layout-extraction fix, with the same objective, bound and stop
+% as the first run but twelve loads that pass the verifier.  No compact 3D run
+% exists for I_24_20_2_90_k50.  Method columns are Table \ref{tab:3d-onecommit}.
+% Only the ends that a campaign replaces are marked: a compact volumetric dual
+% bound (rows 2 and 4's lower end) is not in flight.
+% The interval's lower end is the tighter bound THAT BOUNDS THE PROBLEM: the
+% compact volumetric dual bound where one exists, else the method's own
+% certificate -- never the compact 3D model's dual bound.
+\begin{table}[!htbp]
+\centering
+\small
+\caption{The compact 3D-SCPTOP model (a catalogue of
+$n_{\mathrm{LC}}=3$ layouts shared by the trucks of a direction,
+$1\,800$ s) against BP-3D-SCPTOP on the size ladder, the method's rows
+being those of Table~\ref{tab:3d-onecommit}. \textbf{The budgets differ
+on three rows}: the compact model had $1\,800$ s throughout, the method
+$900$ s on the first two rows, $1\,800$ s on the next two --- which are
+therefore the equal-budget pairs --- and $3\,600$ s on the last.
+\emph{none} means no feasible solution was found inside the budget, and
+all three such runs stopped on \emph{time} with peak resident sets of
+$6.1$, $2.7$ and $4.5$ GB against the declared $20$ GB cap. The last
+column is the interval in which $z^{\star}$ lies, taking the method's
+plan as the upper end and, as the lower end, the tighter bound
+\emph{that bounds the problem}: $n_{\mathrm{LC}}=3$ is an a-priori
+restriction of Section~\ref{sec:model}, so the compact 3D model's dual
+bound bounds that restriction and not $z^{\star}$ and appears in its
+own column only, while a compact \emph{volumetric} dual bound is valid
+for 3D by inclusion and is used instead where one exists. Row 1 is the
+one optimum (Table~\ref{tab:3d-onecommit}).}
+\label{tab:3d-head}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrlrrrrrl}
+\toprule
+& \multicolumn{4}{c}{compact 3D-SCPTOP, $1\,800$ s} & \multicolumn{5}{c}{BP-3D-SCPTOP} & \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-10}
+Instance & $z$ & trucks & LB & stop & $z$ & trucks & LB (cert.) & gap & budget (s) & $z^{\star}$ in \\
+\midrule
+$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time} & \InFlight{18\,796.96} & \InFlight{12} & \InFlight{18\,795.54} & \InFlight{$0.0076\%$} & 900 & $[\InFlight{18\,796.96},\,\InFlight{18\,796.96}]$ \\
+$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time} & \InFlight{38\,855.34} & \InFlight{26} & \InFlight{38\,791.14} & \InFlight{$0.165\%$} & 900 & $[38\,851.93,\,\InFlight{38\,855.34}]$ \\
+$I\_12\_12\_2\_90\_k25$ & \emph{none} & --- & 48\,516.86 & \textsc{time} & \InFlight{52\,129.45} & \InFlight{34} & \InFlight{52\,105.25} & \InFlight{$0.046\%$} & 1\,800 & $[\InFlight{52\,105.25},\,\InFlight{52\,129.45}]$ \\
+$I\_16\_15\_2\_90\_k25$ & \emph{none} & --- & 64\,053.23 & \textsc{time} & \InFlight{78\,549.14} & \InFlight{54} & \InFlight{68\,131.43} & \InFlight{$13.3\%$} & 1\,800 & $[68\,139.17,\,\InFlight{78\,549.14}]$ \\
+$I\_24\_20\_2\_90\_k50$ & \multicolumn{4}{c}{not run} & \InFlight{230\,594.36} & \InFlight{160} & \InFlight{200\,013.41} & \InFlight{$13.3\%$} & 3\,600 & $[\InFlight{200\,013.41},\,\InFlight{230\,594.36}]$ \\
+\bottomrule
+\end{tabular}}
+\end{table}

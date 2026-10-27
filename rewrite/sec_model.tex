@@ -1,0 +1,341 @@
+\section{The 3D-SCPTOP formulation}
+\label{sec:model}
+
+The model is written over \emph{trucks}. A dispatched truck designs its
+own layout --- the stack types, orientations, positions and layer
+compositions of its slots are variables of that truck and that period,
+and its load is assigned to those slots in the same period --- so there
+is no catalogue of loading configurations. That is the decision
+Section~\ref{sec:decomp} rests on: every row below carries either the
+triple $(g,k,t)$ or none of it, so the model is block-angular over
+$G\times K\times T$ and the pricing problem of the Dantzig--Wolfe
+reformulation is obtained by deleting that quantifier and nothing
+else.
+
+Throughout, $g\in G=\{s,p\}$ indexes nodes and directions (named by
+destination), $n\in N$ products, $r\in R$ RTI types, $h\in H$ stack
+types, $i,j\in I$ slot positions, $k\in K$ trucks and $t\in T$ periods,
+with $\rho(n)$ the RTI type product $n$ travels in and
+$M(r)=\{n:\rho(n)=r\}$; variables whose direction is fixed by
+definition omit $g$. Table \ref{tab:sb-Nomenclature} is the
+nomenclature.
+
+\input{tab_nomenclature}
+
+\subsection{Derived quantities}
+
+Five sums recur, as \emph{abbreviations} and not constraints.
+\begin{align}
+\overline{V}_{nt}&=\sum_{k\in K}\sum_{i\in I} V_{kint}
+    &&\forall n\in N,\; t\in T
+    \label{sb:eq:agg-V}\\
+\overline{V^{\mathrm{e}}}_{rt}&=\sum_{k\in K} V^{\mathrm{e}}_{krt}
+    &&\forall r\in R,\; t\in T
+    \label{sb:eq:agg-Ve}\\
+\overline{V}_{knt}&=\sum_{i\in I} V_{kint}
+    &&\forall k\in K,\; n\in N,\; t\in T
+    \label{sb:eq:agg-Vk}\\
+\widehat{X}_{gikt}&=\sum_{h\in H} X_{gihkt}
+    &&\forall g\in G,\; i\in I,\; k\in K,\; t\in T
+    \label{sb:eq:agg-X}\\
+\overline{L}_{ghktr}&=\sum_{i\in I} L_{gihktr}
+    &&\forall g\in G,\; h\in H,\; k\in K,\; t\in T,\; r\in R(h)
+    \label{sb:eq:agg-L}
+\end{align}
+The first two carry the method. The inventory block reads
+$\overline{V}_{nt}$ and $\overline{V^{\mathrm{e}}}_{rt}$ and nothing
+else about the trucks --- not which truck carried what, nor how the
+load was placed.
+
+\subsection{Objective}
+
+Transport cost counts \emph{dispatches}, so a configured but
+undispatched truck costs nothing; holding cost falls on erected RTIs.
+\begin{align}
+\min\; z^{K} &= \sum_{g\in G}\sum_{k\in K}\sum_{t\in T} cK\cdot Y_{gkt},
+\qquad
+\min\; z^{I} = \sum_{g\in G}\sum_{n\in N}\sum_{t\in T} ic_{gn}\cdot I_{gnt}
+    \label{sb:eq:obj-zK}\\
+\min\;& \eta^{K} z^{K}+\eta^{I} z^{I},
+    \qquad \eta^{K}=\eta^{I}=1 \text{ throughout},
+\label{sb:eq:obj}
+\end{align}
+\subsection{Inventory, flow balance and coverage}
+
+Arrivals are delayed; inventory itself accumulates one period at a
+time. For the plant,
+\begin{align}
+I_{pnt}  &=I_{p,n,t-1}-d_{pnt}+\overline{V}_{n,t-lt}
+    &&\forall n\in N,\; t\ge lt+1
+    \label{sb:eq:inv-plant-main}\\
+I_{pnt}  &=I_{p,n,t-1}-d_{pnt}+a_{nt}
+    &&\forall n\in N,\; t\in\{2,\dots,lt\}
+    \label{sb:eq:inv-plant-transient}\\
+I_{pnt}  &=i_{pn}-d_{pnt}+a_{nt}
+    &&\forall n\in N,\; t=1
+    \label{sb:eq:inv-plant-init}\\
+Ie_{ptr} &=Ie_{p,t-1,r}+\sum_{n\in M(r)} d_{pnt}-\overline{V^{\mathrm{e}}}_{rt}
+    &&\forall r\in R,\; t\ge 2
+    \label{sb:eq:inve-plant}\\
+Ie_{ptr} &=ie_{pr}+\sum_{n\in M(r)} d_{pnt}-\overline{V^{\mathrm{e}}}_{rt}
+    &&\forall r\in R,\; t=1
+    \label{sb:eq:inve-plant-init}
+\end{align}
+Consuming a full RTI produces a folded one in the same period, which is
+why $d_{pnt}$ drives \eqref{sb:eq:inve-plant}. For the supplier,
+\begin{align}
+I_{snt}  &=I_{s,n,t-1}+d_{snt}-\overline{V}_{nt}
+    &&\forall n\in N,\; t\ge 2
+    \label{sb:eq:inv-sup-main}\\
+I_{snt}  &=i_{sn}+d_{snt}-\overline{V}_{nt}
+    &&\forall n\in N,\; t=1
+    \label{sb:eq:inv-sup-init}\\
+Ie_{str} &=Ie_{s,t-1,r}+\overline{V^{\mathrm{e}}}_{r,t-lt}-\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t\ge lt+1
+    \label{sb:eq:inve-sup-main}\\
+Ie_{str} &=Ie_{s,t-1,r}+ae_{rt}-\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t\in\{2,\dots,lt\}
+    \label{sb:eq:inve-sup-transient}\\
+Ie_{str} &=ie_{sr}+ae_{rt}-\sum_{n\in M(r)} d_{snt}
+    &&\forall r\in R,\; t=1
+    \label{sb:eq:inve-sup-init}
+\end{align}
+The lead time therefore acts on one side of a balance only --- the
+sending node's stock falls in the dispatch period, the receiving node's
+rises $lt$ periods later --- an alignment
+Section~\ref{sec:branching} uses twice. Coverage stock is enforced at
+both nodes and on both kinds of stock,
+\begin{align}
+I_{gnt}\ \ge\ ss_{gnt}
+    &&\forall g\in G,\; n\in N,\; t\in T
+    \label{sb:eq:safety-full}\\
+Ie_{gtr}\ \ge\ sse_{gtr}
+    &&\forall g\in G,\; r\in R,\; t\in T
+    \label{sb:eq:safety-empty}
+\end{align}
+the requirement being that node's own series over the next $SC$
+periods:
+\begin{equation}
+ss_{gnt}=\sum_{j=1}^{SC} d_{g,n,\tau(t,j)},
+\qquad
+sse_{gtr}=\sum_{n\in M(r)} ss_{gnt},
+\qquad
+\tau(t,j)=\begin{cases} t+j, & t+j\le |T|,\\ |T|-SC+j, & \text{otherwise.}\end{cases}
+\label{sb:eq:coverage}
+\end{equation}
+Near the end of the horizon \eqref{sb:eq:coverage} wraps the window
+back onto the last $SC$ periods rather than truncating it, following
+\autocite{Diaz-Madronero2014APlanning}: truncating lowers the
+requirement of the final periods and with it the optimal value, so the
+tail rule belongs to the problem statement.
+
+\subsection{The layout of a truck}
+
+Everything from here to \eqref{sb:eq:stack-w-sup} is written for one
+truck: one direction $g$, one index $k$, one period $t$. At most one
+stack type occupies a slot and only a configured truck has slots; a
+stack is oriented along one axis or the other; its height cannot exceed
+the trailer's, which with $r_{gr}>0$ also empties an unused slot:
+\begin{align}
+  & \widehat{X}_{gikt}\;\le\;Z_{gkt} && \forall i\in I
+    \label{sb:eq:slot-active}\\
+  & LX_{gihkt}+LY_{gihkt}\;=\;X_{gihkt} && \forall h\in H,\; i\in I
+    \label{sb:eq:orient}\\
+  & \sum_{r\in R(h)} r_{gr}\,L_{gihktr}\;\le\;rK\cdot X_{gihkt}
+    && \forall h\in H,\; i\in I
+    \label{sb:eq:height}
+\end{align}
+Slots must not overlap --- for each pair $i<j$, the usual four-way
+disjunction closed by a cover row --- and every slot lies inside the
+floor:
+\begin{align}
+PX_{gikt}+\sum_{h\in H}\bigl(p_{h}LX_{gihkt}+q_{h}LY_{gihkt}\bigr)
+    &\le PX_{gjkt}+M^{x}(1-A_{gijkt})
+    \label{sb:eq:nonov-x1}\\
+PX_{gjkt}+\sum_{h\in H}\bigl(p_{h}LX_{gjhkt}+q_{h}LY_{gjhkt}\bigr)
+    &\le PX_{gikt}+M^{x}(1-B_{gijkt})
+    \label{sb:eq:nonov-x2}\\
+PY_{gikt}+\sum_{h\in H}\bigl(q_{h}LX_{gihkt}+p_{h}LY_{gihkt}\bigr)
+    &\le PY_{gjkt}+M^{y}(1-C_{gijkt})
+    \label{sb:eq:nonov-y1}\\
+PY_{gjkt}+\sum_{h\in H}\bigl(q_{h}LX_{gjhkt}+p_{h}LY_{gjhkt}\bigr)
+    &\le PY_{gikt}+M^{y}(1-D_{gijkt})
+    \label{sb:eq:nonov-y2}\\
+A_{gijkt}+B_{gijkt}+C_{gijkt}+D_{gijkt}
+    &\;\ge\;\widehat{X}_{gikt}+\widehat{X}_{gjkt}-1
+    \label{sb:eq:cover}\\
+PX_{gikt}+\sum_{h\in H}\bigl(p_{h}LX_{gihkt}+q_{h}LY_{gihkt}\bigr)
+    &\le pK
+    \label{sb:eq:cont-x}\\
+PY_{gikt}+\sum_{h\in H}\bigl(q_{h}LX_{gihkt}+p_{h}LY_{gihkt}\bigr)
+    &\le qK
+    \label{sb:eq:cont-y}
+\end{align}
+The containment rows are unconditional, which is what lets the
+non-overlap rows take the tightened $M^{x}=pK$, $M^{y}=qK$.
+
+\subsection{Full truckload on every dispatched truck}
+
+A dispatched truck must be full, and it can be full in two ways: it may
+run out of space or of payload. A volume-only floor is not a
+conservative simplification but an infeasible one --- filling the
+fraction $\alpha=0.55$ of a $97.92$~m$^{3}$ trailer
+($13\,600\times2\,400\times3\,000$~mm) with freight at $579$~kg/m$^{3}$
+weighs $31.2$~t against a $24$~t cap, and seven of the industrial
+catalogue's fifteen types are denser still. Summing the two ratios is
+the opposite error: it accepts a truck $35\%$ full by volume and $20\%$
+by weight. We therefore require a fraction $\alpha$ of \emph{either}
+resource, a binary $\theta_{gkt}$ selecting which one binds, on the
+load the truck carries with each commodity's own weight:
+\begin{align}
+\sum_{n\in N}\gamma_{p\rho(n)}\,\overline{V}_{knt}
+&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{pkt}-1+\theta_{pkt}\bigr)
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:util-p}\\
+\sum_{n\in N} w_{n}\,\overline{V}_{knt}
+&\;\ge\;\alpha\,pK^{w}\bigl(Y_{pkt}-\theta_{pkt}\bigr)
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:utilw-p}\\
+\sum_{r\in R}\gamma_{sr}\,V^{\mathrm{e}}_{krt}
+&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{skt}-1+\theta_{skt}\bigr)
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:util-s}\\
+\sum_{r\in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{krt}
+&\;\ge\;\alpha\,pK^{w}\bigl(Y_{skt}-\theta_{skt}\bigr)
+    &&\forall k\in K,\; t\in T
+    \label{sb:eq:utilw-s}
+\end{align}
+Exactly one of each pair is active at $Y_{gkt}=1$, so each is the
+disjunction ``full by volume \emph{or} full by payload''. The same
+disjunction on the layer \emph{capacity} the stacks provide rather than
+on the load they receive,
+\begin{align}
+  \sum_{h\in H}\sum_{r\in R(h)}
+    \gamma_{gr}\,n_{hr}\,\overline{L}_{ghktr}
+&\;\ge\;\alpha\,\Gamma_{K}\bigl(Y_{gkt}-1+\theta_{gkt}\bigr),
+\quad
+  \sum_{h\in H}\sum_{r\in R(h)}
+    \hat w_{gr}\,n_{hr}\,\overline{L}_{ghktr}
+\;\ge\;\alpha\,pK^{w}\bigl(Y_{gkt}-\theta_{gkt}\bigr)
+    \label{sb:eq:util-cap}
+\end{align}
+is a valid tightening, kept because it lets a solver establish a layout
+before choosing a product assignment. Which form is the
+\emph{requirement} matters.
+\eqref{sb:eq:util-p}--\eqref{sb:eq:utilw-s} is, full truckload being a
+property of the freight that moves; \eqref{sb:eq:util-cap} follows from
+it because a slot never receives more RTIs of type $r$ than its layers
+hold and $\hat w_{gr}\ge w_{n}$ for every $n\in M(r)$, and taken
+\emph{alone} would admit trucks that are not full. That inequality is
+also why $\hat w_{pr}=\max_{n\in M(r)}w_{n}$ is the family
+\emph{maximum}: the family \emph{minimum} would assert that
+\emph{every} product assignment of this layout fills the truck, cutting
+off feasible loads.
+
+\subsection{Dispatch, loading and weight}
+
+A dispatched truck must be configured,
+\begin{equation}
+Y_{gkt}\;\le\;Z_{gkt}\qquad\forall g\in G,\;k\in K,\;t\in T,
+\label{sb:eq:lc-active}
+\end{equation}
+while the converse fails: $Z_{gkt}=1$ with $Y_{gkt}=0$ is a truck
+carrying a layout and no freight, which in the reformulated block is
+exactly the empty column (Section~\ref{sec:pricing}).
+
+Full RTIs in a slot cannot exceed the layer capacity of the stack
+placed there, products sharing an RTI type partitioning it; folded RTIs
+are capped by the truck's aggregate capacity, folded weight being
+deterministic in the type. Both loads are gated on the dispatch, at
+their own analytic bounds rather than a generic big-$M$:
+\begin{align}
+  & \sum_{n\in M(r)} V_{kint}
+      \;\le\;\sum_{h\,:\,r\in R(h)} n_{hr}\,L_{p,i,h,k,t,r}
+    && \forall k\in K,\; i\in I,\; r\in R,\; t\in T
+    \label{sb:eq:slot-cap}\\
+  & V^{\mathrm{e}}_{krt}
+      \;\le\;\sum_{h\,:\,r\in R(h)} n_{hr}\,\overline{L}_{s,h,k,t,r}
+    && \forall k\in K,\; r\in R,\; t\in T
+    \label{sb:eq:empty-cap}\\
+  & V_{kint}\le \bar u^{V}_{n}\,Y_{pkt}
+    && \forall k\in K,\; i\in I,\; n\in N,\; t\in T
+    \label{fix:slot-link}\\
+  & V^{\mathrm{e}}_{krt}\le \bar u^{\mathrm{e}}_{r}\,Y_{skt}
+    && \forall k\in K,\; r\in R,\; t\in T
+    \label{fix:empty-link}
+\end{align}
+The payload is a property of the truck, the crush limit of each stack;
+on plant-bound trucks that cap is \emph{period-exact}, evaluated on the
+mix actually loaded in the slot, on supplier-bound trucks deterministic
+in the layout:
+\begin{align}
+  & \sum_{n\in N} w_{n}\,\overline{V}_{knt}\;\le\;pK^{w}\,Y_{pkt},
+  \qquad
+    \sum_{r\in R} w^{\mathrm{f}}_{r}\,V^{\mathrm{e}}_{krt}
+      \;\le\;pK^{w}\,Y_{skt}
+    && \forall k\in K,\; t\in T
+    \label{sb:eq:truck-w-plant}\\
+  & \sum_{n\in N} w_{n}\,V_{kint}\;\le\;W^{\max}
+    && \forall k\in K,\; i\in I,\; t\in T
+    \label{sb:eq:stack-w-plant}\\
+  & \sum_{h\in H}\sum_{r\in R(h)}
+      w^{\mathrm{f}}_{r}\,n_{hr}\,L_{s,i,h,k,t,r}\;\le\;W^{\max}
+    && \forall i\in I,\; k\in K,\; t\in T
+    \label{sb:eq:stack-w-sup}
+\end{align}
+where \eqref{sb:eq:truck-w-plant} names both payload rows and
+\eqref{fix:slot-link} is tighter in the relaxation than their
+implication, since what bounds a slot's content is the crush cap.
+
+\subsection{Symmetry, slot-set sizing and data assumptions}
+\label{sb:sec:symm}
+
+The slots of a truck are interchangeable, and so are the trucks of a
+direction and period. Both are ordered:
+\begin{align}
+  & \widehat{X}_{g,i+1,k,t}\;\le\;\widehat{X}_{gikt}
+    && \forall g\in G,\; k\in K,\; t\in T,\; i<|I|
+    \label{sb:eq:sym}\\
+  & Y_{g,k+1,t}\;\le\;Y_{gkt}
+    && \forall g\in G,\; t\in T,\; k<|K|
+    \label{dec:sym-truck}
+\end{align}
+Re-indexing makes \eqref{dec:sym-truck} valid, but it removes only
+\emph{which} subset of trucks is used: loads and layouts stay
+interchangeable among those used, so a plan dispatching $m$ trucks in a
+period still appears $m!$ times --- the difficulty
+Section~\ref{sec:decomp} removes by aggregation rather than by a row.
+The slot count is a modelling parameter, and
+\begin{equation}
+|I|\;\le\;\Bigl\lfloor
+    (pK\cdot qK)\big/\min_{h\in H} p_{h}q_{h}
+\Bigr\rfloor
+\label{sb:eq:Ibound}
+\end{equation}
+eliminates provably unused slot variables without cutting any feasible
+layout. It is more than preprocessing: a placement model given fewer
+slots than a layout needs can report infeasible while the load is
+placeable (Section~\ref{sec:branching}).
+
+Four properties of the data are assumed: $\rho$ is a partition;
+$lt\ge1$, which the lagged terms require; all weights and heights are
+strictly positive, which makes $\bar u^{V}_{n}$ and
+$\bar u^{\mathrm{e}}_{r}$ well defined and lets \eqref{sb:eq:height}
+empty an unused slot; and the footprint geometry is consistent, one
+layer of stack type $h$ tiling its footprint, $n_{hr}a_{r}=p_{h}q_{h}$,
+with the volume charged to an RTI its bounding box,
+$\gamma_{gr}=a_{r}r_{gr}$. \emph{The last is a departure}, and
+Proposition~\ref{prop:inclusion} and the floor-area inequality
+\eqref{bp:PP-areacut} are both false without it. It costs nothing
+here, both instance families building one stack type per distinct RTI
+footprint, so $n_{hr}=1$ and the relation is an identity.
+
+\subsection{Domains}
+
+\begin{align*}
+&Z_{gkt},\,Y_{gkt},\,\theta_{gkt},\,X_{gihkt},\,LX_{gihkt},\,LY_{gihkt},\,
+  A_{gijkt},\,B_{gijkt},\,C_{gijkt},\,D_{gijkt}\in\{0,1\},\\
+&L_{gihktr},\,V_{kint},\,V^{\mathrm{e}}_{krt},\,I_{gnt},\,Ie_{gtr}
+  \in\mathbb{Z}_{\ge 0},\qquad
+PX_{gikt},\,PY_{gikt}\ge 0.
+\end{align*}

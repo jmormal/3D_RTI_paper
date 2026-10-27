@@ -1,0 +1,40 @@
+\begin{table}[!htbp]
+\centering
+\small
+\caption{What each reported quantity means. A sentinel recorded by a
+run that obtained no bound is never printed, never averaged and never
+rounded to a side.}
+\label{tab:quantities}
+\begin{tabular}{@{}lp{0.80\textwidth}@{}}
+\toprule
+$z$ & The cost \eqref{eq:MPObjective} of the plan returned, net of any
+  artificial penalty; a plan is reported only if it carries no
+  artificial slack. An upper bound on the optimum in every case. \\
+trucks & $\sum_{g,t}n_{gt}$ for that plan. \\
+LB & A lower bound on the optimum of the model the method solves. For
+  the method it is the \emph{certified} bound of
+  Section~\ref{sec:bounds}, printed only where the sweep behind it came
+  back with every pair proved; where it did not, the row says
+  \emph{unproved} and carries no gap. For a compact model it is the
+  solver's dual bound at its stop. \\
+gap & $(z-\mathrm{LB})/z$, against the method's own bound. An
+  optimality gap only to the extent that bound is tight. \\
+stop & How a solve ended: \textsc{optimal}, \textsc{time\_limit} or
+  \textsc{mem\_limit}. A time or memory stop makes the row's time the
+  budget rather than a solve time. \\
+nodes / open & Tree nodes opened; regions left unexpanded at the
+  deadline. A run with open regions has not searched the space,
+  whatever its gap --- and a run with none has not refuted it either,
+  a region closed with a bound below the incumbent being bounded and
+  not excluded. \\
+verified & Dispatched trucks re-derived from the column's own fill and
+  found legal by the independent routine of
+  Section~\ref{sec:res-setup}, out of the number dispatched. \\
+unpl.\ / und. & Among the loads a \emph{volumetric} plan dispatches,
+  those \emph{proved} unplaceable and those left \emph{undecided}
+  within the limit; an undecided load is counted on neither side. \\
+$\Delta z$ & The cost of one method relative to another on the same
+  instance, with the denominator named where it appears. \\
+\bottomrule
+\end{tabular}
+\end{table}

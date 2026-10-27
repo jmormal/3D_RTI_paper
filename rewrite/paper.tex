@@ -1,0 +1,43 @@
+\documentclass{article}
+
+\usepackage[style=authoryear, backend=biber]{biblatex}
+\addbibresource{../references.bib}
+\addbibresource{method.bib}
+\usepackage[a4paper, total={6 in, 9 in}]{geometry}
+\input{../necessarypackages}
+\usetikzlibrary{decorations.pathreplacing}
+
+% A number that a campaign in progress will replace.  It prints its argument,
+% so the paper builds and reads normally; every use is listed with its
+% replacing campaign in rewrite/inflight-sites.md.
+\providecommand{\InFlight}[1]{#1}
+
+\title{An optimisation approach for supply chain procurement transport
+operational planning with 3D full-truckload constraints and returnable
+transport items}
+\date{}
+
+\newenvironment{ChapterAppendix}{\appendix}{}
+
+\begin{document}
+\maketitle
+
+\input{sec_abstract}
+\input{sec_intro}
+\input{sec_litreview}
+\input{sec_problem}
+\input{sec_model}
+\input{sec_decomp}
+\input{sec_master}
+\input{sec_pricing}
+\input{sec_branching}
+\input{sec_experiments}
+\input{sec_conclusions}
+
+\appendix
+\input{sec_appendix_scptop}
+\input{sec_appendix_bench}
+
+\printbibliography
+
+\end{document}

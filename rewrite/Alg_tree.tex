@@ -1,0 +1,53 @@
+\begin{algorithm}[!htb]
+\caption{BP-3D-SCPTOP: branch and bound over the fleet vector, with
+\textsc{Construct} as primal heuristic and \textsc{Certify} as bound.}
+\label{alg:bp3d}
+\begin{algorithmic}[1]
+\State $\bar\Omega\gets$ one maximally full single-commodity truck per commodity
+   and direction, each verified
+   \Comment{no demand mixes, no reduced variants}
+\State $\mathrm{LB}_{0}\gets\textsc{Certify}(\bar\Omega,\text{root})$;
+   $(\bar z,\mathbf{n}^{\star},\bar\Omega)\gets\textsc{Construct}(\bar\Omega,\text{root})$;
+   $X^{\star}\gets\sum_{g,t}n^{\star}_{gt}$
+\State $\mathcal{S}\gets[\,X\ge X^{\star}+1,\; X=X^{\star},\; X\le X^{\star}-1\,]$
+   \Comment{a stack: the region that can beat the incumbent is popped first}
+\While{$\mathcal{S}\ne\emptyset$ and time remains}
+   \State $\mathcal{R}\gets$ pop $\mathcal{S}$; impose it on the RMP as fleet rows
+   \If{$\mathcal{R}$ is refuted arithmetically} \State \textbf{continue}
+      \Comment{fleet box, availability, requirement} \EndIf
+   \State $\tilde z\gets$ LP over $\bar\Omega$ inside $\mathcal{R}$
+      \Comment{over-estimates the region's LP: a filter, never a bound}
+   \If{$\tilde z\ge\bar z$ and the policy certifies $\mathcal{R}$}
+      \State $(\mathrm{LB}_{\mathcal{R}},\text{proved})\gets
+             \textsc{Certify}(\bar\Omega,\mathcal{R})$
+      \If{$\mathrm{LB}_{\mathcal{R}}\ge\bar z$} \State \textbf{continue}
+         \Comment{pruned} \EndIf
+      \State record $\mathrm{LB}_{\mathcal{R}}$ as an open bound
+   \Else \State $\mathcal{R}$ carries its parent's bound \EndIf
+   \State $(z,\hat{\mathbf{n}},\bar\Omega)\gets\textsc{Construct}(\bar\Omega,\mathcal{R})$
+      \Comment{its columns join the shared pool whatever it returns}
+   \If{no plan} \State price under $\mathcal{R}$'s duals and construct once
+      more; \textbf{continue} if still none \EndIf
+   \If{$z<\bar z$} \State $(\bar z,\mathbf{n}^{\star})\gets(z,\hat{\mathbf{n}})$
+      \Comment{new incumbent} \EndIf
+   \If{$\mathcal{R}$ does not fix $X$}
+      \State push the three regions of level 1 around
+            $\sum_{g,t}\hat n_{gt}$ \Comment{level 1 recurses}
+   \ElsIf{the Murty depth $j$ is below the cap}
+      \State push the three children \eqref{eq:murty} at the $j$-th pair,
+             around $\hat{\mathbf{n}}$, equality last
+   \EndIf
+\EndWhile
+\ForAll{$\mathcal{R}$ still on $\mathcal{S}$, while a reserve of time remains}
+   \State filter by the pool LP; certify the survivors; record their bounds
+   \Comment{the frontier}
+\EndFor
+\State $\mathrm{LB}\gets\max\{\mathrm{LB}_{0},\,
+   \min\text{ over the open and frontier bounds}\}$, capped at $\bar z$
+\State verify every dispatched truck of the incumbent against
+   \eqref{eq:col-geom}--\eqref{eq:col-agg}
+\State \Return $(\bar z,\mathrm{LB})$; optimality is claimed only if
+   $\mathrm{LB}_{0}$ was proved, $\mathcal{S}=\emptyset$, no restart occurred
+   and $\bar z=\mathrm{LB}$
+\end{algorithmic}
+\end{algorithm}

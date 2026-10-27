@@ -1,0 +1,46 @@
+% results/volumetric_loads_recheck.json (pack_tl 60 s, oracle pack_witness, every
+% placed witness re-verified by verify_column): I_16_15_2_90_k25 dispatched 45,
+% unplaceable 41, undecided 0, source compact_ref OPTIMAL 68139.17;
+% I_24_20_2_90_k50 dispatched 137, unplaceable 119, undecided 0, source
+% compact_ref MEM_LIMIT 200266.21.
+% results/repacked_volumetric.json for rows 2-4 (loadlocal_trucks 86 / 256,
+% repacked_trucks 74 / 212, method_trucks 54 / 160; pairs_unpacked 0 and
+% complaints 0 on both; over_delivered_units 80 / 137).
+% The method rows are replaced by the 3D ladder re-run (900-3600 s per rung).
+\begin{table}[!t]
+\centering
+\small
+\caption{What volumetric planning costs, constructed rather than
+estimated: trucks dispatched on the two instances where the per-stack
+crush limit binds. Row 1 is the volumetric benchmark's own plan, which
+is not executable --- $41$ of its $45$ dispatched loads on the first
+instance and $119$ of its $137$ on the second are \emph{proved}
+unplaceable with \emph{none} left undecided, so those shares carry no
+undecided caveat. Row 2 splits each unplaceable load where it stands,
+with no consolidation; it is reported for contrast and is \emph{not}
+the comparison, consolidation being worth twelve and forty-four trucks.
+Row 3 is the comparison: the volumetric plan's delivery quantities
+kept, each period re-packed with the same partition-and-pack machinery
+the method uses, every resulting truck verified, and at least the
+original quantities delivered --- by $80$ and $137$ units, the
+partition being a cover. Row 4 is BP-3D-SCPTOP, which also chooses the
+quantities. The volumetric plan on $I\_24\_20\_2\_90\_k50$ is a
+\emph{memory stop} and not an optimum, so a better one might repair into
+fewer than $212$ trucks and that column's margin is overstated by an
+unquantified amount in the method's favour; the
+$I\_16\_15\_2\_90\_k25$ plan is the proved volumetric optimum and
+carries no such caveat.}
+\label{tab:repack}
+\begin{tabular}{lrr}
+\toprule
+ & $I\_16\_15\_2\_90\_k25$ & $I\_24\_20\_2\_90\_k50$ \\
+\midrule
+volumetric plan (not executable)      & 45  & 137 \\
+repaired load by load (contrast only) & 86  & 256 \\
+\textbf{re-packed, quantities kept}   & \textbf{74} & \textbf{212} \\
+\textbf{BP-3D-SCPTOP} (which also chooses the quantities) & \textbf{\InFlight{54}} & \textbf{\InFlight{160}} \\
+\midrule
+saving on trucks / on cost & \InFlight{$27.0\%$ / $19.1\%$} & \InFlight{$24.5\%$ / $16.2\%$} \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,26 @@
+In procurement transport planning with returnable transport items
+(RTIs) --- foldable containers that must be returned empty --- the
+delivery and the return flow are each other's supply. We formulate
+3D-SCPTOP, a mixed integer programme joining the transport and
+inventory decisions to a full-truckload condition stated as a 3D
+loading problem: RTIs form vertical stacks under a height budget and a
+per-stack crush limit, whose footprints must be placed on the trailer
+floor without overlap. The formulation is written over trucks, so it
+is block-angular over (direction, truck, period); deleting that
+quantifier yields the pricing problem of a Dantzig--Wolfe
+reformulation whose master carries \emph{no} loading configuration. We solve it with BP-3D-SCPTOP: branch and price over
+the fleet vector, with a flow-first relax-and-fix construction as
+primal heuristic and a lower bound certified on the volumetric
+relaxation, valid for the 3D problem by inclusion. The branching
+hierarchy is finite and complete, so the procedure is exact given
+compute; what it reports here is an incumbent verified truck by truck
+against its own layout, a certified bound, and no proof of optimality.
+On thirty-six generated instances
+it returns a verified plan on thirty-one, at a mean certified gap of
+$8.8\%$ over thirty of them; on four size-ladder instances a compact 3D formulation
+returns a plan only on the smallest, of five periods. Of the $724$
+truck loads a volumetric capacity model dispatches on those instances,
+$501$ ($69.2\%$) are \emph{proved} impossible to place in a trailer.
+
+\keywords{Procurement transport planning, inventory, returnable
+transport items, full-truckload, 3D container loading, branch and price}

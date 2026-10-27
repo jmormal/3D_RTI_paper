@@ -16,6 +16,18 @@ own budget, thread count, memory cap and commit. A \emph{gap} is
 always $(z-\mathrm{LB})/z$ against the method's own certified bound;
 Table~\ref{tab:quantities} defines the rest.
 
+Every row is one run, and one run is enough: the procedure is
+deterministic given a build and a machine, which was checked rather
+than assumed --- three runs of $I\_16\_15\_2\_90\_k25$ in 3D at
+the same configuration returned the same plan at the same cost to the
+cent. What a row is \emph{not} is portable. Every phase draws on a
+wall-clock budget, so which phases finish depends on how fast the
+machine runs them, and a plan is the method's answer under one
+schedule rather than a function of the configuration alone. Two
+consequences are taken seriously below: a difference of one or two
+trucks between rows is not read as an effect, and no claim rests on
+one.
+
 Three settings that are not budgets also decide what the tables can
 say.
 Column generation is run to a certificate at the root and at the one

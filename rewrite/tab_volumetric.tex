@@ -4,7 +4,11 @@
 % row carries root_proved=true, so none of them rests on the unproved-root
 % bound defect fixed in e85c70c; that fix changes only the case where no
 % certificate exists, and here one always does.  The t column is the `seconds`
-% field, the method's own wall clock.
+% field, the method's own wall clock.  It lands at 3062-3133 s, not 3600:
+% tree.jl:601-602 gives the search (1 - frontier_share) * time_limit = 3060 s
+% and reserves the remainder for the frontier sweep, which returns in 2.3 to
+% 72.5 s on these six.  The shortfall is the reserve going unspent, not a
+% phase refused.
 % Compact rows: results/compact_ref/compact_ref_<instance>.json, each with its
 % own config block: 3600 s (1800 on I_8_5_2_90), MIP gap 0, 10 threads, 20 GB,
 % seed 0.
@@ -34,9 +38,15 @@ $(z_{\mathrm{DW}}-z_{\mathrm{compact}})/z_{\mathrm{compact}}$;
 negative means the method's plan is cheaper. Both sides had $3\,600$ s,
 $20$ GB and ten threads --- except that the compact model was given
 $1\,800$ s on $I\_8\_5\_2\_90$, where it proved the optimum in $0.2$ s
-and the budget never bound. The method's wall clock falls short of
-$3\,600$ s because it starts no phase it cannot finish inside the
-budget. No plan in this table is verified truck by truck: a volumetric
+and the budget never bound. The method's wall clock stops
+short of $3\,600$ s by construction: the search is given
+$(1-0.15)\times 3\,600 = 3\,060$ s and the rest is reserved for the
+frontier sweep that bounds the regions left open, which returns here in
+$2$ to $73$ s rather than spending its reserve. Reserved out of the
+budget and not on top of it --- the recorded runs this table replaces
+finished at $1\,817$ to $1\,897$ s against an $1\,800$ s budget,
+and a row whose runtime exceeds the budget it is compared at is not a
+comparison. No plan in this table is verified truck by truck: a volumetric
 column carries no layout.}
 \label{tab:volumetric}
 \resizebox{\textwidth}{!}{%

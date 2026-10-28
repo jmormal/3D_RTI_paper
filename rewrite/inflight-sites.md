@@ -3,7 +3,7 @@
 Regenerated 2026-10-27 after the volumetric parity campaign was substituted,
 so the counts and line numbers are those of the files as they now stand.
 
-**112 marked values on 32 lines, 4 files.** Every marked value is a number the
+**105 marked values on 29 lines, 4 files** (112 until 2026-10-28; see *What decision 16 changes here*). Every marked value is a number the
 3D ladder re-run will replace; nothing else is marked. The macro is defined in
 `paper.tex` as `\providecommand{\InFlight}[1]{#1}`, so it prints its argument
 and the paper builds and reads normally.
@@ -157,23 +157,54 @@ goes stale on substitution --- the method column comes from the ladder CSV.
 
 ### `sec_experiments.tex` --- the prose that quotes those tables
 
+**These line numbers were 49 short until 2026-10-28**, taken before an edit
+above them and never re-derived while the counts stayed right. They moved again
+in the same session when the rung's sentence was cut. Re-derive them, never
+copy them, with the command at the end of this file.
+
 | line | calls | value |
 | --- | --- | --- |
-| 151 | 1 | 160 trucks |
-| 155 | 2 | 0.0076 %, 0.165 % |
-| 157 | 1 | 13.3 % |
-| 167 | 1 | 2.00 % (the tree's improvement on rung 3) |
-| 168 | 2 | 53 195.84, 52 129.45 |
-| 169 | 1 | 0.03 % |
-| 176 | 1 | 12 (trucks on rung 1) |
-| 177 | 3 | 26, 34, 44 |
-| 178 | 3 | 54, 122, 160 |
-| 194 | 2 | 864 s of 873 s |
-| 214 | 1 | 0.102 % (cheaper than the compact 3D model) |
-| 286 | 2 | 54, 160 |
-| 287 | 2 | 27.0 %, 24.5 % |
-| 288 | 2 | 19.1 %, 16.2 % |
-| 319 | 1 | 13.3 % (the crush-binding rungs' bound gap) |
+| 185 | 1 | 160 trucks |
+| 189 | 2 | 0.0076 %, 0.165 % |
+| 191 | 1 | 13.3 % |
+| 201 | 1 | 2.00 % (the tree's improvement on rung 3) |
+| 202 | 2 | 53 195.84, 52 129.45 |
+| 203 | 1 | 0.03 % |
+| 220 | 2 | 864 s of 873 s |
+| 240 | 1 | 0.102 % (cheaper than the compact 3D model) |
+| 312 | 2 | 54, 160 |
+| 313 | 2 | 27.0 %, 24.5 % |
+| 314 | 2 | 19.1 %, 16.2 % |
+| 345 | 1 | 13.3 % (the crush-binding rungs' bound gap) |
+
+### What decision 16 changes here
+
+Decision 16 of `docs/DECISIONS.md` (2026-10-28) removes the heuristic pricing
+rung from the method. Three consequences for this plan, none of them applied
+yet:
+
+* **Seven of the 112 markers were deleted rather than substituted, on
+  2026-10-28.** They were one sentence --- "that rung contributes $0$ trucks
+  ... $0$ of 12, of 26 and of 34, against 44 of 54 and 122 of 160" --- a
+  per-generator attribution of the dispatch. No artefact records it for the
+  port, and with no rung in the method there is nothing to attribute, so the
+  sentence went with the rung and took the `4.72` / `10.17` composition
+  figures with it. Figure~`fig:hull` loses its only empirical companion and
+  stands on the argument of Section `sec:pricing`, which is where it belonged:
+  that pricing returns extreme points is proved there, not measured. The count
+  is now **105**.
+* **The substitution is now mandatory, not optional.** `tab_ladder.tex` and
+  the method columns of `tab_head.tex` and `tab_repack.tex` were produced by
+  the reference with `ladder=True`. With the rung out of the method, those
+  tables describe an algorithm the paper no longer has, so campaign B is what
+  makes the paper self-consistent rather than what makes it fresher.
+* **Rung 5 blocks it today.** `results/julia/ladder_3d.csv` row 5 is
+  `has_plan=false`, so `z` would print as `inf` and the gap as `NaN`, and rung
+  5 ran on a different commit from rungs 1--4. The re-run fixes both. Note
+  also that the recorded ladder used the precompiled load path, which returns
+  59 trucks on rung 4 where the in-process path returns 55;
+  `julia/scripts/run_benchmark.jl` now loads in-process and records
+  `load_path` on every row.
 
 ## How to check this file
 

@@ -159,15 +159,18 @@ certificate affordable at every node. Running both oracles through one
 master makes Section~\ref{sec:res-abstraction} an experiment about the
 loading representation rather than about two solution technologies.
 
-\paragraph{A pricing ladder.}
+\paragraph{Improving, or optimal.}
 Any column of negative reduced cost improves the restricted master; the
-\emph{most} negative one is needed only for the certificate. Geometric
-column generation therefore runs as a ladder whose first rung is a
-randomised greedy construction over enumerated stack fills, placed by a
-shelf packer and run \emph{under the current duals}, keeping the best
-two loads per pair that beat the pair's threshold by half a percent and
-sending the remaining pairs to the exact oracle. That rung is pricing
-output and never seeding, and the certifying sweep never uses it.
+\emph{most} negative one is needed only for the certificate, so the two
+uses are priced differently. A sweep that may add columns passes the
+pair's threshold to the oracle as an objective limit, and a call that
+returns no point is then a proof that the pair has no improving column
+rather than a failure to find one. A sweep that certifies prices every
+pair to proven optimality, under no objective limit and no early stop,
+which is what Algorithm~\ref{alg:certify} requires. What separates them
+is cost, not validity: one sweep is $2|T|$ calls, one per count row, and
+a pair that has an improving column can spend its whole per-call budget
+proving that column optimal.
 
 \input{Tikz_truck}
 
@@ -181,6 +184,10 @@ that blend for one truck where an integer plan pays for each truck it
 mixes --- so no choice of duals returns it, however the search moves
 them (Figure~\ref{fig:hull}). Interior loads are precisely what an
 integer plan needs when a period's demand does not decompose into full
-trucks, which is why the method has a second generator for them.
+trucks, which is why the method does not ask pricing for them. The
+flow-first construction of Section~\ref{sec:relaxfix-flow} reaches the
+interior directly, and branching on the fleet aggregates withdraws the
+dominating column, so the duals move and the oracle is asked for a load
+the pool does not yet hold.
 
 \input{TikzHullFigure}

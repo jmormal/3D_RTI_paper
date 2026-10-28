@@ -18,25 +18,15 @@ Table~\ref{tab:quantities} defines the rest.
 
 Every row is one run, and one run is reproducible: the procedure is
 deterministic given a build, a machine and the way its code is
-executed. That was checked rather than assumed, and the check is worth
-reporting in full. On $I\_16\_15\_2\_90\_k25$ in 3D, three runs
-with the solver's module compiled in the running process returned the
-same plan at the same cost to the cent, and two runs of the same
-source from its precompiled form also agreed to the cent --- with each
-\emph{other}, at a different plan: $55$ trucks at $79\,608.45$
-against $59$ at $83\,645.86$. Nothing about the model or the
-configuration differs between them; only how fast the machine
-executes the same instructions.
-
-That is what a wall-clock budget costs. Every phase of the procedure
-draws on one, so which phases finish, how many construction attempts
-fit, and which regions the tree opens all depend on execution speed,
-and a plan is the method's answer under one schedule rather than a
-function of its configuration. The effect is largest where a phase
-ends near its deadline: on the largest ladder instance the two
-execution paths differ by whether a plan is found at all. Every run
-reported here was executed the same way, so the table is internally
-comparable, and two consequences are taken seriously throughout: a
+executed. It is not deterministic across those, and that is a property
+of the method rather than of any implementation of it. Every phase
+draws on a wall-clock budget, so which phases finish, how many
+construction attempts fit and which regions the tree opens all depend
+on execution speed; a plan is the method's answer under one schedule
+and not a function of its configuration alone. Every run reported here
+was executed the same way, and every row records the source tree it ran
+from and how that code was loaded, so the tables are internally
+comparable. Two consequences are taken seriously throughout: a
 difference of one or two trucks between rows is not read as an effect,
 and no claim rests on one.
 
@@ -101,20 +91,15 @@ agreement that is partly by construction, a port having been tested
 against the reference, and on $I\_4\_5\_2\_60$ the two plans in fact
 differ.
 
-Which of the two produced which table is stated here rather than left
-to be inferred. Table~\ref{tab:volumetric} is the second
-implementation, on the equal budgets its caption declares. Every other
-table is the first. The two are not interchangeable at the sizes of the
-size ladder: column generation there runs as the ladder of
-Section~\ref{sec:pricing}, a heuristic rung ahead of the exact oracle,
-and the second implementation has only the exact rung. Where the
-heuristic rung contributes nothing --- the three smallest ladder rungs,
-measured below --- the two agree or the second is slightly ahead; where
-it contributes most of the trucks, the second implementation is behind
-on one rung and returns no plan on the largest. A certificate is
-unaffected either way, an exact sweep that returns nothing being a
-certificate on its own, so this is a statement about which plans each
-can find and not about what either may claim.
+Which of the two produced which table is stated in that table's
+caption, together with the source tree it ran from and the budget it
+was given, rather than left to be inferred. Both implement the one
+procedure of Section~\ref{sec:pricing}: a single pricing oracle, exact,
+and a certificate that is a sweep which proves it. Provenance is stated
+because two runs of one method on two code bases are still two
+measurements, not because the two answer different questions, and a
+certificate is unaffected by which produced it --- an exact sweep that
+returns nothing is a certificate on its own.
 
 \subsection{What the volumetric side gives}
 \label{sec:res-vol}
@@ -217,15 +202,7 @@ root construction by $\InFlight{2.00\%}$ on the third rung, five node
 improvements taking $\InFlight{53\,195.84}$ to $\InFlight{52\,129.45}$,
 and by $\InFlight{0.03\%}$ or nothing on the other four: the pattern
 follows what the root leaves the tree, and where the relaxation is
-nearly exact the construction is already there. That the two generators
-are complementary is measured under one dual trajectory --- the exact
-oracle's columns carry $4.72$ distinct commodities on average against
-the heuristic rung's $10.17$, which is Figure~\ref{fig:hull} in numbers
---- and in production that rung contributes $0$ trucks to each of the
-three plans whose gap is under $0.2\%$, $0$ of $\InFlight{12}$, of
-$\InFlight{26}$ and of $\InFlight{34}$, against $\InFlight{44}$ of
-$\InFlight{54}$ and $\InFlight{122}$ of $\InFlight{160}$ on the two
-where the crush limit binds.
+nearly exact the construction is already there.
 
 % Phase clock: results/fleet_tree_3d/tree_3d_I_8_5_2_90_table_900.json,
 % t_cg 864.16 of seconds 873.10.

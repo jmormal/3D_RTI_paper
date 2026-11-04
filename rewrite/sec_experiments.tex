@@ -279,6 +279,9 @@ the region with one truck fewer is where the plan improves.
 % Rows ablation: results/julia/ip_tl_600.csv on 3d-port (src_tree 246b883, julia/src
 % differing from e4830fe only by the rows code; ip_tl 600, 10 threads, 20 GB,
 % complaints 0, seconds 3091.52): 160 trucks, 230020.08, pack_unplaceable 1440.
+% (230020.08 - 223944.20)/230020.08 = 2.64%; the julia/src trees 246b883/286fceb
+% and e4830fe differ in construct.jl, cuts.jl and tree.jl by the rows code and in
+% colgen.jl and RTI3D.jl by comments only (git diff 286fceb e4830fe).
 % Packing census, summed over the 36 results/bench_tree/tree_3d_*.json:
 % stats.pack_ok_shelf 24686, stats.pack_ok_cpsat 246,
 % stats.distinct_parts 11866, stats.distinct_parts_unplaceable 4327,
@@ -304,8 +307,8 @@ the partition now carries as rows. On the fifth rung one run isolates those rows
 the same step-4 limit and otherwise the same code, the method returned
 $160$ verified trucks at $230\,020.08$ and packing proved $1\,440$
 loads unplaceable, against $156$ trucks and $913$ with them;
-one run each, so the counts and not the $2.6\%$ in cost are what it
-shows. Over the thirty-six instances of Table~\ref{tab:bench} the shelf
+one run each, so the counts are what it shows, not the cost, $2.6\%$
+below the run without the rows. Over the thirty-six instances of Table~\ref{tab:bench} the shelf
 design placed $24\,686$ loads and the constraint
 programme $246$, which proved $4\,327$ of the $11\,866$ distinct
 compositions proposed unplaceable and left $397$ undecided.

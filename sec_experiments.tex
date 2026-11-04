@@ -24,10 +24,13 @@ fit under the roof; demand deviates $\pm10\%$ from its mean, and
 content weight by $\pm25\%$ between products sharing a type, which
 makes the crush limit depend on the period's mix. Every instance here
 has $|R|=2$ and $v=90$. The smallest, $I\_8\_5\_2\_90$, consumes
-roughly $2.5$ truckloads per period; the others cross
-$(|N|,|T|)\in\{(8,10),(12,12),(16,15),(24,20)\}$ with $2.5$, $5$ or
-$8$ truckloads per period, the name's suffix being that figure times
-ten. The truck is a semi-trailer, $13600\times2400\times3000$ mm,
+roughly $2.5$ truckloads per period; the other six pair $(|N|,|T|)$
+with $2.5$, $5$ or $8$ truckloads per period, the name's suffix being
+that figure times ten: $(8,10)$, $(12,12)$ and $(16,15)$ at $2.5$,
+$(16,15)$ and $(24,20)$ at $5$, and $(24,20)$ at $8$. The five solved
+in 3D (Table~\ref{tab:3d-onecommit}), from $I\_8\_5\_2\_90$ to
+$I\_24\_20\_2\_90\_k50$, form the \emph{size ladder}, each instance a
+\emph{rung}. The truck is a semi-trailer, $13600\times2400\times3000$ mm,
 payload $24$ t, $W^{\max}=1200$ kg, $\alpha=0.55$, $cK=1000$ per
 dispatch, $lt=1$, one period of coverage stock.
 
@@ -40,7 +43,7 @@ dispatch, $lt=1$, one period of coverage stock.
 
 The volumetric problem of Appendix~\ref{appendix:A} is the only part of
 the problem with an independent optimum, because a compact formulation
-of it solves exactly on the smaller instances; Table~\ref{tab:volumetric}
+of it, SCPTOP, solves exactly on the smaller instances; Table~\ref{tab:volumetric}
 therefore checks whether the method arrives where it should, at the
 same $3\,600$ s, $20$ GB and ten threads. It does. On $I\_8\_5\_2\_90$
 it returns the proved optimum $18\,796.96$, to the cent, with twelve
@@ -60,7 +63,8 @@ $67$, $496$ and $87$ cost units. On $I\_12\_12\_2\_90\_k25$ the method
 certifies $52\,105.31$, valid for the 3D problem by
 Proposition~\ref{prop:inclusion}, $274$ s into its run, where the
 compact volumetric model stood at a dual bound of $51\,944.22$ when its
-$600$ s expired: the decomposition's bound is $0.310\%$ tighter.
+$600$ s expired: the decomposition's bound is $0.310\%$ tighter,
+relative to the compact bound.
 % 52105.31 at 274.0 s: results/julia/final/ladder_3d_final.log line 699
 % ("volumetric relaxation LB 52105.31 proved=true"), the ladder's third rung.
 
@@ -148,10 +152,13 @@ proof is not the method's: the compact volumetric relaxation solves it
 to proved optimality at $18\,796.96$ in $0.198$ s, and the verified 3D
 plan attains that value. The method's own run ends with one region
 dropped, six open and three bounded below the incumbent at
-$18\,795.56$, $18\,795.54$ and $18\,795.54$. The proof is available
-because this instance's container families have coinciding height- and
-crush-limited layer counts, where a volumetric capacity is adequate
-(Section~\ref{sec:res-abstraction}).
+$18\,795.56$, $18\,795.54$ and $18\,795.54$. On this instance the
+crush limit never halves a container family's layer
+count, as it does on $I\_16\_15\_2\_90\_k25$, where
+Section~\ref{sec:res-abstraction} measures the over-credit that causes.
+% instances/I_8_5_2_90.json: R1 1150 mm, 2 layers by height, crush counts
+% floor(1200/w) = 2, 2, 3, 3 (P1, P3, P5, P7); R2 1000 mm, 3 layers by height,
+% crush counts 3, 3, 2, 2 (P2, P4, P6, P8).  Rung 4 (I_16_15): 4 -> 2.
 
 \subsection{Is a volumetric capacity adequate?}
 \label{sec:res-abstraction}
@@ -181,8 +188,12 @@ Deflating the capacity is the obvious remedy: adding the stack-count
 rows \eqref{eq:stackrows} to the compact volumetric model raises its
 answer on $I\_16\_15\_2\_90\_k25$ from forty-five trucks to forty-eight
 and its dual bound to $70\,435.04$ after $600$ s, $2\,296$ above that
-model's own bound of $68\,139.17$, and changes nothing where the crush
-limit does not bind. The stack rows being necessary for placeability
+model's own bound of $68\,139.17$, and leaves the fleet unchanged where
+the crush limit does not bind ($34$ trucks on $I\_12\_12\_2\_90\_k25$ at
+$600$ s).
+% results/compact_ref/compact_ab_I_12_12_2_90_k25.json (stack rows): 34 trucks,
+% 52117.80, bound 51785.62; compact_ref_I_12_12_2_90_k25.json: 34, 52116.69,
+% 51944.22; both TIME_LIMIT at 600 s. The stack rows being necessary for placeability
 and not sufficient, whether those forty-eight loads can be placed has
 not been tested.
 

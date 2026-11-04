@@ -23,14 +23,14 @@
 \begin{table}[!htbp]
 \centering
 \small
-\caption{The method under its volumetric oracle against the compact
-SCPTOP formulation, both solving the volumetric problem of
+\caption{The method under its volumetric oracle against SCPTOP, the
+compact formulation of the volumetric problem of
 Appendix~\ref{appendix:A}: a check on the method where an independent
 optimum exists. $z$ is the incumbent at the stop; \textsc{opt} marks a
 proved optimum, $^{\mathrm{m}}$ a stop on the memory cap,
 $^{\mathrm{t}}$ a stop on time. ``bound'' is Gurobi's dual bound for
 the compact model and the certified bound of Section~\ref{sec:bounds}
-for the method. $\Delta z=(z_{\mathrm{DW}}-z_{\mathrm{compact}})/
+for the method. $\Delta z=(z_{\mathrm{method}}-z_{\mathrm{compact}})/
 z_{\mathrm{compact}}$, negative when the method's plan is cheaper. Both
 sides had $3\,600$ s ($1\,800$ s for the compact model on
 $I\_8\_5\_2\_90$, which it solved in $0.2$ s), $20$ GB and ten threads.
@@ -47,9 +47,9 @@ Instance & $z$ & bound & trucks & $t$ (s) & $z$ & bound (cert.) & trucks & $t$ (
 $I\_8\_5\_2\_90$ & 18\,796.96\,\textsc{opt} & 18\,796.96 & 12 & 0.198 & 18\,796.96$^{\mathrm{t}}$ & 18\,795.56 & 12 & 3064 & $0.0000$ & 18\,796.96 (compact) \\
 $I\_8\_10\_2\_90\_k25$ & 38\,855.65$^{\mathrm{m}}$ & 38\,851.93 & 26 & 3269 & 38\,853.17$^{\mathrm{t}}$ & 38\,791.19 & 26 & 3062 & $-0.0064$ & 38\,851.93 (compact) \\
 $I\_16\_15\_2\_90\_k25$ & 68\,139.17\,\textsc{opt} & 68\,139.17 & 45 & 1350 & 68\,139.21$^{\mathrm{t}}$ & 68\,131.48 & 45 & 3117 & $+0.0001$ & 68\,139.17 (compact) \\
-$I\_16\_15\_2\_90\_k50$ & 134\,346.91$^{\mathrm{m}}$ & 133\,417.47 & 89 & 1122 & 134\,507.47$^{\mathrm{t}}$ & 133\,484.56 & 89 & 3073 & $+0.1195$ & 133\,484.56 (DW) \\
-$I\_24\_20\_2\_90\_k50$ & 200\,266.21$^{\mathrm{m}}$ & 199\,518.04 & 137 & 2093 & 200\,048.69$^{\mathrm{t}}$ & 200\,013.57 & 137 & 3071 & $-0.1086$ & 200\,013.57 (DW) \\
-$I\_24\_20\_2\_90\_k80$ & 282\,101.77$^{\mathrm{m}}$ & 280\,823.53 & 189 & 2403 & 281\,233.28$^{\mathrm{t}}$ & 280\,910.22 & 188 & 3133 & $-0.3079$ & 280\,910.22 (DW) \\
+$I\_16\_15\_2\_90\_k50$ & 134\,346.91$^{\mathrm{m}}$ & 133\,417.47 & 89 & 1122 & 134\,507.47$^{\mathrm{t}}$ & 133\,484.56 & 89 & 3073 & $+0.1195$ & 133\,484.56 (method) \\
+$I\_24\_20\_2\_90\_k50$ & 200\,266.21$^{\mathrm{m}}$ & 199\,518.04 & 137 & 2093 & 200\,048.69$^{\mathrm{t}}$ & 200\,013.57 & 137 & 3071 & $-0.1086$ & 200\,013.57 (method) \\
+$I\_24\_20\_2\_90\_k80$ & 282\,101.77$^{\mathrm{m}}$ & 280\,823.53 & 189 & 2403 & 281\,233.28$^{\mathrm{t}}$ & 280\,910.22 & 188 & 3133 & $-0.3079$ & 280\,910.22 (method) \\
 \bottomrule
 \end{tabular}}
 \end{table}

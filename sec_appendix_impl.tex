@@ -33,8 +33,8 @@ Section~\ref{sec:geo3d} second, and its verdict is kept for the run.
 Every 3D plan is verified truck by truck before it is reported, and
 every certified bound came back with every pair proved. Each instance
 was solved once, alone on one workstation; since the phases run on
-wall-clock budgets, a run is reproducible given a build and a machine,
-and a difference of one or two trucks between rows is not read as an
+wall-clock budgets, a run depends on the build, the machine and its
+load, and a difference of one or two trucks between rows is not read as an
 effect. Table~\ref{tab:impl} lists the settings; code and data:
 \Pending{[repository URL]}.
 
@@ -58,12 +58,14 @@ step 4, per call & budget$/6$: $150$, $150$, $300$, $300$, $600$ s & $120$ s \\
 rows \eqref{eq:stackrows}--\eqref{eq:fibrerows} & steps 2 and 3 & --- \\
 pricing, per call & $20$ s & $20$ s \\
 placeability, per call & $20$ s & --- \\
+certified regions & root; $X\le X^{\star}-1$; regions that cannot be split; the frontier & same \\
+Murty depth cap & $6$, raised by $2$ when the stack empties within the budget & same \\
 threads & $10$ & $10$ \\
 memory cap & $20$ GB per model; $1$ GB on volumetric pricing models & same \\
 seed & solver default & solver default \\
 \midrule
 compact models & \multicolumn{2}{p{0.67\textwidth}}{Gurobi 12.0, $10$ threads, $20$ GB, MIP gap $0$, seed $0$; $1\,800$ s (3D), $600$--$3\,600$ s (volumetric)} \\
-check and re-pack, Table~\ref{tab:repack} & \multicolumn{2}{p{0.67\textwidth}}{the method's placeability oracle, $60$ s per load; its step~3 with the rows, $600$ s per call, up to $40$ cut rounds, $20$ s per placeability call; $10$ threads, $20$ GB} \\
+check and re-pack, Table~\ref{tab:repack} & \multicolumn{2}{p{0.67\textwidth}}{the method's placeability oracle, $60$ s per load; its step~3 with the rows, $600$ s per call, up to $40$ cut rounds, $20$ s per placeability call, trucks per period from the volume and payload minimum up to $+12$; $10$ threads, $20$ GB} \\
 \bottomrule
 \end{tabular}
 \end{table}

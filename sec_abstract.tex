@@ -1,28 +1,12 @@
-In procurement transport planning with returnable transport items
-(RTIs) --- foldable containers that must be returned empty --- the
-delivery and the return flow are each other's supply. We formulate
-3D-SCPTOP, a mixed integer programme joining the transport and
-inventory decisions to a full-truckload condition stated as a 3D
-loading problem: RTIs form vertical stacks under a height budget and a
-per-stack crush limit, whose footprints must be placed on the trailer
-floor without overlap. The formulation is written over trucks, so it
-is block-angular over (direction, truck, period); deleting that
-quantifier yields the pricing problem of a Dantzig--Wolfe
-reformulation whose master carries \emph{no} loading configuration. We solve it with BP-3D-SCPTOP: branch and price over
-the fleet vector, with a flow-first relax-and-fix construction as
-primal heuristic and a lower bound certified on the volumetric
-relaxation, valid for the 3D problem by inclusion. The branching
-hierarchy is finite and complete, so the procedure is exact given
-compute; what it reports here is an incumbent verified truck by truck
-against its own layout, a certified bound, and no proof of optimality.
-% results/julia/final/ladder_3d_final.csv: trucks 12-156, complaints 0,
-% time_limit 900-3600, gap_pct 0.0075 / 0.1628 / 0.022 / 14.5186 / 10.686.
-On a ladder of five instances, from five to twenty periods, it returns
-plans of $12$ to $156$ trucks, every truck verified, within budgets of
-$900$ to $3\,600$ s, at certified gaps of $0.0075\%$ to $0.163\%$
-where the per-stack crush limit does not bind and of $14.5\%$ and
-$10.7\%$ where it does; a compact 3D formulation, given the four
-smallest, returns a plan only on the five-period one.
+% Base: old/main.tex lines 1-3 (the initial manuscript's abstract and keywords).
+% Final ladder: results/julia/final/ladder_3d_final.csv (trucks 12-156, complaints 0,
+% time_limit 900-3600, gap_pct 0.0075 / 0.1628 / 0.022 / 14.5186 / 10.686); minimum
+% fleets on rungs 1-3 (5, 10, 12 periods): requirement prunes, ladder_3d_final.log
+% lines 15, 651, 705.  Volumetric stage: Table tab:volumetric (results/julia/
+% parity_vol.csv against results/compact_ref/*.json): 68139.21 vs 68139.17
+% (0.0001%), certified bound 0.0113% below, four memory-stop rows within 0.31%.
+% Catalogue: results/catalogue_realism.json (kappa: nine at 1.000, two at 1.176,
+% four at 1.231-2.000, none below 1).
+This paper proposes a mixed integer linear programming model, dubbed 3D-SCPTOP, for procurement transport planning in manufacturing supply chains, integrating the procurement, inventory and transport decisions of an assembly plant and its supplier with three-dimensional full-truckload constraints and the closed-loop management of returnable transport items. Because the placement subproblem is NP-hard and the compact model carries one copy of it per truck, direction and period, we reformulate the problem by Dantzig--Wolfe decomposition, taking the complete loaded truck as the unit of decision. The decomposition is derived structurally from a model stated over trucks in which \emph{no set of loading configurations appears at all}: deleting the quantifier over (direction, truck, period) from its block rows leaves the pricing problem, the trucks of a direction and period are anonymous and are aggregated into counts, and the master couples to the geometry through nothing but two aggregate-flow definitions and one truck count per direction and period. Every geometric, stack-height, crush, payload and full-truckload constraint lives inside one pricing problem per direction. A column is a geometrically realisable truck load with its layout retained, so the per-stack crush cap is evaluated on the product mix actually loaded rather than on a worst-case bound; a plan assembled from such columns is executable by construction, and each dispatched truck is re-verified independently of the search and of the oracle that built the column. The master is solved by branch and price, with a two-level branch and bound over the fleet vector and a flow-first relax-and-fix construction as primal heuristic whose integer programmes carry necessary conditions of placeability as rows, and because every placeable load is volumetrically feasible, a certified bound of the volumetric relaxation is a valid lower bound for the 3D problem. The method is assessed in two stages. Against the compact formulation on the volumetric problem, where a reference optimum exists, it returns a plan $0.0001\%$ above a proved optimum at the same fleet of forty-five trucks with a certified bound $0.0113\%$ below that optimum, and it agrees with the compact model's incumbent within $0.31\%$ on four further instances on which that model exhausts its memory budget; the columns of that stage carry no layout, so its plans are \emph{not} executable. On the 3D problem, where the compact model returns no incumbent beyond five periods, the method returns verified plans on all five rungs of a ladder reaching twenty-four products and twenty periods, from $12$ to $156$ trucks within budgets of $900$ to $3\,600$ s, with provably minimum fleets through twelve periods. Certified gaps run from $0.0075\%$ to $0.163\%$ on the first three rungs and are $14.5\%$ and $10.7\%$ on the last two: small where the volumetric relaxation is nearly exact, large where a per-stack crush limit halves a container family's layer count, and which of the two regimes an instance falls in is computable from the container catalogue before any model is solved. \Pending{On the ladder instances $I\_16\_15\_2\_90\_k25$ and $I\_24\_20\_2\_90\_k50$, a volumetric model's plan prescribes loads that are \emph{proved} impossible to place in a trailer, and re-planning its trucks while keeping its delivery quantities needs more trucks than the method plans directly. A volumetric transport capacity, which most of the procurement transport literature assumes, is therefore not a conservative simplification --- where it errs it errs by prescribing loads that do not fit, discovered on the loading dock and not in the model ---} and on the industrial container catalogue the error runs one way: of its fifteen types \emph{none} is credited below an analytic count of what a trailer can hold, nine sit exactly at it, and four are over-credited by a fifth or more. That test needs only the catalogue and the trailer, so it is a property of the catalogue to be checked rather than assumed.
 
-\keywords{Procurement transport planning, inventory, returnable
-transport items, full-truckload, 3D container loading, branch and price}
+\keywords{ Procurement, inventory, transport planning,  full-truckload, 3D container loading }

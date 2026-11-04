@@ -302,6 +302,141 @@ loaded by `../necessarypackages.tex`). Content unchanged; wrapped sites:
 | `tab_protocol.tex` | 47 | every cell of the "Placeability check, Table 11" row |
 | `sec_experiments.tex` | 14-19 | the sentence giving the check's and re-pack's Python provenance |
 | `sec_experiments.tex` | 297-312 | Section 9.5's re-pack paragraph (74/212, 55/156, 25.7/26.4 %, 17.9/18.6 %, 80/137 units) |
-| `sec_intro.tex` | 30-31 | "Section 9.5 measures how often, by placeability proof" |
-| `sec_intro.tex` | 62-65 | contribution 4 |
+| ~~`sec_intro.tex` 30-31~~ | -- | removed with the rewrite's introduction (section 13) |
+| ~~`sec_intro.tex` 62-65~~ | -- | removed with the rewrite's introduction (section 13) |
+| `sec_intro.tex` | 14 (end of the paragraph) | the restored introduction's contribution (iv), "We show by independent placeability proof ... and we quantify what repairing them costs" |
+| `sec_abstract.tex` | 10 | the abstract's two sentences on the volumetric plan's unplaceable loads and the re-plan, through "discovered on the loading dock and not in the model" (qualitative, no Table 11 number) |
 | `sec_conclusions.tex` | 13-18 | "a volumetric transport capacity is not a conservative simplification: ... 25.7 % and 26.4 % ..." |
+
+
+## 13. Introduction and literature review restored from the initial manuscript
+
+The author's decision: the rewrite's introduction and literature review used
+notation before it was introduced. Both are now the initial manuscript's,
+`old/main.tex` lines 4-22 (Introduction) and 23-442 (Literature Review, with
+its four subsections, both comparison tables, the Research Methodology figure
+and the closing `\FloatBarrier`). The paper is at the repository root since
+4010ce9 (`Renderer.tex`, `main.tex`); `sec_problem.tex` and `sec_model.tex`
+are untouched. Every citation in the restored text resolves against
+`references.bib` (47 keys checked).
+
+Verbatim except for the following, each against `old/main.tex`.
+
+### (a) Labels and cross-references
+
+| site | old | new |
+| --- | --- | --- |
+| `sec_intro.tex:2` | (no label) | `\label{sec:intro}` |
+| `sec_litreview.tex:2` | (no label) | `\label{sec:lit}` |
+| `sec_intro.tex:19` | "Section 2 ... Section 3 ... Section 4 ... Section 5 ... Section 6 ... Section 7 ... Section 8" (literal numbers) | `\ref{sec:lit}`, `sec:problem`, `sec:model`, `sec:decomp`--`sec:branching`, `sec:results`, `sec:conclusions` (see also (b)) |
+| `sec_intro.tex:14` | `Section~\ref{sec:res-case}` (undefined: there is no case study) | removed with its sentence, (b) |
+
+No later section referred to anything the rewrite's introduction or literature
+review defined (`sec:intro`, `sec:lit`, `table:ComProTra` and the numbered
+contribution list had no uses outside those files), so no later section needed
+repair. `table:ComProTra` is now the restored procurement comparison table.
+
+### (b) Sentences describing a method or result this paper no longer contains
+
+| site | old | new |
+| --- | --- | --- |
+| `sec_intro.tex:9` | "Additionally, a matheuristic procedure (MATH-3D-SCPTOP) is researched." | "Additionally, a branch-and-price procedure (BP-3D-SCPTOP) is developed to solve it." |
+| `sec_intro.tex:14` | "... a relax-and-fix construction as primal heuristic, giving MATH-3D-SCPTOP, and we show ..." | "... giving BP-3D-SCPTOP, and we show ..." |
+| `sec_intro.tex:14` | "A fifth item is set up but *not* delivered in this revision: the comparison of the method against the company's own spreadsheet procedure on the case-study instances, for the reasons given in Section~\ref{sec:res-case}." | removed (the paper has no case study) |
+| `sec_intro.tex:19` | "Section 5 develops the branch and price solution approach, MATH-3D-SCPTOP, ... Section 6 reports the computational experiments and Section 7 the case study. Finally, Section 8 concludes ..." | "Sections~\ref{sec:decomp}--\ref{sec:branching} develop the branch and price solution approach, BP-3D-SCPTOP, ... Section~\ref{sec:results} reports the computational experiments. Finally, Section~\ref{sec:conclusions} concludes ..." |
+| `sec_litreview.tex:64` | "... Table 1 links the standard $C\&P$ nomenclature and the criteria of the typology according to \autocite{Wascher2007AnProblems}." | sentence removed: no such table exists (in the initial manuscript Table 1 was already the procurement comparison) |
+| `sec_litreview.tex:284` (C&P comparison table, row 3D-SCPTOP) | resolution procedure "MH" | "BP"; the table notes gain "**BP** (Branch and Price)" (MH stays for Tresca 2022) |
+| `sec_litreview.tex:327` (Figure 1) | node "MH-3D-SCPTOP" | "BP-3D-SCPTOP" |
+| `sec_litreview.tex:347` (Figure 1) | side node "Metaheuristic" | "Column Generation" |
+| `sec_litreview.tex:333` (Figure 1) | node "Case Study & Managerial Implications" | "Managerial Implications" |
+
+Figure 1's "Resolution Procedure Comparison" (the method against the compact
+models, Sections 9.2 and 9.4) and "Model Comparison" with "With respect
+(Díaz-Madroñero et al. 2014)" (the 3D model against the volumetric one,
+Section 9.5) still describe the paper and are unchanged.
+
+### (c) Numbers from the old runs
+
+| site | old | new |
+| --- | --- | --- |
+| `sec_intro.tex:14`, contribution (iii) | "which it matches to $0.0006\%$ of a proved optimum, under the provenance qualification stated in Section~\ref{sec:res-vol}: that run recorded no configuration of its own and ran an earlier revision of the scheme" | "which it matches to $0.0001\%$ of a proved optimum (Section~\ref{sec:res-vol})": the volumetric parity table's value, 68 139.21 against 68 139.17 (`results/julia/parity_vol.csv`), already quoted in Section 9.2; the provenance clause described the old run |
+
+### Pending
+
+Contribution (iv) rests on Table 11 and is wrapped in `\Pending` (section 12).
+
+### Removed
+
+* `tab_positioning.tex` (`git rm`): the rewrite's positioning table. Nothing
+  else used it; the restored literature review carries its own procurement
+  comparison (`table:ComProTra`) and C&P comparison tables.
+* The rewrite's numbered contribution list: replaced by the initial
+  manuscript's inline (i)-(iv). No other section referred to it.
+
+### Build and counts
+
+`Renderer.pdf` (with the abstract of section 14): exit 0, 38 pages (31
+before), no undefined reference or citation. New warnings, both inherited
+from the initial manuscript: an overfull `\hbox` of 6.75 pt in the Container
+loading subsection (the same box at the same text in `old/`'s build), and a
+biber warning that the ISBN of `Zhao2022LearningPacking` in `references.bib`
+is invalid (the entry is cited only by the restored literature review).
+
+`Renderer-diff.pdf` (built after section 14): both versions flattened with `latexpand` (100c362 from a
+temporary `git worktree add`, removed afterwards), compared with `latexdiff
+--config="PICTUREENV=(?:picture|DIFnomarkup|tikzpicture|tabular|longtable)[\w\d*@]*"`
+(tables and TikZ marked as whole blocks; markup inside a tabular breaks
+`\hline`), with `\InFlight` defined and the three removed tables' labels given
+their 100c362 numbers. 40 pages, exit 0, no undefined reference.
+
+Words (`detex -n`):
+
+| | before | after |
+| --- | --- | --- |
+| Introduction | 477 | 793 |
+| Literature review, prose | 306 | 2 612 |
+| Literature review, with its two tables and figure | 306 (+402 in `tab_positioning.tex`) | 3 436 |
+| Abstract (section 14) | 253 | 622 |
+| Body (`sec_*.tex`, abstract included) | 11 574 | 15 389 (14 565 without the literature review's tables and figure) |
+
+
+## 14. Abstract restored from the initial manuscript
+
+The author's decision: `sec_abstract.tex` is again the initial manuscript's
+abstract and keywords line (`old/main.tex` lines 1-3). `\keywords` is already
+defined in `necessarypackages.tex:40`, as in `old/necessarypackages.tex:40`.
+Changed only where the method or the results changed; no sentence was added.
+
+| old | new |
+| --- | --- |
+| The master is solved by a two-level branch and bound over the fleet vector with a relax-and-fix primal heuristic, and because | The master is solved by branch and price, with a two-level branch and bound over the fleet vector and a flow-first relax-and-fix construction as primal heuristic whose integer programmes carry necessary conditions of placeability as rows, and because |
+| it returns a plan $0.0006\%$ above a proved optimum at the same fleet of forty-five trucks with a certified bound $0.0114\%$ below that optimum, and it beats the compact model's incumbent on four further instances on which that model exhausts its memory budget; the columns of that stage carry no layout, so its plans are \emph{not} executable, and the runs behind it recorded no configuration of their own and ran an earlier revision of the scheme. | it returns a plan $0.0001\%$ above a proved optimum at the same fleet of forty-five trucks with a certified bound $0.0113\%$ below that optimum, and it agrees with the compact model's incumbent within $0.31\%$ on four further instances on which that model exhausts its memory budget; the columns of that stage carry no layout, so its plans are \emph{not} executable. |
+| the method returns verified plans on thirty-one of thirty-six generated instances and on all five rungs of a ladder reaching twenty-four products and twenty periods, with provably minimum fleets through twelve periods. Certified gaps run from $0.0076\%$ to $13.3\%$ along the ladder, and from $0.01\%$ to $30.72\%$ with a mean of $8.8\%$ over the thirty generated instances carrying both a plan and a proved bound: small where | the method returns verified plans on all five rungs of a ladder reaching twenty-four products and twenty periods, from $12$ to $156$ trucks within budgets of $900$ to $3\,600$ s, with provably minimum fleets through twelve periods. Certified gaps run from $0.0075\%$ to $0.163\%$ on the first three rungs and are $14.5\%$ and $10.7\%$ on the last two: small where |
+| Of the $724$ truck loads a volumetric model prescribes over the generated instances, $501$ are \emph{proved} impossible to place in a trailer and $174$ are left undecided; on the ladder instances $I\_16\_15\_2\_90\_k25$ and $I\_24\_20\_2\_90\_k50$, re-planning such a plan's trucks while keeping its delivery quantities needs $74$ and $212$ trucks where the method plans $54$ and $160$ directly. A volumetric transport capacity, which most of the procurement transport literature assumes, is therefore not a conservative simplification --- where it errs it errs by prescribing loads that do not fit, discovered on the loading dock and not in the model --- and on | \Pending{On the ladder instances $I\_16\_15\_2\_90\_k25$ and $I\_24\_20\_2\_90\_k50$, a volumetric model's plan prescribes loads that are \emph{proved} impossible to place in a trailer, and re-planning its trucks while keeping its delivery quantities needs more trucks than the method plans directly. A volumetric transport capacity, which most of the procurement transport literature assumes, is therefore not a conservative simplification --- where it errs it errs by prescribing loads that do not fit, discovered on the loading dock and not in the model ---} and on |
+
+Sources (also in the file's comment): `ladder_3d_final.csv` for 12-156 trucks,
+900-3 600 s and the gaps; LOG lines 15, 651, 705 for minimum fleets through
+twelve periods; Table 6 (`parity_vol.csv`, `compact_ref`) for 0.0001 %,
+0.0113 % and 0.31 %; `results/catalogue_realism.json` for the catalogue
+sentence (nine types at 1.000, four at 1.231 or more, none below 1), kept
+verbatim. Removed old-run numbers: 0.0006 %, 0.0114 %, 31 of 36, 0.0076-13.3 %,
+0.01-30.72 %, 8.8 %, 724 / 501 / 174, 74 / 212, 54 / 160.
+
+Words (`detex -n`, paragraph plus keywords): old **635**, new **622**; the
+rewrite's abstract it replaces was 253.
+
+### The old abstract (`old/main.tex` lines 1-3)
+
+```
+This paper proposes a mixed integer linear programming model, dubbed 3D-SCPTOP, for procurement transport planning in manufacturing supply chains, integrating the procurement, inventory and transport decisions of an assembly plant and its supplier with three-dimensional full-truckload constraints and the closed-loop management of returnable transport items. Because the placement subproblem is NP-hard and the compact model carries one copy of it per truck, direction and period, we reformulate the problem by Dantzig--Wolfe decomposition, taking the complete loaded truck as the unit of decision. The decomposition is derived structurally from a model stated over trucks in which \emph{no set of loading configurations appears at all}: deleting the quantifier over (direction, truck, period) from its block rows leaves the pricing problem, the trucks of a direction and period are anonymous and are aggregated into counts, and the master couples to the geometry through nothing but two aggregate-flow definitions and one truck count per direction and period. Every geometric, stack-height, crush, payload and full-truckload constraint lives inside one pricing problem per direction. A column is a geometrically realisable truck load with its layout retained, so the per-stack crush cap is evaluated on the product mix actually loaded rather than on a worst-case bound; a plan assembled from such columns is executable by construction, and each dispatched truck is re-verified independently of the search and of the oracle that built the column. The master is solved by a two-level branch and bound over the fleet vector with a relax-and-fix primal heuristic, and because every placeable load is volumetrically feasible, a certified bound of the volumetric relaxation is a valid lower bound for the 3D problem. The method is assessed in two stages. Against the compact formulation on the volumetric problem, where a reference optimum exists, it returns a plan $0.0006\%$ above a proved optimum at the same fleet of forty-five trucks with a certified bound $0.0114\%$ below that optimum, and it beats the compact model's incumbent on four further instances on which that model exhausts its memory budget; the columns of that stage carry no layout, so its plans are \emph{not} executable, and the runs behind it recorded no configuration of their own and ran an earlier revision of the scheme. On the 3D problem, where the compact model returns no incumbent beyond five periods, the method returns verified plans on thirty-one of thirty-six generated instances and on all five rungs of a ladder reaching twenty-four products and twenty periods, with provably minimum fleets through twelve periods. Certified gaps run from $0.0076\%$ to $13.3\%$ along the ladder, and from $0.01\%$ to $30.72\%$ with a mean of $8.8\%$ over the thirty generated instances carrying both a plan and a proved bound: small where the volumetric relaxation is nearly exact, large where a per-stack crush limit halves a container family's layer count, and which of the two regimes an instance falls in is computable from the container catalogue before any model is solved. Of the $724$ truck loads a volumetric model prescribes over the generated instances, $501$ are \emph{proved} impossible to place in a trailer and $174$ are left undecided; on the ladder instances $I\_16\_15\_2\_90\_k25$ and $I\_24\_20\_2\_90\_k50$, re-planning such a plan's trucks while keeping its delivery quantities needs $74$ and $212$ trucks where the method plans $54$ and $160$ directly. A volumetric transport capacity, which most of the procurement transport literature assumes, is therefore not a conservative simplification --- where it errs it errs by prescribing loads that do not fit, discovered on the loading dock and not in the model --- and on the industrial container catalogue the error runs one way: of its fifteen types \emph{none} is credited below an analytic count of what a trailer can hold, nine sit exactly at it, and four are over-credited by a fifth or more. That test needs only the catalogue and the trailer, so it is a property of the catalogue to be checked rather than assumed.
+
+\keywords{ Procurement, inventory, transport planning,  full-truckload, 3D container loading }
+```
+
+### The new abstract
+
+```
+This paper proposes a mixed integer linear programming model, dubbed 3D-SCPTOP, for procurement transport planning in manufacturing supply chains, integrating the procurement, inventory and transport decisions of an assembly plant and its supplier with three-dimensional full-truckload constraints and the closed-loop management of returnable transport items. Because the placement subproblem is NP-hard and the compact model carries one copy of it per truck, direction and period, we reformulate the problem by Dantzig--Wolfe decomposition, taking the complete loaded truck as the unit of decision. The decomposition is derived structurally from a model stated over trucks in which \emph{no set of loading configurations appears at all}: deleting the quantifier over (direction, truck, period) from its block rows leaves the pricing problem, the trucks of a direction and period are anonymous and are aggregated into counts, and the master couples to the geometry through nothing but two aggregate-flow definitions and one truck count per direction and period. Every geometric, stack-height, crush, payload and full-truckload constraint lives inside one pricing problem per direction. A column is a geometrically realisable truck load with its layout retained, so the per-stack crush cap is evaluated on the product mix actually loaded rather than on a worst-case bound; a plan assembled from such columns is executable by construction, and each dispatched truck is re-verified independently of the search and of the oracle that built the column. The master is solved by branch and price, with a two-level branch and bound over the fleet vector and a flow-first relax-and-fix construction as primal heuristic whose integer programmes carry necessary conditions of placeability as rows, and because every placeable load is volumetrically feasible, a certified bound of the volumetric relaxation is a valid lower bound for the 3D problem. The method is assessed in two stages. Against the compact formulation on the volumetric problem, where a reference optimum exists, it returns a plan $0.0001\%$ above a proved optimum at the same fleet of forty-five trucks with a certified bound $0.0113\%$ below that optimum, and it agrees with the compact model's incumbent within $0.31\%$ on four further instances on which that model exhausts its memory budget; the columns of that stage carry no layout, so its plans are \emph{not} executable. On the 3D problem, where the compact model returns no incumbent beyond five periods, the method returns verified plans on all five rungs of a ladder reaching twenty-four products and twenty periods, from $12$ to $156$ trucks within budgets of $900$ to $3\,600$ s, with provably minimum fleets through twelve periods. Certified gaps run from $0.0075\%$ to $0.163\%$ on the first three rungs and are $14.5\%$ and $10.7\%$ on the last two: small where the volumetric relaxation is nearly exact, large where a per-stack crush limit halves a container family's layer count, and which of the two regimes an instance falls in is computable from the container catalogue before any model is solved. \Pending{On the ladder instances $I\_16\_15\_2\_90\_k25$ and $I\_24\_20\_2\_90\_k50$, a volumetric model's plan prescribes loads that are \emph{proved} impossible to place in a trailer, and re-planning its trucks while keeping its delivery quantities needs more trucks than the method plans directly. A volumetric transport capacity, which most of the procurement transport literature assumes, is therefore not a conservative simplification --- where it errs it errs by prescribing loads that do not fit, discovered on the loading dock and not in the model ---} and on the industrial container catalogue the error runs one way: of its fifteen types \emph{none} is credited below an analytic count of what a trailer can hold, nine sit exactly at it, and four are over-credited by a fifth or more. That test needs only the catalogue and the trailer, so it is a property of the catalogue to be checked rather than assumed.
+
+\keywords{ Procurement, inventory, transport planning,  full-truckload, 3D container loading }
+```

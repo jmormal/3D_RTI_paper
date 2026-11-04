@@ -20,6 +20,12 @@ Line numbers are those of the `.tex` files at `d2cd6c0`.
 **Counts: 1 blocking, 3 major, 19 minor**, plus 7 items for the author's
 decision.
 
+**Resolution pass (2026-11-04, later the same day).** Each finding below now
+carries a resolution line: FIXED (what was done), NOT CHANGED (why) or AUTHOR
+(B1 and D1-D7, left by instruction). M1-M3 and all nineteen minors are fixed,
+two of them partly (m4, m16, with the reason given). Line numbers in the
+findings are those of `d2cd6c0`, not of the fixed files.
+
 **Build:** a clean rebuild of a scratch copy (`latexmk -C`-equivalent, then
 `PATH=/usr/bin:$PATH TEXINPUTS=..: latexmk -pdf paper.tex`) exits 0.
 
@@ -72,6 +78,8 @@ decision.
 
   This is the author's call (D1). The abstract cannot stay as it is.
 
+**AUTHOR (D1).** Not acted on, by instruction: the abstract's 31-of-36 / 8.8 % sentence and Table 9's "BP-3D-SCPTOP" are unchanged. Table 9's caption now names its implementation (m12), nothing more.
+
 ---
 
 ## Major
@@ -106,6 +114,8 @@ decision.
     79 703.31 and say in the caption why the known better plan is excluded.
   - If the author decides not to cite the Python ladder at all (D2), the
     "best verified plan" wording still has to go.
+
+**FIXED.** Section 9.3 now attributes the last two gaps "mainly" to the bound, "but not wholly", and states that the first implementation's 54-truck verified plan at 78 549.14 (PYL, commit 73411b9) makes at least 1.45 of rung 4's 14.5 points the plan's (gap's own denominator: (79 703.31 - 78 549.14)/79 703.31). Section 9.5's "the best verified plan" is now "the method's plan". Table 10 keeps the method's plan as upper end, its caption saying that on row 4 the first implementation's verified 78 549.14 tightens it. Whether to cite the Python ladder at all stays D2.
 
 ### M2. "They go nowhere else": the reason given is wrong for pricing and silent on the master that supplies every bound
 
@@ -153,6 +163,8 @@ decision.
     every bound, they are not implied, and that this is where Section 10
     proposes to put them.
 
+**FIXED.** `sec_branching.tex`: "They go nowhere else ... could raise no bound" replaced. The rows are implied in the pricing problem (its integer points are layouts; whether they would tighten its weak relaxation, as (bp:PP-areacut) does, is stated as untested) and in the master over placeable columns. They are *not* implied in the volumetric relaxation that supplies every bound, and the text points to the conclusions. The conclusions now name (88)-(89) with the stack rows as candidates for the bound, "which the volumetric relaxation does not imply". No row was added to the bound and no stronger bound is claimed (D6).
+
 ### M3. The conclusions' headline saving compares the method with a re-pack made by weaker machinery, and misdescribes it
 
 - **Where:** `sec_conclusions.tex:13-17`, `sec_experiments.tex:402-410`,
@@ -189,6 +201,8 @@ decision.
     quantities".
   - Table 11's caption should state how its cost figure was computed.
 
+**FIXED (wording); rebuild is D4.** Conclusions: "plans the same quantities" is gone; now "needs 25.7 % and 26.4 % fewer trucks than two volumetric plans' quantities need once re-packed into loadable trucks, with the first implementation's earlier partition". Table 11's caption says the re-pack partition lacks (88)-(89), that a re-pack with the current partition might need fewer trucks on either instance, and that row 3's cost is the volumetric plan's plus cK per extra truck, omitting the over-delivered units' holding cost, which could only raise it. The re-pack itself was not rebuilt.
+
 ---
 
 ## Minor
@@ -202,6 +216,8 @@ decision.
   `proved=False`. The maximum over the 35 proved rows is 87.7 s
   (`I_8_10_2_60`).
 - **Fix:** "2.5 to 87.7 s on the thirty-five where every pair was proved".
+
+**FIXED.** "2.5 to 87.7 s ... over the thirty-five runs whose sweep proved every pair"; the thirty-sixth is named as unproved.
 
 ### m2. Table 7's definition of *dropped* does not match the code
 
@@ -217,6 +233,8 @@ decision.
   - or an unproved certification.
 - **Fix:** define *dropped* that way, and add it to Table 5.
 
+**FIXED.** *dropped* is now defined in Table 5 (popped and abandoned without a certificate of their own, e.g. no plan in them; only the root's bound covers them) and Table 7's caption refers to it, which also shortens that caption.
+
 ### m3. The DFF definition does not admit the threshold member as written
 
 - **Where:** `sec_branching.tex:350-358`.
@@ -228,6 +246,8 @@ decision.
   as a second tuple element.
 - **Fix:** define a DFF as a pair (u, U_u) with Σx_i <= pK implying
   Σu(x_i) <= U_u, and write U_u qK on the right-hand side of (89).
+
+**FIXED.** A dual-feasible function is now a pair (u, U): sum x_i <= C implies sum u(x_i) <= U; (89) has U_1 qK and pK U_2, and the family lists U = C, floor(C/l), j.
 
 ### m4. Symbol and word collisions introduced by the new text
 
@@ -248,6 +268,8 @@ decision.
   say "footprint class f, i.e. stack type h", and define or rename the pricing
   rung ("a greedy pricing heuristic").
 
+**FIXED, partly.** Weight and height thresholds are now xi, the DFF length threshold l, the two DFFs u_1 and u_2. Footprint class f is tied to stack type h (p_f = p_h, q_f = q_h) where it is introduced, and "commodities of footprint class f" is used in the rows paragraph. The pricing "rung" is renamed "a randomized greedy (GRASP) pricing heuristic" in Section 9.1 and Table 12. NOT CHANGED: the branching-level and size-ladder senses of "rung" are older than this revision, each is clear from its context, and renaming either touches many sites for no added clarity.
+
 ### m5. Figure 6, band 2, contradicts the arrow above it
 
 - **Where:** `Tikz_construct.tex:101`, rendered on p. 20.
@@ -256,6 +278,8 @@ decision.
   (`sec_branching.tex:152-154`) says "those rows aside, the row set is the
   master's own".
 - **Fix:** "no pricing call here: the master's rows (plus, in 3D, (87)-(89))".
+
+**FIXED.** Band 2 now reads "no pricing call here: the master's rows, plus (87)-(89) in 3D, and the objective is decided now". Rendered: fits the band.
 
 ### m6. Algorithm 3's caption names the wrong lines
 
@@ -268,6 +292,8 @@ decision.
   noticing.
 - **Fix:** "Line 4's rows, line 12's (87)-(89) and lines 15-27 apply under 3D
   loading only".
+
+**FIXED.** Verified against the rendered algorithm. Caption: "Line 4, the rows of line 12 and lines 15-27 apply under 3D loading only". epsilon_2's value is now printed in Table 4 (m7).
 
 ### m7. The protocol declares a memory cap and a provenance that the bounding oracle and the files do not have
 
@@ -299,6 +325,8 @@ decision.
   footnote row of the per-call defaults, including epsilon_2. Say the Julia
   solver version is from the Manifest.
 
+**FIXED.** Table 4's caption now declares the 1 GB soft cap of the second implementation's volumetric pricing models (`colgen.jl:156-157`), checked against the shared environment, "not the 20 GB declared", and that every bound it reports came back proved; Table 7's caption says "(1 GB on volumetric pricing, Table 4)". It lists the ladder's per-call defaults, epsilon_2 = 1e-4 included, and says the Julia solver version is read from the package manifest. The cap itself is not changed (D7).
+
 ### m8. "Essentially every positive answer" is the first implementation's figure
 
 - **Where:** `sec_branching.tex:233-236`.
@@ -311,6 +339,8 @@ decision.
 - **Fix:** "most positive answers (93% on the second implementation's
   ladder)".
 
+**FIXED.** "supplies most positive answers (93 % on the ladder of Section 9.3)" (6749 of 7234).
+
 ### m9. The decoupling "if and only if" omits the payload
 
 - **Where:** `sec_branching.tex:243-249`.
@@ -320,6 +350,8 @@ decision.
   The code checks payload first (T2 in `prove_unplaceable`, called at the top
   of `decoupled_pack`).
 - **Fix:** "a load within the payload is placeable iff ...".
+
+**FIXED.** "a load within the payload is placeable if and only if ...".
 
 ### m10. The condition on the height rows is stated differently from the code
 
@@ -331,6 +363,8 @@ decision.
   This is harmless, since an equal-height class gives a valid row.
 - **Fix:** "only where a class carries more than one RTI type".
 
+**FIXED.** "only where a class carries more than one RTI type".
+
 ### m11. "In the configuration of Table 12" is not what the reference ladder's files say
 
 - **Where:** `sec_experiments.tex:231-233`.
@@ -340,6 +374,8 @@ decision.
   - `step2_gap` 5e-4.
 - **Fix:** "in an earlier configuration of the first implementation (commit
   73411b9, heuristic pricing rung and early stop on)".
+
+**FIXED.** Now "an earlier configuration of the first implementation (commit 73411b9, greedy pricing heuristic and early stop on)". One correction to the finding: `step2_gap` is 5e-4 in BENCH as well as in PYL, so the files differ in commit and in the absent `region_cert_policy` key, not in `step2_gap`.
 
 ### m12. Section 9.1 promises each table's caption names its implementation; four do not
 
@@ -352,6 +388,8 @@ decision.
 - **Fix:** add the implementation to each of those captions, and complete the
   list in Section 9.1.
 
+**FIXED.** Section 9.1 now lists what the first implementation produced (Tables 8, 9 and 12, the censuses and re-packs of Section 9.5, the leaf certification of Section 9.4). Table 8's caption names it (commit dd5f039), Table 9's says "(first implementation)", Table 10's says the compact model ran on Gurobi 12.
+
 ### m13. Table 8's "the only proofs of minimality" is no longer true, and in the method's favour
 
 - **Where:** `tab_fleetfloor.tex:16`, against `sec_experiments.tex:220-223`.
@@ -362,6 +400,8 @@ decision.
   the fleet minimum on rungs 1-3, arithmetically, inside the run.
 - **Fix:** say so in Section 9.3 and drop "only" from Table 8.
 
+**FIXED.** Table 8's "These are the only proofs of minimality in this paper" is replaced by "The runs of Table 7 prune the same regions by arithmetic (Section 9.3)". Section 9.3 says each run prunes the one-truck-fewer region by the requirement floor (LOG lines 15, 651, 705), which is valid under 3D loading.
+
 ### m14. Section 9.4 gives one of three reasons rung 1 is not proved
 
 - **Where:** `sec_experiments.tex:354-357`.
@@ -369,6 +409,8 @@ decision.
   unrefuted leaves; 3 bounded unrefuted". The text names only the three
   bounded leaves.
 - **Fix:** add "and with one region dropped and six still open".
+
+**FIXED.** "ends with one region dropped, six open and three covered by certified volumetric bounds ...".
 
 ### m15. The rows-ablation sentence is garbled and its counts lack denominators
 
@@ -394,6 +436,8 @@ decision.
   2.6% lower relative to the run without the rows, is not claimed." Also see
   D3.
 
+**FIXED** with the suggested structure: "156 verified trucks against 160, and 913 of 5 700 compositions submitted to the oracle proved unplaceable against 1 440 of 6 812. One run each; the cost, 2.6 % lower relative to the run without the rows, is not claimed." "Submitted" rather than "proposed": `pack_calls` also counts the ray-bisection probes of the dominance cuts, which the partition did not propose.
+
 ### m16. Section 9.1's certification policy contradicts two other statements
 
 - **Where:** `sec_experiments.tex:47-57`.
@@ -414,6 +458,8 @@ decision.
 - **Fix:** state the second implementation's policy fully, drop the
   affordability claim for 3D, and say that Table 12 used a different policy.
 
+**FIXED.** Section 9.1 now lists every place the second implementation certifies (root, one-truck-fewer region, full-depth leaf, frontier sweep), says every 3D certificate is volumetric, and says Table 12's runs certified every popped region. The 3D affordability claim is dropped. NOT ADDED: the in-region re-pricing of a failed level-1 region, which these runs never exercised.
+
 ### m17. "Nor does the geometry take the time" compares placeability with geometric pricing
 
 - **Where:** `sec_experiments.tex:296-298`.
@@ -430,6 +476,8 @@ decision.
 - **Fix:** "placeability tests cost 0.2 to 14.2 s per run", and say that column
   generation's time is its budget share.
 
+**FIXED.** "Nor do the placeability tests take the time ...: they cost 0.2 to 14.2 s per run, while column generation, geometric pricing included, spends the budget share it is given". The source comment records `root_cg_stop` deadline and rung 5's 360 s re-pricing.
+
 ### m18. Older sentences a referee will still hit (not introduced by the revision)
 
 - `sec_intro.tex:68-71`: "on the sizes reported here it returns a verified
@@ -441,6 +489,8 @@ decision.
   stage being ... stopped on a declared budget". A solve stopped on a budget
   does depend on the seed.
 
+**FIXED, all three.** Introduction: "on the sizes reported here it proves no optimum" (the claim that every run returns a plan and a bound is cut). Abstract: "dispatches on those instances" -> "on the thirty-six"; the 31-of-36 sentence is untouched. Table 4: the clause "no number reported here rests on a seed ..." is cut, and the matching "nothing reported rests on one" in Section 9.1 becomes "the solvers' defaults apply".
+
 ### m19. Table 6's "like with like" spans two solver versions
 
 - **Where:** `tab_protocol.tex:23`.
@@ -448,6 +498,8 @@ decision.
   model's are Gurobi 12.0.1 (`results/compact_ref/*.json`, `env.gurobi`). Now
   that the revision prints versions, the claim needs the qualifier.
 - **Fix:** "same budget, threads and cap; Gurobi 13 against 12".
+
+**FIXED.** Table 4: "compare like with like in budget, threads and cap, under Gurobi 13 against 12".
 
 ---
 
@@ -458,6 +510,9 @@ decision.
   "an earlier configuration" and remove it from the abstract. Table 9, the
   Section 9.3 paragraph and the placeability census sentence follow whichever
   is chosen.
+
+  **AUTHOR.** Not acted on.
+
 - **D2. Citing the Python reference ladder in prose** (`sec_experiments.tex:
   231-237`). It reports a 54-truck verified plan on rung 4 and 160 on rung 5,
   which sits awkwardly with "the Julia implementation is what the paper
@@ -465,6 +520,9 @@ decision.
   - If kept, the 54-truck plan must enter the interval and the gap attribution
     (M1).
   - If dropped, rung 4's comparison disappears; nothing else depends on it.
+
+  **AUTHOR.** The citation is kept; M1's wording fix makes the paper consistent with it either way.
+
 - **D3. The server arms.** The rows were chosen from five arms over two rounds
   (ARMS) and then confirmed by one run. The arms both corroborate and
   complicate the paper's single-pair ablation:
@@ -478,9 +536,15 @@ decision.
   Disclosing the selection, and citing the arms as corroboration with their
   caveats (shared 96-CPU host, unpinned pricing in r1), would pre-empt a
   referee's "how was this component chosen?".
+
+  **AUTHOR.** The server arms are not mentioned in the paper.
+
 - **D4. The re-pack baseline** (M3). Rebuild it with the method's own current
   partition, or say in the conclusions that the comparator uses the earlier
   machinery.
+
+  **AUTHOR.** Not rebuilt; M3's wording now says what the baseline is.
+
 - **D5. "Exact given compute"** (`sec_abstract.tex:14-16`,
   `sec_intro.tex:68-70`, and Section 8 "reachable in principle"). In the code,
   a region where the construction returns no plan, and that holds no
@@ -493,6 +557,9 @@ decision.
   - It is a gap a referee who reads the code will name. Either qualify the
     claim ("given compute and a construction that finds a plan in every
     non-empty region"), or have the tree certify or split such regions.
+
+  **AUTHOR.** "Exact given compute" (abstract, introduction, Section 8) is unchanged.
+
 - **D6. A stack-aware volumetric baseline and bound.** The revision adds a far
   stronger set of necessary conditions, (88)-(89), but uses them only as a
   primal device.
@@ -501,9 +568,14 @@ decision.
   - The 14.5% and 10.7% gaps are where M2 says those rows could act on the
     bound.
   - Whether to run either before submission is a scope decision.
+
+  **AUTHOR.** No stack-aware baseline or bound was run; M2 now says only where the rows are and are not implied.
+
 - **D7. The 1 GB `SoftMemLimit` in `price_volumetric`** (m7). Fix it and
   re-run, or declare it. ARMS already proposes the fix: free each pricing
   model after the call, or drop the cap, and set pricing threads explicitly.
+
+  **AUTHOR.** The cap is unchanged in the code; m7 declares what ran.
 
 ---
 

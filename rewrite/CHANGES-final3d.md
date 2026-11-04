@@ -196,3 +196,40 @@ here and 18 795.56 there, and the node counts 68 and 301".
 * `paper.pdf` rebuilt (34 pages); `paper-diff.pdf` built with
   `latexdiff-vc --git --flatten -r 100c362 paper.tex` (35 pages; the diff file
   defines `\InFlight` so that the deleted text typesets).
+
+## 10. Referee pass (`REVIEW-final3d.md`, findings at `7b98fca`)
+
+Each finding carries its resolution line in `REVIEW-final3d.md`. Line numbers
+below are those of the files after this pass. B1 and D1-D7 are the author's
+and were not acted on; the abstract's 31-of-36 / 8.8 % sentence is unchanged.
+
+| finding | file:line | old -> new | source |
+| --- | --- | --- | --- |
+| M1 | `sec_experiments.tex:220-240` | "attributed to the bound and not to the plan"; reference ladder "in the configuration of Table 12" -> "attributed mainly to the bound ... but not wholly": the first implementation's verified 54-truck plan at 78 549.14 makes at least 1.45 of rung 4's 14.5 points the plan's; requirement-floor prunes added (m13); "an earlier configuration of the first implementation (commit 73411b9, ...)" (m11) | PYL `plan_verified`, `trucks`, `incumbent`; (79703.31-78549.14)/79703.31 |
+| M1 | `sec_experiments.tex:448-449` | "below the best verified plan" -> "below the method's plan" | -- |
+| M1 | `tab_head.tex:40-42` | caption adds: on row 4 a verified plan of the first implementation at 78 549.14 tightens the upper end | PYL |
+| M2 | `sec_branching.tex:375-385` | "They go nowhere else ... implied by its rows ... could raise no bound" -> implied in pricing (integer points are layouts; tightening its relaxation untested) and in the master over placeable columns; **not** implied in the volumetric relaxation that supplies every bound | -- |
+| M2 | `sec_conclusions.tex:24-30` | the stack rows "and the finer rows (88)-(89), which the volumetric relaxation does not imply, are the candidates" for the bound | -- |
+| M3 | `sec_conclusions.tex:14-18` | "plans the same quantities with ... fewer trucks than re-packing two of its plans needs" -> "needs ... fewer trucks than two volumetric plans' quantities need once re-packed into loadable trucks, with the first implementation's earlier partition" | REPACK |
+| M3 | `tab_repack.tex:31-46` | re-pack partition "lacks the rows (88)-(89)"; a re-pack with the current partition might need fewer trucks; row 3's cost = volumetric plan's + cK per extra truck, omitting the surplus's holding cost, which could only raise it | REPACK `repacked_cost` = `volumetric_obj` + 1000 x extra trucks |
+| m1 | `sec_experiments.tex:296-299` | "2.5 to 90.2 s ... proved on thirty-five" -> "over the thirty-five runs ... whose sweep proved every pair ... 2.5 to 87.7 s" | BENCH trace; 87.7 s = I_8_10_2_60 |
+| m2 | `tab_quantities.tex:30-32`, `tab_ladder.tex:37-39` | *dropped* defined in Table 5; Table 7 refers to it (shorter caption) | `tree.jl` `regions_dropped` (popped, not closed) |
+| m3, m4, m10 | `sec_branching.tex:317-360` | thresholds tau -> xi; DFFs (u, v) -> pairs (u_1, U_1), (u_2, U_2) with the bound separate from the value; length threshold l; "mixes RTI types of different heights" -> "carries more than one RTI type"; "commodities of footprint class f" | `cuts.jl` `_strong_class_rows!`, `placeability.jl` `dffs` |
+| m4 | `sec_branching.tex:282-284` | footprint class f tied to stack type h (p_f = p_h, q_f = q_h) | -- |
+| m4 | `sec_experiments.tex:112-128`, `tab_bench.tex:23-29` | "heuristic pricing rung" -> "randomized greedy (GRASP) pricing heuristic" | BENCH `config.ladder` |
+| m5 | `Tikz_construct.tex:101-103` | "the rows are the master's own" -> "the master's rows, plus (87)-(89) in 3D" | -- |
+| m6 | `Alg_construct.tex:3-4` | "Lines 9-14 run under 3D loading only" -> "Line 4, the rows of line 12 and lines 15-27 apply under 3D loading only" | rendered algorithm |
+| m7 | `tab_protocol.tex:27-47`, `tab_ladder.tex:29-30` | solver version "read from its package manifest"; per-call defaults incl. epsilon_2 = 1e-4; 1 GB soft cap on the second implementation's volumetric pricing, "not the 20 GB declared; every bound it reports came back proved"; Table 7 "(1 GB on volumetric pricing, Table 4)" | `colgen.jl:156-157`; `tree.jl:583-611`; LOG has no "unproved"; `parity_vol.csv` `root_proved` true |
+| m8, m9 | `sec_branching.tex:237-244` | "essentially every positive answer" -> "most positive answers (93 % on the ladder)"; "a load within the payload is placeable iff" | CSV `pack_ok_shelf` 6749 of `pack_ok` 7234 |
+| m12 | `sec_experiments.tex:112-128`, `tab_fleetfloor.tex:9-10`, `tab_summary.tex:8`, `tab_head.tex:26` | 9.1 lists what the first implementation produced; Table 8 "(commit dd5f039)", Table 9 "(first implementation)", Table 10 "Gurobi 12" | `fleet_floor_*.json` commit; compact `env.gurobi` |
+| m13 | `tab_fleetfloor.tex:17-18`, `sec_experiments.tex:221-226` | "These are the only proofs of minimality in this paper" -> "The runs of Table 7 prune the same regions by arithmetic"; 9.3 cites the requirement floor | LOG lines 15, 651, 705; `master.jl` `_cover_rhs` |
+| m14 | `sec_experiments.tex:363` | "ends with one region dropped, six open and three covered ..." | CSV `proof_reason` |
+| m15 | `sec_experiments.tex:312-318` | ablation sentence -> "156 ... against 160, and 913 of 5 700 compositions submitted to the oracle proved unplaceable against 1 440 of 6 812. One run each; the cost, 2.6 % lower relative to the run without the rows, is not claimed." | CSV and 600 `pack_calls`, `pack_unplaceable` |
+| m16 | `sec_experiments.tex:48-57` | certification policy stated fully (root, one-truck-fewer region, full-depth leaf, frontier sweep; volumetric in 3D; Table 12 certified every popped region); 3D affordability claim dropped | `tree.jl` `rcert` 752-762, frontier 1376-1430 |
+| m17 | `sec_experiments.tex:302-305` | "placeability calls cost ... against 120 to 872 s of column generation" -> placeability tests cost 0.2-14.2 s "while column generation, geometric pricing included, spends the budget share it is given" | CSV `root_cg_stop` deadline |
+| m18 | `sec_intro.tex:70`, `sec_abstract.tex:22`, `tab_protocol.tex:36` (clause cut), `sec_experiments.tex:62` | "it returns a verified plan and a certified bound, and proves no optimum" -> "it proves no optimum"; "on those instances" -> "on the thirty-six"; seed clause cut; "nothing reported rests on one" -> "the solvers' defaults apply" | -- |
+| m19 | `tab_protocol.tex:30-31` | "like with like in budget, threads and cap, under Gurobi 13 against 12" | -- |
+| trims | `sec_experiments.tex:255-260`, `sec_branching.tex:239`, `:322`, `:370` | tree paragraph shortened (repeated step-4 detail, "over eleven improvements"); placeability-proofs sentence shortened; two redundant validity clauses cut | -- |
+
+Body words (`detex -n` over the thirteen `sec_*.tex` files, inline maths
+counted): 12 531 before this pass, 12 483 after (11 382 at `100c362`).

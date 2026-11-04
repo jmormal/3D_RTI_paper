@@ -5,6 +5,11 @@
 \addbibresource{method.bib}
 \usepackage[a4paper, total={6 in, 9 in}]{geometry}
 \input{../necessarypackages}
+
+% Text that depends on Table tab:repack, which is being re-run in Julia: the
+% placeability check of the volumetric plans' loads, the re-pack (row 3), and
+% row 2, which will be dropped.  Listed in CHANGES-final3d.md, "Pending (purple)".
+\providecommand{\Pending}[1]{\textcolor{purple}{#1}}
 \usetikzlibrary{decorations.pathreplacing}
 
 \title{An optimisation approach for supply chain procurement transport
@@ -31,7 +36,6 @@ transport items}
 
 \appendix
 \input{sec_appendix_scptop}
-\input{sec_appendix_bench}
 
 \printbibliography
 

@@ -10,39 +10,27 @@
 % bound on rung 5 lost to a memory cap").  ladder_3d_final.log has no
 % "unproved" line; vol_lb_proved true on every row; results/julia/parity_vol.csv
 % root_proved true on all six (Table tab:volumetric's bounds).
-% The 120 s sentence: results/julia/ladder_3d.csv (campaign B, src_tree 246b883,
-% no ip_tl column = the 120 s default, no rows) row I_24_20_2_90_k50 has_plan
-% false; results/julia/ip_tl_600.csv (same code, ip_tl 600) 160 trucks.
-% 36-instance line: config blocks of results/bench_tree/tree_3d_*.json.
+% Table tab:repack (held, Python): results/volumetric_loads_recheck.json, pack_tl 60 s,
+% oracle pack_witness.
 \begin{table}[!htbp]
 \centering
 \small
 \caption{Declared budgets, one line per stage that produces a number
 reported below. \emph{gap} is the relative MIP gap at which an integer
-solve may stop and \emph{mem} the per-model soft cap. The two
-placeability censuses differ in oracle as well as in limit: the
-thirty-six instances were put to the constraint programme alone, the
-size ladder to a constructive shelf witness with the constraint
-programme only for refutations, which is why only the first leaves
-loads undecided. Every line is read from the run files, except the
-second implementation's solver version, read from its package manifest.
-The volumetric parity runs declare their own configuration in each row,
-which is what lets Table~\ref{tab:volumetric} compare like with like in
-budget, threads and cap, under Gurobi 13 against 12;
-the runs they replace recorded none, and a thread count asked for on
-the default Gurobi environment had not reached the models, so those
-used all twelve cores of the machine. No seed is set by the second
-implementation, which produced those runs and the size ladder, so the
-solver's default applies. On the size ladder the construction carries
-the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows} in steps~2 and~3,
-and step~4's integer master is limited, per call, to one sixth of the
-rung's budget; at a constant $120$ s, without those rows, the largest
-rung ended with no plan, and at $600$ s with one. The ladder's other
-per-call limits are the code's defaults: step~2 $300$ s at the root and $120$ s
+solve may stop and \emph{mem} the per-model soft cap. Every line is
+read from the run files, except the method's solver version, read from
+its package manifest. The volumetric parity runs declare their own
+configuration in each row, which is what lets
+Table~\ref{tab:volumetric} compare like with like in budget, threads
+and cap, under Gurobi 13 against 12. No seed is set by the method's
+implementation, so the solver's default applies. On the size ladder the
+construction carries the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows}
+in steps~2 and~3, and step~4's integer master is limited, per call, to
+one sixth of the rung's budget. The ladder's other per-call limits are the code's defaults: step~2 $300$ s at the root and $120$ s
 at a node, at relative gap $\varepsilon_{2}=10^{-4}$; partition $60$ s;
 pricing and placeability $20$ s each; root column generation $15\%$ of
-the budget and the frontier sweep another $15\%$. The second
-implementation's volumetric pricing models carry a $1$ GB soft cap,
+the budget and the frontier sweep another $15\%$. The method's
+volumetric pricing models carry a $1$ GB soft cap,
 checked against the memory of the Gurobi environment they share, not
 the $20$ GB declared; every bound it reports came back proved.}
 \label{tab:protocol}
@@ -51,15 +39,12 @@ the $20$ GB declared; every bound it reports came back proved.}
 \toprule
 Stage & solver & time (s) & gap & threads & mem (GB) & seed \\
 \midrule
-BP-3D-SCPTOP, 36 instances (first impl.) & Gurobi 12 + CP-SAT & $900$ & --- & 10 & 20 & 0 \\
 BP-3D-SCPTOP, size ladder  & Gurobi 13 & $900$--$3\,600$ & --- & 10 & 20 & not set \\
 \quad step 4, per call & Gurobi 13 & budget$/6$: $150$--$600$ & --- & 10 & 20 & not set \\
 Compact SCPTOP (volumetric) & Gurobi 12 & $600$--$3\,600$ & $0$ & 10 & 20 & 0 \\
 Compact 3D-SCPTOP, $n_{\mathrm{LC}}=3$ & Gurobi 12 & $1\,800$ & $0$ & 10 & 20 & 0 \\
-Fleet-floor certification & Gurobi & to convergence & --- & 1 & 20 & 0 \\
-Placeability census, 36 instances & CP-SAT & $300$ per load & --- & --- & --- & --- \\
-Placeability census, size ladder & shelf + CP-SAT & $60$ per load & --- & --- & --- & --- \\
 BP-3D-SCPTOP, volumetric parity & Gurobi 13 & $3\,600$ & --- & 10 & 20 & not set \\
+\Pending{Placeability check, Table~\ref{tab:repack}} & \Pending{shelf + CP-SAT} & \Pending{$60$ per load} & \Pending{---} & \Pending{---} & \Pending{---} & \Pending{---} \\
 \bottomrule
 \end{tabular}}
 \end{table}

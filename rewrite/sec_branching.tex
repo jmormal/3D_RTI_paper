@@ -16,8 +16,7 @@ column from the subproblem
 that one column set serves every period. It is also useless here, the
 master holding many columns that differ in a single RTI, so the
 relaxation answers by shifting the same fractional weight one column
-over --- measured at $3\,000$ branches with no integral relaxation
-reached.
+over.
 
 Between the two robust rungs the first binds, because transport cost
 is $cK\cdot X$ and nothing else in the objective counts trucks. A bound
@@ -237,10 +236,7 @@ the part's stacks in shelves along the trailer, one integer count per
 shelf, footprint and orientation --- supplies most positive answers
 ($93\%$ on the ladder of Section~\ref{sec:res-3d}), and its layout passes the independent verifier of
 Section~\ref{sec:res-setup} before it counts. Infeasibility proofs
-differ by implementation (Section~\ref{sec:results}). The first submits
-the part to the pricing problem in feasibility mode, with the true slot
-bound \eqref{sb:eq:Ibound}. The second decouples: a stack carries one
-footprint class only, so a load within the payload is placeable if and
+come from decoupling: a stack carries one footprint class only, so a load within the payload is placeable if and
 only if the multiset of $\underline{s}_{f}$ rectangles of each class $f$ can be
 placed on the floor, $\underline{s}_{f}$ being the least number of
 class-$f$ stacks its units need --- any layout has at least that many,
@@ -315,7 +311,7 @@ the per-truck split, which is why step~3 keeps its $n+1$ fallback.
 % floor(a)+floor(b) <= floor(a+b), is superadditivity.
 \paragraph{Necessary conditions of placeability as rows.}
 The rows \eqref{eq:stackrows} are the coarsest of the conditions by
-which the second implementation's oracle refutes a load, and the
+which the oracle refutes a load, and the
 partition carries the finer ones too, so that it stops proposing parts
 the oracle would refuse. With $C_{f}$ the commodities of footprint class $f$ in
 direction $g$ and $L^{\max}_{f}$ the most units of them one stack can

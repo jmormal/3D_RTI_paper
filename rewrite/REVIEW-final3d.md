@@ -26,6 +26,13 @@ carries a resolution line: FIXED (what was done), NOT CHANGED (why) or AUTHOR
 two of them partly (m4, m16, with the reason given). Line numbers in the
 findings are those of `d2cd6c0`, not of the fixed files.
 
+**Later the same day the author dropped every old-run result**
+(`CHANGES-final3d.md`, section 11): Tables 8, 9 and 12, the reference-ladder
+comparison, the leaf-certification run and the placeability censuses are gone,
+so the fixes recorded below for M1, m1, m11, m12 and m13 no longer have text to
+apply to. B1 is resolved by that removal: the abstract now reports the final
+ladder.
+
 **Build:** a clean rebuild of a scratch copy (`latexmk -C`-equivalent, then
 `PATH=/usr/bin:$PATH TEXINPUTS=..: latexmk -pdf paper.tex`) exits 0.
 

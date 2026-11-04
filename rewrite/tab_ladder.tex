@@ -23,8 +23,7 @@
 \begin{table}[!htbp]
 \centering
 \small
-\caption{BP-3D-SCPTOP on the size ladder: the second implementation of
-Section~\ref{sec:res-setup}, every row from one source tree
+\caption{BP-3D-SCPTOP on the size ladder, every row from one source tree
 ($\mathrm{e}4830\mathrm{fe}$) run alone on one machine, ten threads, a
 $20$ GB per-model cap ($1$ GB on volumetric pricing,
 Table~\ref{tab:protocol}) and no seed set, with the rows
@@ -51,12 +50,7 @@ optimal), which Table~\ref{tab:volumetric} reports and
 Table~\ref{tab:3d-head} uses as an interval end. Row 1 is the paper's
 only proved optimum and the proof is not the method's: the compact
 volumetric relaxation of that instance solves to $18\,796.96$ in
-$0.198$ s and this verified 3D plan attains it. Row 1's instance is
-also row $I\_8\_5\_2\_90$ of Table~\ref{tab:bench}: \textbf{two runs of
-two implementations}, in the configurations each caption states,
-agreeing on $z$ and trucks, with certified bounds of $18\,795.54$ there
-and $18\,795.56$ here, and $68$ nodes there against $301$ here. The
-wall clock stops short of the budget by construction, $15\%$ of it
+$0.198$ s and this verified 3D plan attains it. The wall clock stops short of the budget by construction, $15\%$ of it
 being reserved for the frontier sweep. The twelve columns are set as
 two blocks of the same five rows in the same order, so that the table
 needs no reduction in type size.}

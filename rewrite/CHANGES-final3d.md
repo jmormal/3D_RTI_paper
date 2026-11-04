@@ -233,3 +233,75 @@ and were not acted on; the abstract's 31-of-36 / 8.8 % sentence is unchanged.
 
 Body words (`detex -n` over the thirteen `sec_*.tex` files, inline maths
 counted): 12 531 before this pass, 12 483 after (11 382 at `100c362`).
+
+## 11. Old runs dropped (author's decision, 2026-11-04)
+
+"Old runs": any result of the first (Python) implementation of the method,
+at any commit, and any configuration of the method other than the final one
+(`final-3d`, `ladder_3d_final.csv`). Kept: the compact SCPTOP and compact 3D
+comparators, the volumetric parity table (Julia), and the rows ablation
+(`ip_tl_600.csv`). Table 11 is held (section 12).
+
+| site | removed or changed | old source |
+| --- | --- | --- |
+| `tab_bench.tex` (Table 12), `sec_appendix_bench.tex` (Appendix B), `paper.tex` input | deleted (`git rm`) | `results/bench_tree/*.json`, commit 0c0c16c |
+| `tab_summary.tex` (Table 9) | deleted | same, and `results/loads_recheck.csv` |
+| `tab_fleetfloor.tex` (Table 8) | deleted; minimality now rests on each final run's requirement prune (LOG lines 15, 651, 705), already cited in Section 9.3 | `results/fleet_tree_3d/fleet_floor_*.json`, commit dd5f039 |
+| `sec_abstract.tex:18-25` | "thirty-one of thirty-six at 8.8 %" and "501 of 724 proved impossible" -> the final ladder: 12 to 156 trucks, every truck verified, budgets 900-3 600 s, gaps 0.0075-0.163 % and 14.5 / 10.7 %; the compact 3D sentence kept | CSV `trucks`, `complaints`, `time_limit`, `gap_pct` |
+| `sec_experiments.tex` 9.1 solver sentence | first/second implementation -> "the method is implemented in Julia ... Gurobi 13; the compact models ... Gurobi 12"; one sentence keeps the provenance of the held Table 11 | -- |
+| `sec_experiments.tex` 9.1 certification policy | "Table 12's runs certified every popped region" and "second implementation's" removed | BENCH |
+| `sec_experiments.tex` 9.1 Instances | the 36-instance factorial removed; the paragraph now describes only the generator rules and the instances used (I_8_5_2_90 and the k-suffixed ladder family of Tables 6-8) | -- |
+| `sec_experiments.tex` 9.1 Verification | "re-implemented in a second language ... agreeing on S_2_2_2 and I_4_5_2_60 ..." removed; title "Verification." | Python cross-check |
+| `sec_experiments.tex` 9.1 provenance paragraph | removed (only one implementation of the method is reported) | -- |
+| `sec_experiments.tex` 9.3 | the 36-instance paragraph (31/36, 8.8 %, v = 60 failures) removed; Table 8 citation removed; the reference ladder comparison (54 at 78 549.14, 160 trucks) removed and the gap attribution restated without it ("chiefly to the bound ... nothing here proves that attribution or measures its share"); "under the same guarantee" given its own content | PYL, BENCH, fleet floors |
+| `sec_experiments.tex` 9.3 bound paragraph | Table 12's sweep range (2.5-87.7 s over 35 runs) and its packing census (24 686 / 246 / 4 327 of 11 866 / 397) removed; the ladder's 1.3-13.8 s kept | BENCH |
+| `sec_experiments.tex` 9.4 | "a geometric certification of three such regions, in a separate run of the first implementation, proved none of them" removed | `tree_3d_I_8_5_2_90_leafcert_900.json` |
+| `sec_experiments.tex` 9.5 | the 36-instance placeability census (501 / 174 / 49 of 724, 94.5 / 91.1 / 91.8 %) and the ladder census paragraph (41/45, 119/137, "the first implementation's stronger oracle") removed; "What that costs" -> "What a volumetric capacity costs"; "All of it has one cause" -> "The over-credit has one cause"; the 32-unit cap re-sourced to the final run's bisected placeability cap; "the census instances" -> "the instances here" | `loads_recheck.csv`, `volumetric_loads_recheck.json`; new source LOG rung 4 "placeability caps ... p|P1=32" |
+| `sec_experiments.tex` 9.2 | source comment added for the 274 s certificate (LOG line 699) | -- |
+| `sec_branching.tex:16-19` | "measured at 3 000 branches with no integral relaxation reached" removed; the argument stays | early Python run |
+| `sec_branching.tex` Deciding placeability | the first implementation's route (pricing problem in feasibility mode) removed; "Infeasibility proofs come from decoupling" | -- |
+| `sec_branching.tex` rows paragraph | "the second implementation's oracle" -> "the oracle" | -- |
+| `sec_pricing.tex:142-144` | "and an exact image, which is what Section 8.1 and the first implementation's refutations in Section 8.3 ask of it" -> "which is what Section 8.1 asks of it" | -- |
+| `sec_model.tex:318` | the slot-bound warning now points to Section 7 (where the true slot bound is required), not Section 8 | -- |
+| `Tikz_tree.tex:115-119` | "3 000 branches, no integral relaxation reached" removed | early Python run |
+| `tab_ladder.tex` caption | "the second implementation of Section 9.1" and the Table 12 cross-reference (two implementations, 68 vs 301 nodes) removed | BENCH |
+| `tab_head.tex` caption and comment | the 54-truck plan at 78 549.14 removed | PYL |
+| `tab_protocol.tex` | rows removed: 36 instances (first impl.), fleet-floor certification, both placeability censuses (one row kept, renamed "Placeability check, Table 11", for the held table); caption: census sentence, the replaced parity runs' history and the constant-120 s / campaign-B sentence removed (a non-final configuration); "second implementation" -> "the method" | BENCH, fleet floors, B |
+| `tab_quantities.tex` | the "unpl. / und." row (Tables 9 and 12's columns) and "the row says unproved" removed | -- |
+| `tab_volumetric.tex` caption | "the recorded runs this table replaces finished at 1 817 to 1 897 s ..." removed | replaced Python parity runs |
+
+Body words (`detex -n`, the `sec_*.tex` files): **12 483 -> 11 574**
+(Appendix B's 13 words included before). Tables, figures and algorithms:
+9 067 -> 7 143. 31 pages (35 before).
+
+### Not removed, for the author
+
+* **Table 11** is held (section 12); its caption still carries the Python
+  placeability check (41/45, 119/137) and re-packs.
+* **Figure 4** (`TikzHullFigure.tex`) plots supplier-bound loads "from a sweep
+  of demand-derived price vectors" and "(74,126): the load a twelve-truck plan
+  needs" -- data from an old Python sweep. The argument it illustrates is
+  proved in Section 7; the figure would need regenerating from the Julia
+  pricing or redrawing as a schematic.
+* **`{R1: 200, R2: 30}`** in Section 8.2 and Figure 6: a step-2 vector from an
+  old run, used as an illustration. Its claim (1.83 floors of volume, 35.5 m2
+  of stacks on a 32.64 m2 floor) is arithmetic on instance data and holds
+  whatever produced the vector.
+
+## 12. Pending (purple): text that depends on Table 11
+
+Table 11 is being re-run in Julia (placeability check with the Julia oracle;
+row 3 with the Julia partition, the geometric rows and packing; row 2 to be
+dropped). `paper.tex` defines `\Pending{...}` (`\textcolor{purple}`; xcolor is
+loaded by `../necessarypackages.tex`). Content unchanged; wrapped sites:
+
+| file | line | what |
+| --- | --- | --- |
+| `tab_repack.tex` | 21-46 | the whole caption |
+| `tab_repack.tex` | 51-53, 56 | every cell of rows 1, 2 and 3 and of the savings line |
+| `tab_protocol.tex` | 47 | every cell of the "Placeability check, Table 11" row |
+| `sec_experiments.tex` | 14-19 | the sentence giving the check's and re-pack's Python provenance |
+| `sec_experiments.tex` | 297-312 | Section 9.5's re-pack paragraph (74/212, 55/156, 25.7/26.4 %, 17.9/18.6 %, 80/137 units) |
+| `sec_intro.tex` | 30-31 | "Section 9.5 measures how often, by placeability proof" |
+| `sec_intro.tex` | 62-65 | contribution 4 |
+| `sec_conclusions.tex` | 13-18 | "a volumetric transport capacity is not a conservative simplification: ... 25.7 % and 26.4 % ..." |

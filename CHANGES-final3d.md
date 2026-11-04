@@ -577,3 +577,20 @@ biber ISBN warning for `Zhao2022LearningPacking`). `Renderer-diff.pdf` against
 100c362 (latexpand of both, latexdiff with tables and TikZ as blocks, `\InFlight`
 defined and the removed floats' labels given their old numbers): 39 pages,
 exit 0, no undefined reference.
+
+### Pending (purple) sites after this pass
+
+Section 12's list, with today's files and lines (content unchanged; the Table 11
+sites will be rewritten when the Julia re-pack arrives):
+
+| file | line | what |
+| --- | --- | --- |
+| `tab_repack.tex` | 21-46 | the whole caption of Table 8 (formerly 11) |
+| `tab_repack.tex` | 51-53, 56 | every cell of rows 1, 2 and 3 and of the savings line |
+| `sec_appendix_impl.tex` | 62 | the "placeability check" row of Table 10 (moved from `tab_protocol.tex`) |
+| `sec_experiments.tex` | 10-14 | the sentence giving the check's and re-pack's Python provenance |
+| `sec_experiments.tex` | 166-181 | Section 8.5's re-pack paragraph |
+| `sec_intro.tex` | 14 | contribution (iv) |
+| `sec_abstract.tex` | 10 | the shortened sentence "A volumetric model's plan prescribes loads proved impossible to place, so a volumetric transport capacity is not a conservative simplification;" |
+| `sec_conclusions.tex` | 13-18 | "a volumetric transport capacity is not a conservative simplification: ... 25.7 % and 26.4 % ..." |
+| `sec_experiments.tex` | 10; `sec_appendix_impl.tex` | 35 | new: `[repository URL]`, for the author to decide |

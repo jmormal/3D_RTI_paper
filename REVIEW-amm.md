@@ -170,7 +170,7 @@ exit 0.
 
 ### T1 is the fifth major finding: see "Table 8 (10ed61c)".
 
-- **Resolution (PENDING re-pack).** Not touched, as instructed.
+- **Resolution (FIXED).** See T1 below.
 
 ---
 
@@ -457,7 +457,18 @@ Line numbers in this section are those of `10ed61c`.
 
   Contribution (iv)'s "we quantify what repairing them costs" depends on this.
 
-- **Resolution (PENDING re-pack).** Not touched, as instructed (D3).
+- **Resolution (FIXED by option (c), extended).** The exact re-pack
+  (`repack_volumetric_exact_r40.json`, branch `final-3d-repack`, cc3e1b7)
+  delivers the volumetric quantities exactly and replays both plans with
+  `verify_plan`. The volumetric plans pass (0 complaints, costs 68139.17 and
+  200266.21). The re-packed ones fail (6 and 23 complaints): step 3 finds no
+  split in 1 and 5 periods, all shipments of empties at 97-100% of one
+  truck's volume. Table 8 keeps the check, adds the unsplit-period count and
+  the method's verified plan for reference, and drops the re-packed row and
+  every saving. Section 8.5 explains why the six periods fail. Four of them
+  are above a proved placeability cap; the two mixed ones rest on step 3
+  finding nothing. Section 8.5 also notes that a cover breaks the plant's
+  coverage instead.
 
 ### T2 (minor). The conclusions drop the qualifiers that Section 8.5 and Table 8 carry
 
@@ -470,10 +481,9 @@ Line numbers in this section are those of `10ed61c`.
 - **Fix:** "up to 9.8% and 16.1% …", or state the comparison as trucks carrying
   at least the same quantities.
 
-- **Resolution (FIXED, numbers unchanged).** "the method plans with up to 9.8%
-  and 16.1% fewer trucks than re-packing ..., the re-packed counts being upper
-  bounds and the second volumetric plan a memory stop (Table 8)". The T1
-  qualifier waits for the re-pack.
+- **Resolution (FIXED, superseded by T1).** The conclusions now read "the plans
+  cannot be repaired by re-packing their own quantities, which in six periods
+  do not split into loadable full trucks (Table 8)". No saving remains.
 
 ### T3 (minor). Contribution (iv) says "independent placeability proof"; the check uses the method's own oracle
 
@@ -487,7 +497,8 @@ Line numbers in this section are those of `10ed61c`.
 - **Fix (minimal):** "by placeability proof". Its last clause stands or falls
   with T1.
 
-- **Resolution (FIXED).** "by placeability proof". Its last clause waits for T1.
+- **Resolution (FIXED).** "by placeability proof". The last clause, after
+  T1, reads "nor repaired by re-packing their own quantities".
 
 ### T4 (minor). Appendix C's re-pack row omits how the truck count is searched
 
@@ -508,7 +519,8 @@ Line numbers in this section are those of `10ed61c`.
 - **Fix:** "the 24 and 131 surplus units are folded RTIs, which carry no
   holding cost" in place of "which understates it".
 
-- **Resolution (PENDING re-pack).** Not touched, as instructed.
+- **Resolution (MOOT).** The exact re-pack over-delivers nothing, and the
+  re-packed row is gone (T1).
 
 ### Table 8: checked and correct
 
@@ -618,7 +630,7 @@ In reading order. "Define at" gives the earliest natural place.
   transport items"). Up to seven are usually allowed.
   - **Resolution (AUTHOR).** Not touched.
 - **D3. T1's remedy:** constrained re-pack, step-4 re-solve, or counts only.
-  - **Resolution (AUTHOR / PENDING re-pack).** Not touched.
+  - **Resolution (AUTHOR, decided 2026-11-04).** Counts only (c), with the exact re-pack showing why the plan cannot be repaired; see T1.
 - **D4. Contribution (iv)'s generality.** It rests on two instances chosen
   because the crush limit binds, plus the catalogue's κ ≥ 1. On I_8_5_2_90 the
   volumetric optimum equals the 3D optimum, so there a volumetric plan is

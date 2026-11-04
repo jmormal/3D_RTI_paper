@@ -1,52 +1,61 @@
-% Source: results/julia/final/repack_volumetric_r40.json on branch final-3d
-% (results committed at b029500), written by julia/scripts/repack_volumetric.jl
-% (commit b772bbd, src_tree e4830fe, load_path include) through
-% julia/scripts/repack_volumetric.sh with ROUNDS=40 PART_TL=600, on the
-% workstation, 10 threads, 20 GB, check_tl 60, pack_tl 20, geom_rows both,
-% oracle pack_witness.  Input: results/compact_ref/compact_ref_<instance>.json.
+% Source: results/julia/final/repack_volumetric_exact_r40.json on branch
+% final-3d-repack (results committed at cc3e1b7), written by
+% julia/scripts/repack_volumetric.jl --exact (launcher commit e769eab,
+% src_tree 5958641, dirty false, load_path include), on the workstation,
+% 10 threads, 20 GB, check_tl 60, pack_tl 20, part_tl 600, part_rounds 40,
+% max_extra 12, geom_rows both, oracle pack_witness (shelf, then decoupled).
+% Input: results/compact_ref/compact_ref_<instance>.json.
 %   I_16_15_2_90_k25: volumetric_status OPTIMAL, volumetric_obj 68139.17,
 %     volumetric_trucks 45; dispatched_verdicts unplaceable 41 / placed 4 /
-%     undecided 0; distinct_verdicts 39 of 43; repacked_trucks 61,
-%     repacked_cost 84139.17; over_delivered_units 24; complaints 0.
+%     undecided 0 / witness_rejected 0; distinct_verdicts 39 unplaceable of 43;
+%     volumetric_plan_complaints 0 (verify_plan, cost 68139.17);
+%     pairs_uncovered 1 (s,7: NO COVER at n=1..13); plan_complaints 6.
 %   I_24_20_2_90_k50: volumetric_status MEM_LIMIT, volumetric_obj 200266.21,
-%     volumetric_trucks 137; dispatched 119 of 137 unplaceable, 18 placed, 0
-%     undecided; distinct 111 of 129; repacked_trucks 186, repacked_cost
-%     249266.21; over_delivered_units 131; complaints 0.
-% repacked_cost = volumetric_obj + 1000 x (repacked - volumetric trucks).
+%     volumetric_trucks 137; dispatched 119 of 137 unplaceable, 18 placed,
+%     0 undecided; distinct 111 of 129; volumetric_plan_complaints 0 (cost
+%     200266.21); pairs_uncovered 5 (s,3 s,7 s,12 s,16 s,17, each NO COVER at
+%     n=1..13); plan_complaints 23.
+% The unsplit periods (compact_ref loads, g = s, one truck each):
+%   I_16_15 t7 {R1: 226};  I_24_20 t3 {R1: 218, R2: 63}, t7 {R2: 226},
+%   t12 {R2: 226}, t16 {R1: 89, R2: 162}, t17 {R1: 312, R2: 1}.
+%   Volume fill 0.973-0.999 of one truck; payload fill 0.518-0.687 (instance
+%   JSONs: h_fold, w_tare, truck 13600x2400x3000, pKw 24000, alpha 0.55).
+%   For every family here a unit's payload share is below its volume share,
+%   so a truck of empties is full only at >= 55% of volume: two need >= 110%.
+%   Placeability caps (ladder_3d_final.log lines 770 and 909): I_16_15 s|R1 =
+%   208 < 226; I_24_20 s|R2 = 208 < 226 (t7, t12), s|R1 = 306 < 312 (t17, by
+%   downward closure).  Four of six exceed a cap; t3 and t16 mix two types.
 % Method row: results/julia/final/ladder_3d_final.csv (55 / 79703.31,
-% 156 / 223944.20).  Savings against the re-packed figure:
-%   trucks (61-55)/61 = 9.84%, (186-156)/186 = 16.13%;
-%   cost (84139.17-79703.31)/84139.17 = 5.27%,
-%        (249266.21-223944.20)/249266.21 = 10.16%.
+% 156 / 223944.20), verified, complaints 0.
 \begin{table}[!t]
 \centering
 \small
-\caption{What volumetric planning costs once the loads must fit, on the
-two instances where the per-stack crush limit binds. Row 1 is the
-compact volumetric model's plan, which is not executable: $41$ of its
-$45$ dispatched loads on the first instance and $119$ of its $137$ on
-the second are proved unplaceable by the method's placeability oracle,
-none left undecided. Row 2 keeps that plan's delivery quantities and
-re-packs each period with the method's step~3, every truck verified;
-the partition being a cover, it delivers $24$ and $131$ units more, and
-its cost charges $cK$ per extra truck but not the holding cost of those
-units, which understates it. Its count is an upper bound on what
-re-packing those quantities needs, a partition that finds no cover at
-$n$ trucks not being a proof that $n$ cannot carry the period. Row 3
-is BP-3D-SCPTOP, which also chooses the quantities; savings are
-relative to row 2. On $I\_24\_20\_2\_90\_k50$ the volumetric plan is a
-memory stop, not an optimum, and the re-packed count may not be the
-least, so that column's saving may be overstated.}
+\caption{The compact volumetric model's plan put to the method's
+placeability oracle, on the two instances where the per-stack crush
+limit binds. On $I\_16\_15\_2\_90\_k25$ the volumetric plan is a proved
+optimum; on $I\_24\_20\_2\_90\_k50$ it is a memory stop. A composition
+dispatched in several periods counts once among the distinct ones. The
+last volumetric row counts the periods whose delivery quantities the
+method's step~3 cannot split into loadable full trucks, all of them
+shipments of empty containers (see the text), so the volumetric plan
+has no loadable counterpart with the same quantities. BP-3D-SCPTOP,
+which chooses its own quantities, is given for reference, every truck
+verified.}
 \label{tab:repack}
 \begin{tabular}{lrr}
 \toprule
  & $I\_16\_15\_2\_90\_k25$ & $I\_24\_20\_2\_90\_k50$ \\
 \midrule
-volumetric plan (not executable)      & 45  & 137 \\
-\textbf{re-packed, quantities kept}   & \textbf{61} & \textbf{186} \\
-\textbf{BP-3D-SCPTOP} (which also chooses the quantities) & \textbf{55} & \textbf{156} \\
+\multicolumn{3}{l}{\emph{Compact volumetric plan}} \\
+trucks dispatched                        & $45$ & $137$ \\
+\textbf{proved unplaceable}              & $\mathbf{41}$ & $\mathbf{119}$ \\
+placed                                   & $4$  & $18$ \\
+undecided                                & $0$  & $0$ \\
+distinct compositions proved unplaceable & $39$ of $43$ & $111$ of $129$ \\
+periods not split into loadable full trucks & $1$ & $5$ \\
 \midrule
-saving on trucks / on cost & $9.8\%$ / $5.3\%$ & $16.1\%$ / $10.2\%$ \\
+\multicolumn{3}{l}{\emph{BP-3D-SCPTOP}} \\
+verified trucks / cost                   & $55$ / $79\,703.31$ & $156$ / $223\,944.20$ \\
 \bottomrule
 \end{tabular}
 \end{table}

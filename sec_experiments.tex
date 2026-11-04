@@ -165,24 +165,33 @@ Section~\ref{sec:res-abstraction} measures the over-credit that causes.
 
 \input{tab_repack}
 
-% Check and re-pack: results/julia/final/repack_volumetric_r40.json (see the
-% comment of tab_repack.tex).
-What a volumetric capacity costs is constructed rather than estimated
+% Check and re-pack: results/julia/final/repack_volumetric_exact_r40.json (see
+% the comment of tab_repack.tex).  Fills, caps and the replayed plan's
+% complaints are listed there.
+What a volumetric capacity costs shows in the volumetric plan itself
 (Table~\ref{tab:repack}). Every load the compact volumetric plan
 dispatches is put to the method's placeability oracle: $41$ of $45$ on
 $I\_16\_15\_2\_90\_k25$, whose volumetric plan is the proved optimum,
 and $119$ of $137$ on $I\_24\_20\_2\_90\_k50$ are proved unplaceable,
 none left undecided, so a volumetric optimum can be a plan nine tenths
-of which cannot be loaded. Keeping that plan's delivery quantities and
-re-packing each period with the method's step~3, every truck verified,
-takes $61$ and $186$ trucks where the method plans $55$ and $156$
-directly: savings of $9.8\%$ and $16.1\%$ on trucks and $5.3\%$ and
-$10.2\%$ on cost, each relative to the re-packed figure. The re-packed
-count is an upper bound on what re-packing those quantities needs, so
-the savings may be overstated, on $I\_24\_20\_2\_90\_k50$ in particular,
-whose volumetric plan is moreover a memory stop rather than an optimum;
-the re-packed cost omits the holding cost of the $24$ and $131$ units
-the cover over-delivers, which understates it.
+of which cannot be loaded.
+
+Nor can the plan be repaired by re-packing its own delivery quantities
+into loadable trucks. In one period of the first instance and five of
+the second, the plan ships the period's empty containers in a single
+truck filled to $97$--$100\%$ of its volume. A folded container takes a
+larger share of the truck's volume than of its payload, so a truck of
+empties is full only at $\alpha = 55\%$ of its volume, and two trucks
+cannot both be full with that quantity. One truck cannot carry it either: in
+four of the six periods the quantity exceeds the largest count of that
+container type that one truck can be proved to hold, and in the other
+two, which mix two types, the method's step~3 finds no loadable truck
+for it. Re-packing the rest of the plan exactly leaves those empties
+unshipped, and the plan then fails the supplier's coverage stock in
+later periods; delivering more than the plan's quantities, as a cover
+does, takes from the plant folded containers it needs for its own
+coverage. A loadable plan has to choose different quantities, which is
+what BP-3D-SCPTOP does: its verified plans use $55$ and $156$ trucks.
 
 Deflating the capacity is the obvious remedy: adding the stack-count
 rows \eqref{eq:stackrows} to the compact volumetric model raises its

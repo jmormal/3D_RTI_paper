@@ -755,3 +755,37 @@ overfull 6.75 pt (`sec_litreview.tex:106-107`, inherited) and 1.35 pt
 (`tab_nomenclature.tex:60`); no biber warning. `Renderer-diff.pdf` against
 100c362: 40 pages, exit 0, no undefined reference. Abstract: 247 words from
 the PDF with "3 600" as one word (248 as two).
+
+## 18. Table 8 after the exact re-pack (option (c))
+
+Source: `results/julia/final/repack_volumetric_exact_r40.json` on branch
+`final-3d-repack` (results cc3e1b7, launcher e769eab, src_tree 5958641). The
+re-pack now delivers the volumetric quantities exactly (`partition(...;
+exact=true)`). Both the volumetric and the re-packed plans go through
+`verify_plan`.
+
+- The volumetric plans verify: 0 complaints, at costs equal to their
+  objectives.
+- The re-packed plans do not: 6 and 23 complaints. Step 3 finds no split in
+  1 and 5 periods, and the supplier's coverage stock fails later.
+  - Every unsplit period ships empties in one truck filled to 97-100% of its
+    volume, so two trucks cannot both be full.
+  - In four of the six periods the quantity exceeds the proved cap of one
+    truck.
+
+Changes:
+
+- **Table 8:** keeps the check (41/45 and 119/137 unplaceable, 0 undecided;
+  39/43 and 111/129 distinct). It adds the unsplit-period count (1, 5) and the
+  method's verified plan for reference (55 / 79703.31, 156 / 223944.20). The
+  re-packed row and all saving cells are removed.
+- **Section 8.5:** the re-pack paragraph is replaced by why the plan cannot be
+  repaired by re-packing its own quantities.
+- **Conclusions:** the 9.8% / 16.1% sentence is replaced.
+- **Contribution (iv):** "and we quantify what repairing them costs" becomes
+  "nor repaired by re-packing their own quantities".
+- **Appendix C:** the source comment and the re-pack row now say "on the
+  plan's exact quantities".
+
+Build: 31 pages (the longer Table 8 pushes four bibliography entries onto a
+new page), exit 0, no undefined reference.

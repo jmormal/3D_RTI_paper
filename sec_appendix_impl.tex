@@ -14,10 +14,10 @@
 %     certify_regions ratchet); julia/src/colgen.jl:156-157 (volumetric pricing
 %     mem_gb=1.0); julia/src/construct.jl (n+0..2 trucks per pair).
 %   Pack memoisation: julia/src/tree.jl:658-687.  Plan verification: tree.jl:1493-1520.
-%   Table tab:repack: results/julia/final/repack_volumetric_r40.json (branch
-%     final-3d, results b029500), julia/scripts/repack_volumetric.jl via
-%     repack_volumetric.sh, ROUNDS=40 PART_TL=600, check_tl 60, pack_tl 20,
-%     geom_rows both, 10 threads, 20 GB, workstation.
+%   Table tab:repack: results/julia/final/repack_volumetric_exact_r40.json
+%     (branch final-3d-repack, results cc3e1b7), julia/scripts/
+%     repack_volumetric.jl --exact, part_rounds 40, part_tl 600, check_tl 60,
+%     pack_tl 20, max_extra 12, geom_rows both, 10 threads, 20 GB, workstation.
 \section{Implementation and reproducibility}
 \label{appendix:impl}
 
@@ -65,7 +65,7 @@ memory cap & $20$ GB per model; $1$ GB on volumetric pricing models & same \\
 seed & solver default & solver default \\
 \midrule
 compact models & \multicolumn{2}{p{0.67\textwidth}}{Gurobi 12.0, $10$ threads, $20$ GB, MIP gap $0$, seed $0$; $1\,800$ s (3D), $600$--$3\,600$ s (volumetric)} \\
-check and re-pack, Table~\ref{tab:repack} & \multicolumn{2}{p{0.67\textwidth}}{the method's placeability oracle, $60$ s per load; its step~3 with the rows, $600$ s per call, up to $40$ cut rounds, $20$ s per placeability call, trucks per period from the volume and payload minimum up to $+12$; $10$ threads, $20$ GB} \\
+check and re-pack, Table~\ref{tab:repack} & \multicolumn{2}{p{0.67\textwidth}}{the method's placeability oracle, $60$ s per load; its step~3 with the rows on the plan's exact quantities, $600$ s per call, up to $40$ cut rounds, $20$ s per placeability call, trucks per period from the volume and payload minimum up to $+12$; $10$ threads, $20$ GB} \\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -1,4 +1,4 @@
-\begin{figure}[!ht]
+\begin{figure}[h!]
 \centering
 \begin{tikzpicture}[x=0.028cm, y=0.030cm, >=Latex,
   lab/.style={font=\scriptsize, align=left},
@@ -17,7 +17,7 @@
 
   % upper-right frontier of the convex hull
   \draw[black!75, dashed, thick] (0,182) -- (28,168) -- (238,0);
-  \node[lab, black!75, fill=white, inner sep=1.5pt, rotate=-31] at (168,64) {frontier of $\operatorname{conv}(\Omega^{s})$};
+  \node[lab, black!75, rotate=-31] at (168,64) {frontier of $\operatorname{conv}(\Omega^{s})$};
 
   % dominating blend, and the load an integer plan needs
   \fill[blue!70!black] (74,131.2) circle[radius=3];
@@ -25,33 +25,20 @@
         inner sep=1.7pt] at (74,126) {};
   \draw[blue!70!black, <->, thin] (74,129) -- (74,128.2);
 
-  \node[lab, blue!70!black, anchor=west, text width=40mm] (bl) at (86,198)
-      {$0.78\,(28,168)+0.22\,(238,0)$\\ $=(74,131.2)$: the blend the\\
-       relaxation buys};
+  \node[lab, blue!70!black, anchor=west, text width=44mm] (bl) at (98,180)
+      {$0.78\,(28,168)+0.22\,(238,0)=(74,131.2)$:\\ the blend the relaxation buys};
   \draw[lead, blue!70!black] (bl.south west) -- (78,133);
 
-  \node[lab, red!75!black, fill=white, inner sep=1.5pt, anchor=west, text width=38mm] (tg) at (96,104)
-      {$(74,126)$: the load a\\ twelve-truck plan needs};
-  \draw[lead, red!75!black] (tg.west) -- (79,124);
+  \node[lab, red!75!black, anchor=west, text width=38mm] (tg) at (100,108)
+      {$(74,126)$: the load a twelve-truck plan needs};
+  \draw[lead, red!75!black] (tg.west) -- (79,125);
 
   % a dual vector, drawn inside the hull where there is room
-  \draw[->, thick] (108,52) -- ++(24,18);
-  \node[lab, anchor=north east] at (108,52) {$\pi$};
-  \node[lab, anchor=west, text width=36mm] at (56,24)
+  \draw[->, thick] (150,52) -- ++(26,20);
+  \node[lab, anchor=north east] at (150,52) {$\pi$};
+  \node[lab, anchor=west, text width=50mm] at (28,18)
       {for \emph{every} $\pi$, the maximum of $\pi^{\!\top}\!a$ is attained
        at a vertex of the frontier};
-  % inset: the blend and the load an integer plan needs are 5.2 units apart on a
-  % 208-unit axis, so they read as one mark at print size.
-  \begin{scope}[shift={(176,138)}, x=0.30cm, y=0.32cm]
-     \draw[black!35] (-1.2,-1.2) rectangle (6.2,4.2);
-     \draw[black!75, dashed] (-1.2,3.4) -- (6.2,2.2);
-     \fill[blue!70!black] (2.5,2.9) circle[radius=0.16];
-     \node[star, star points=5, star point ratio=2.2, fill=red!75!black,
-           inner sep=1.1pt] at (2.5,0.9) {};
-     \node[lab, anchor=west, scale=0.9] at (3.1,2.9) {$(74,131.2)$};
-     \node[lab, anchor=west, scale=0.9] at (3.1,0.9) {$(74,126)$};
-     \node[lab, anchor=south, scale=0.9] at (2.5,4.2) {inset, $\times 20$};
-  \end{scope}
 \end{tikzpicture}
 \caption{Why the load a cheaper plan needs is never priced. Dots are
 the supplier-bound loads obtained from a sweep of demand-derived price
@@ -61,9 +48,9 @@ $\pi$ its optimum is attained at a vertex of that frontier. The load
 $(74,126)$ lies strictly below it --- it is dominated componentwise by
 the blend $0.78\,(28,168)+0.22\,(238,0)=(74,131.2)$ --- so no choice of
 duals returns it. The relaxation buys that blend for one truck, while
-an integer plan must pay for both of the trucks it mixes. The construction of
-Section~\ref{sec:relaxfix-flow} reaches the interior directly: it
-partitions a delivery vector into legal loads instead of asking a
-linear objective for them.}
+an integer plan must pay for both of the trucks it mixes. The
+construction of Section~\ref{sec:branching} reaches the interior
+directly: it partitions a delivery vector into exact loads instead of
+asking a linear objective for them.}
 \label{fig:hull}
 \end{figure}

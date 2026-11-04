@@ -1,0 +1,1270 @@
+\section{Computational Experiments}
+\label{sec:results}
+
+The experiments answer three questions, and the order matters because
+the first is what licenses the other two.
+
+\begin{enumerate}
+\item \textbf{Does the reformulation find good plans where the truth is
+  known?} The volumetric problem of Appendix~\ref{appendix:A} is the
+  same transport and inventory problem with a volumetric truck
+  capacity, and the compact formulation of it is solvable on instances
+  of the size this study reaches. It is therefore a genuine yardstick,
+  and Section~\ref{sec:res-vol} sets the reformulation against it.
+\item \textbf{Does the method keep working on the 3D problem, where no
+  reference optimum is available?} The compact 3D model returns no
+  incumbent beyond five periods, so it cannot serve as a yardstick;
+  Section~\ref{sec:res-3d} reports what the method returns and what it
+  can certify, and Section~\ref{sec:res-case} states what remains to
+  be measured against the procedure the company uses today.
+\item \textbf{Does it matter?} Section~\ref{sec:res-abstraction} puts
+  the loads a volumetric model prescribes to an independent
+  placeability proof, which is the test of whether the 3D
+  representation buys anything at all.
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\subsection{Protocol and declared budgets}
+\label{sec:protocol}
+
+All calculations use Python. The restricted master, the aggregate
+integer master and the partitions of Section~\ref{sec:relaxfix-flow},
+the volumetric benchmark and the compact models are solved with Gurobi
+12; the pricing problems
+\eqref{bp:PP-objective}--\eqref{bp:PP-s-stack-w} and the placeability
+tests with CP-SAT from OR-Tools 9.12, which solves the equivalent
+statement of the same feasible set described in
+Section~\ref{sec:pp}. The solver is how these numbers were obtained
+and is not part of the method: the method asks the oracle for an
+optimal point of the pricing problem, and any solver that returns one
+serves. Every run reported in
+Tables~\ref{tab:volumetric}--\ref{tab:fleetfloor} is read from a
+recorded run file, named in a comment beside the row in the source of
+the table.
+
+\paragraph{Every row carries its configuration, or says that it does not.}
+Five parameters can change the answer a solver returns: the wall-clock
+\emph{time limit}; the relative \emph{MIP gap} at which an integer
+solve may stop; the \emph{thread count}; the \emph{memory cap} per
+model; and the random \emph{seed}. Table~\ref{tab:protocol} states them
+per stage. They are read from each run's own record and not from the
+script that launched it --- with one exception, which is marked
+wherever it appears. The volumetric fleet-tree runs of
+Table~\ref{tab:volumetric} recorded no configuration, and theirs is
+\emph{recovered} after the fact from their launcher scripts and the
+system journal; one of those five runs has no recoverable time limit at
+all. A recovered configuration is weaker evidence than a recorded one
+and is never silently mixed with it.
+
+\paragraph{Memory is a budget, not an accident.}
+Gurobi holds its branch-and-bound tree in memory and imposes no limit
+of its own, so a compact model whose dual bound has stalled simply
+grows its list of unexplored nodes until the machine intervenes. Every
+model is therefore given an explicit per-model soft memory limit, at
+which the solver stops and returns its incumbent and its dual bound
+with the status \textsc{mem\_limit}, exactly as a time limit would. Two
+consequences follow. A solve that stopped on memory is a solve that
+stopped, and its dual bound is a valid lower bound on the model's
+optimum regardless of why it stopped. And reaching a \emph{fixed}
+per-model cap sooner on a larger model is a statement about the cap and
+not about tractability: no inference is drawn here from \emph{when} the
+cap was reached, and the cap is reported as a parameter of the
+experiment like the time limit.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Declared budgets, per stage. The memory cap is Gurobi's
+per-model soft limit, at which a solve stops and keeps its incumbent
+and dual bound. Values marked $^{\sim}$ are recovered from a launcher
+script rather than recorded by the run
+(\texttt{results/hp/provenance.json}); the recovered memory cap is the
+implementation's $4$ GB default, which applied because no launcher set
+the environment variable that overrides it and \texttt{systemd-run}
+does not inherit a terminal's environment. The value marked
+$^{\dagger}$ is neither recorded nor asked for: the launcher asked for
+ten threads, but the implementation then built each Gurobi model on a
+fresh environment, which does not inherit a thread count set on the
+default one, so every model in those runs ran on all twelve cores of
+the machine. The parameter was threaded through on 2026-09-14, after
+those runs. The fleet tree divides its
+time limit between phases as described in Section~\ref{sec:branching}:
+in 3D, $15\%$ of the budget to root column generation, $3\%$ reserved
+for the frontier sweep, placeability calls limited to $5$ s and pricing
+calls to $20$ s at eight CP-SAT workers each, the heuristic rung on with
+a $0.5\%$ qualifying margin and the stop-early oracle and pre-empting
+the oracle at a pair it serves --- which is what the budget condition of
+Section~\ref{sec:pp} selects at a $20$ s per-call limit --- an initial Murty
+depth of $6$ raised by two whenever the stack empties with budget left,
+at most two cut-and-repack rounds per partition attempt, and at most
+$15\%$ of the budget on region certificates. The $900$ s budget applies
+to the thirty-six generated instances and to the first two rungs of the
+size ladder, $1\,800$ s to the third and fourth rungs and $3\,600$ s to
+the fifth.}
+\label{tab:protocol}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+stage & time limit (s) & MIP gap & threads & memory cap (GB) & seed \\
+\midrule
+% bench_tree rows: config blocks of results/bench_tree/tree_3d_*.json
+%   (time_limit 900, step2_gap 5e-4, threads 10, soft_mem_gb 20, seed 0, commit 0c0c16c)
+MATH-3D-SCPTOP, 36 generated instances (Table~\ref{tab:bench}) & 900 & $5\cdot10^{-4}$ (step 2), 0 (step 4) & 10 & 20 & 0 \\
+% ladder rows: config blocks of results/fleet_tree_3d/tree_3d_*_table_*.json
+%   (time_limit 900/1800/3600, step2_gap 5e-4, threads 10, soft_mem_gb 20, seed 0, commit 73411b9)
+MATH-3D-SCPTOP, size ladder (Tables~\ref{tab:3d-onecommit}--\ref{tab:ladder}) & 900 / 1\,800 / 3\,600 & $5\cdot10^{-4}$ (step 2), 0 (step 4) & 10 & 20 & 0 \\
+% hp rows: results/hp/provenance.json, level "recovered".  The launcher called
+%   gp.setParam("Threads", 10), but fleet_tree.py before commit 9e57df7
+%   (2026-09-14) built its models on `gp.Env(params={"OutputFlag": 0})`, and a
+%   fresh gp.Env does not inherit the default environment's parameters, so the
+%   request never reached the master and every model ran on all 12 cores of the
+%   machine.  These runs are dated 2026-09-09, before that fix.
+fleet tree, volumetric oracle (Table~\ref{tab:volumetric}) & 1\,800$^{\sim}$ & $10^{-4}$ & $12^{\dagger}$ (10 asked) & 4$^{\sim}$ & not established \\
+% compact volumetric: config blocks of results/compact_ref/compact_ref_*.json
+compact SCPTOP, volumetric reference (Table~\ref{tab:volumetric}) & 1\,800 / 3\,600 & 0 & 10 & 20 & 0 \\
+% compact 3D: config blocks of results/compact_3d/compact3d_*.json
+compact 3D-SCPTOP, $n_{\mathrm{LC}}=3$ (Table~\ref{tab:3d-head}) & 1\,800 & 0 & 10 & 20 & 0 \\
+% SCPTOP half of experiments/run_benchmark.py, launcher ft3d-benchmark.sh
+SCPTOP, volumetric benchmark (Tables~\ref{tab:bench}--\ref{tab:summary}) & 900 & $0.02$ & 4 & 20 & 0 \\
+placeability recheck of SCPTOP loads & 120 per load & --- & 4 & 20 & 0 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\paragraph{What each reported quantity means.}
+\begin{itemize}
+\item $z$ is the cost \eqref{eq:MPObjective} of the plan returned, net
+  of any artificial penalty; a plan is reported only if it carries no
+  artificial slack. For the fleet tree it is the incumbent of
+  Algorithm~\ref{alg:bp3d}; for the compact models it is the solver's
+  incumbent at its stop. It is an upper bound on the optimum in every
+  case.
+\item \emph{trucks} is $\sum_{g,t}n_{gt}$ for that plan.
+\item $\mathrm{LB}$ is a lower bound on the optimum of the model the
+  method solves. For the fleet tree it is the \emph{certified} bound of
+  Section~\ref{sec:bounds}: the root certificate, or the minimum over
+  the certified bounds of the open frontier when that is higher. A
+  bound is printed only where the sweep behind it came back with every
+  pair proved; where it did not, the row says \emph{unproved} and no
+  gap is computed. For a compact model it is the solver's dual bound at
+  its stop. A sentinel recorded by a run that obtained no bound is
+  never printed, never averaged and never rounded to a side.
+\item \emph{gap} is $(z-\mathrm{LB})/z$ against the method's own
+  bound. It is an optimality gap only to the extent that the bound is
+  tight, and Section~\ref{sec:res-abstraction} identifies exactly where
+  it is not. It is never a gap to a proven optimum unless the row says
+  so.
+\item \emph{stop} names the condition under which a solve ended:
+  \textsc{optimal}, \textsc{time\_limit} or \textsc{mem\_limit}. A time
+  or memory stop makes the row's time the budget rather than a solve
+  time.
+\item \emph{nodes} is the tree nodes opened and \emph{open} the regions
+  left unexpanded when time ran out; a run with open regions has not
+  searched the space, whatever its gap.
+\item \emph{verified} is the outcome of re-deriving every dispatched
+  truck of a plan from the column's own fill and checking it against
+  \eqref{eq:col-geom}--\eqref{eq:col-agg} --- placement, stack height,
+  crush limit, payload and the utilisation floor --- by a routine
+  independent of the search and of the oracle that built the column,
+  which re-derives all of those from the stored layout rather than
+  reading any quantity the builder recorded. It is not code-disjoint
+  from the rest of the implementation: the full-truckload predicate
+  \emph{is} the one the oracle, the column reductions and the partition
+  floor use, together with the two commodity-to-weight and
+  commodity-to-type lookups, so a defect in the \emph{definition} of a
+  full truck would not be caught by this check. What it catches is a
+  defect in any solver's \emph{satisfaction} of that definition, which
+  is what it is there for.
+  \emph{unplaceable} counts, among the loads a \emph{volumetric} plan
+  dispatches, those a constraint programme has \emph{proved} cannot be
+  stacked and placed in a trailer; loads it could not decide within its
+  limit are reported as \emph{undecided} alongside, and are counted
+  neither way.
+\item $\Delta z$ is the cost of one method relative to another on the
+  same instance. The denominator is stated wherever it appears, and
+  $\Delta z$ is meaningful only between plans both of which are
+  executable.
+\end{itemize}
+
+% ---------------------------------------------------------------
+\subsection{Instance generation}
+\label{sec:instances}
+
+Thirty-six benchmark instances are generated as a full factorial over
+the four explanatory variables of the study: the number of products
+$|N|\in\{4,8\}$, the horizon $|T|\in\{5,10\}$, the number of RTI types
+$|R|\in\{2,3,4\}$ and the volumetric granularity
+$v\in\{60,90,120\}$. Instances are named $I\_|N|\_|T|\_|R|\_v$.
+
+\begin{itemize}
+  \item \textbf{Container dimensions}: footprints are drawn from the
+  industrial catalogue $\{1200\times800,\;1200\times1000,\;
+  800\times600,\;1200\times1600,\;2400\times1200\}$ mm. Heights are
+  quantised to $50$ mm and a footprint is admissible for a given $v$
+  only if the implied erected height lies in $[400,1500]$ mm, so that
+  an RTI is worth stacking and at least two layers fit under the
+  trailer roof. Whenever $|R|\ge3$ several RTI types share a
+  footprint, reproducing a real catalogue in which container families
+  sit on a common pallet base; this is what allows a stack to mix
+  types across layers.
+
+  \item \textbf{Container volume}: $v$ is the number of erected RTIs
+  that fill one truck by volume, and every RTI type is generated with
+  volume at least $\Gamma_{K}/v$. Larger $v$ means smaller RTIs and a
+  harder placement subproblem; smaller $v$ means a single container is
+  a larger fraction of a trailer.
+
+  \item \textbf{Demand}: generated per product and period by deviating
+  $\pm10\%$ from a mean calibrated so that roughly $2.5$ truckloads
+  are consumed per period. Calibrating the mean keeps difficulty
+  comparable across the factorial instead of letting it drift with the
+  RTI size.
+
+  \item \textbf{Weights}: the content weight of a full RTI scales with
+  its volume and varies by $\pm25\%$ between products sharing an RTI
+  type, which is what makes the per-stack crush limit depend on the
+  period's product mix rather than on the RTI type alone.
+\end{itemize}
+
+The truck is a standard semi-trailer,
+$pK\times qK\times rK=13600\times2400\times3000$ mm, payload
+$pK^{w}=24$ t, per-stack crush limit $W^{\max}=1200$ kg, minimum
+utilisation $\alpha=0.55$ and cost $cK=1000$ per dispatch. Lead time
+is $lt=1$ and coverage stock one period of demand.
+
+\paragraph{A size ladder.}
+The benchmark tops out at $|N|=8$ and $|T|=10$. To find where, if
+anywhere, the decomposition pays against the compact model, a second
+set of instances is generated with the same rules along two axes:
+$(|N|,|T|)\in\{(8,10),(12,12),(16,15),(24,20)\}$, and the number of
+truckloads consumed per period, $2.5$, $5$ or $8$, which scales the
+fleet $K$ and with it the number of interchangeable trucks the compact
+model indexes. The suffix is that figure times ten and is \emph{not}
+$K$: $I\_8\_10\_2\_90\_k25$, $I\_12\_12\_2\_90\_k25$ and
+$I\_16\_15\_2\_90\_k25$ have $K=12$, and $I\_24\_20\_2\_90\_k50$ has
+$K=21$. These instances have $|R|=2$ and $v=90$. They stress different
+things: $|N|$ and $|T|$ grow the master and the number of pricing
+calls, while the fleet grows the compact model's per-truck variables
+and its symmetry.
+
+\paragraph{Sizing the RTI fleet.}
+One generation parameter deserves comment because it is easy to get
+wrong and the symptom is misleading. Empties return by the truckload,
+and a return truck leaves only once the plant has accumulated enough
+folded RTIs to clear the full-truckload floor. Since folded RTIs pack
+very densely, that takes several periods, during which the supplier
+must live off its own folded stock. If the fleet is sized only for the
+lead time, the linear relaxation remains feasible by dispatching
+fractional trucks while the integer problem has no solution at all. We
+therefore size the supplier's initial folded stock of each type to
+cover $lt+SC$ periods plus the number of periods, capped at six,
+needed to accumulate $\lceil\alpha\Gamma_{K}/\gamma_{sr}\rceil$ folded
+RTIs at the plant's rate of emptying them, which is the standard
+closed-loop argument that an RTI fleet must cover the cycle time.
+
+% ---------------------------------------------------------------
+\subsection{Methods compared, and which procedure produced which table}
+\label{sec:methods}
+
+Three solution procedures appear in the recorded results of this study,
+and only the first is the method of Section~\ref{sec:math}. They are
+listed with the tables they produced, because a table labelled with the
+method's name but produced by another procedure is the single easiest
+way for a study like this one to mislead.
+
+\begin{itemize}
+\item \textbf{MATH-3D-SCPTOP} --- Algorithm~\ref{alg:bp3d} exactly as
+      Section~\ref{sec:math} states it: the master of
+      Section~\ref{sec:mp} over a starting pool of the placeable
+      single-commodity trucks and nothing else, columns from the
+      pricing ladder of Section~\ref{sec:pp}, the flow-first relax and
+      fix of Section~\ref{sec:relaxfix-flow} as primal heuristic with
+      the partition run as a cover, every part proved placeable before
+      it becomes a column, dominance cuts on the parts proved
+      unplaceable, integer stack counts in the aggregate master, the
+      region $X\le X^{\star}-1$ constructed first, and the bound from
+      the volumetric relaxation
+      (Proposition~\ref{prop:inclusion}). Every dispatched truck is
+      verified. \emph{This produced Tables~\ref{tab:bench},
+      \ref{tab:summary} and
+      \ref{tab:3d-onecommit}--\ref{tab:fleetfloor}, and every
+      MATH-3D-SCPTOP number quoted in this paper.}
+\item \textbf{The same method over the volumetric oracle} --- the same
+      master, the same search and the same construction, with the
+      pricing problem replaced by the two-constraint knapsack of
+      Section~\ref{sec:pp}, so that a column is a volumetrically
+      feasible full truck. \emph{This produced the fleet-tree columns
+      of Table~\ref{tab:volumetric}.}
+\item \textbf{An earlier branch-and-price configuration}, in which the
+      primal heuristic is the integer master over a pool seeded with
+      the volumetric benchmark's placeable loads rather than the
+      flow-first construction. It is a different procedure --- a
+      different pool, a different primal, and no placeability cuts ---
+      and on $I\_8\_5\_2\_90$ it returns $20\,767.81$ with fourteen trucks
+      where MATH-3D-SCPTOP returns $18\,796.96$ with twelve.
+      \emph{No table in this paper reports it.} Its recorded output,
+      \texttt{results/benchmark.csv} and
+      \texttt{results/case\_study.csv}, is not used for any method
+      column here; the volumetric half of the first of those files,
+      which involves no branch and price at all, is used for the
+      placeability census of Section~\ref{sec:res-abstraction} and for
+      nothing else.
+\end{itemize}
+
+The comparators are:
+
+\begin{itemize}
+\item \textbf{Compact SCPTOP} --- the volumetric model of
+      Appendix~\ref{appendix:A} solved directly by Gurobi. It solves
+      the same problem as the fleet tree over the volumetric oracle, so
+      the two bracket a common optimum, and it is the one comparator in
+      this study that produces a \emph{proved} optimum.
+\item \textbf{Compact 3D-SCPTOP} --- the model of
+      Section~\ref{sec:model} solved directly by Gurobi, warm-started
+      with the matheuristic's plan. Section~\ref{sec:model} lets every
+      truck design its own layout, which puts a complete packing
+      problem on each of the $2|K||T|$ trucks; what is solved here
+      instead shares a catalogue of $n_{\mathrm{LC}}=3$ layouts per
+      direction among them, so that the trucks of a direction must
+      agree on three designs. That is a \emph{restriction} of
+      Section~\ref{sec:model}, chosen a priori: nothing here computes
+      an over-estimate of how many designs suffice. Its \emph{plan} is
+      therefore a legitimate comparator --- a feasible plan of the
+      restriction is a feasible plan of the model --- and its dual
+      bound bounds the restriction and is not an end of any interval
+      for $z^{\star}$.
+\item \textbf{SCPTOP} --- the volumetric benchmark, identical to the
+      master in every respect \emph{except} that truck capacity is
+      volumetric. It is not used as a yardstick for the 3D method; its
+      role is Section~\ref{sec:res-abstraction}, where the loads it
+      dispatches are put to a placeability proof.
+\item \textbf{Company procedure (PLC-SCPTOP)} --- the master over a
+      fixed pool of manually derived loading configurations, as
+      produced today by a spreadsheet. This is the intended comparator
+      for the 3D rows, and Section~\ref{sec:res-case} states why no
+      number is reported against it here.
+\end{itemize}
+
+% ---------------------------------------------------------------
+\subsection{The volumetric model against the compact SCPTOP formulation}
+\label{sec:res-vol}
+
+\input{tab_volumetric}
+
+Table~\ref{tab:volumetric} is the comparison in which the truth is
+sometimes known. On the volumetric problem the compact formulation is
+tractable at the sizes this study reaches --- it closes two of the six
+instances to proved optimality --- so the reformulation can be measured
+against a reference rather than against itself.
+
+\paragraph{Against a proved optimum.}
+On $I\_16\_15\_2\_90\_k25$ the compact model proves the optimum,
+$68\,139.17$ with forty-five trucks, in $1\,349$ s of a $3\,600$ s
+budget at a $20$ GB cap. The fleet tree over the volumetric oracle
+returns $68\,139.59$, also with forty-five trucks: $0.0006\%$ above a
+\emph{proved} optimum, and at the same fleet. Its own certified bound on
+the same instance, $68\,131.43$, lies $0.0114\%$ below that optimum, so
+both ends of the reformulation's interval are within about a hundredth
+of a percent of the truth. This is the strongest credibility datum in
+the paper, and the reason for reporting it first is that nothing
+elsewhere in the study can be checked this way.
+
+Four qualifications belong with it rather than after it, and the last
+two are the ones that limit what it proves.
+
+What is compared here are two \emph{volumetric} plans, and neither is
+executable as a 3D plan. That is the point of the stage --- it measures
+the method against a reference optimum of the model the reference can
+solve --- but it means the phrase ``executable by construction'' does
+not apply to this row. A column of the volumetric oracle is a load
+vector with no layout, so there is nothing for the verifier of
+Section~\ref{sec:res-bounds} to re-derive, and no plan in
+Table~\ref{tab:volumetric} is verified truck by truck. How far such a
+plan is from executable is measured in Section~\ref{sec:res-abstraction}
+on the compact model's own optimum for this instance, where $41$ of its
+$45$ dispatched loads are \emph{proved} unplaceable; the fleet tree's
+$45$-truck volumetric plan at $68\,139.59$ has not been put through that
+census, and nothing here should be read as a claim that it would fare
+better.
+
+The budgets are \emph{not} equal. On time and memory the inequality
+runs against the fleet tree: the compact model had twice the time and
+five times the memory. On cores it runs the other way, and that has to
+be said in the same breath. The launcher asked for ten threads, but the
+tree built its Gurobi models on a fresh environment, which does not
+inherit a thread count set on the default one, so every model in those
+runs used all twelve cores of the machine against the compact model's
+ten; the parameter was only threaded through on 2026-09-14, five days
+after these runs. One resource axis therefore favoured the tree by a
+fifth of the cores, which is a further reason to read this row as an
+objective comparison and not as a timing claim.
+
+The fleet-tree run recorded no configuration of its own, so the
+$1\,800$ s and the $4$ GB in the table are recovered from its launcher
+and the system journal, with no seed and no commit established; a
+recovered configuration is weaker than a recorded one, and what it
+supports is the objective comparison --- two numbers on one instance ---
+and not a timing claim.
+
+And the five volumetric runs are five days older
+than the 3D campaign: they ran the same \emph{scheme} --- the master of
+Section~\ref{sec:mp}, the pure single-commodity pool, the flow-first
+relax and fix, the two-level fleet branch and bound --- but an earlier
+revision of it, in which step 3 solved an exact split rather than the
+cover of Section~\ref{sec:relaxfix-flow}, step 2 carried no integer
+stack counts, and level 1 did not recurse. They are therefore evidence
+about the scheme and not a measurement of the code that produced
+Table~\ref{tab:3d-onecommit}. Re-running them on the current code is a
+cheap and obvious next step, and until it is done this row is the
+weakest-provenanced of the paper's strong claims.
+
+One thing the volumetric rows do measure cleanly is the tree, because
+there it certifies per node. On $I\_16\_15\_2\_90\_k25$ its root
+construction returns $68\,151.00$ at $332$ s and four node improvements
+take that to $68\,139.59$, a gain of $0.0167\%$ that lands within
+$0.0006\%$ of the proved optimum. The pattern repeats on the three
+larger rows: root plans of $133\,506.22$, $200\,053.56$ and
+$281\,024.98$ improved by three, five and two node improvements to
+$133\,503.74$, $200\,047.54$ and $281\,023.77$ --- gains of $0.0019\%$,
+$0.0030\%$ and $0.0004\%$. The tree earns little here and much on the
+3D rows, which is consistent with what the root leaves it: where the
+relaxation is nearly exact the construction is already there.
+
+\paragraph{Where the compact model stops on memory.}
+On the other four instances the compact model exhausts its $20$ GB cap
+with its dual bound still short of its incumbent. The fleet tree's plan
+is cheaper on all four --- by $0.0058\%$, $0.6276\%$, $0.1092\%$ and
+$0.3821\%$ of the compact incumbent --- and uses one truck fewer on two
+of them. Its certified bound is the tighter of the two on three of the
+four; on $I\_8\_10\_2\_90\_k25$ the compact model's dual bound,
+$38\,851.93$, is tighter than the reformulation's $38\,791.14$ by
+$0.157\%$. The budget asymmetry means a row on which the fleet tree is
+cheaper is not a budget artefact, while the one row on which its bound
+is looser may be.
+
+\paragraph{The bound, tighter and sooner.}
+The clearest statement about the bound does not need the recovered
+runs. On $I\_12\_12\_2\_90\_k25$ the reformulation certifies
+$52\,105.25$ after $26.3$ s of its $1\,800$ s 3D run --- a full sweep in
+which every $(g,t)$ pair priced optimal and nothing priced out, over
+the volumetric relaxation and so valid for the 3D problem by
+Proposition~\ref{prop:inclusion}. The compact volumetric model on the
+same instance, given $600$ s, ten threads and a $20$ GB cap, stops at a
+dual bound of $51\,944.22$ with an incumbent of $52\,116.69$. The
+decomposition's bound is $0.310\%$ tighter and arrives in a
+twenty-third of the time. The two budgets differ and are stated for
+that reason; both bounds are valid bounds on the same relaxation.
+% results/compact_ref/compact_ref_I_12_12_2_90_k25.json (bound 51944.2197, obj 52116.69,
+%   TIME_LIMIT at 600 s, 34 trucks, config threads 10 / soft_mem_gb 20 / seed 0)
+% results/fleet_tree_3d/tree_3d_I_12_12_2_90_k25_table_1800.json (vol_lb 52105.2467,
+%   vol_lb_proved true, trace "26.3 volumetric relaxation LB 52105.25 proved=True")
+% 0.310% = (52105.2467-51944.2197)/51944.2197; 600/26.3 = 22.8
+
+\paragraph{The horizon walk, measured once.}
+The volumetric problem is also where the second relax and fix of
+Section~\ref{sec:relaxfix-walk} has its recorded results, and they are
+reported here rather than beside the procedure. Eight runs on
+$I\_24\_20\_2\_90\_k50$ at a $600$ s budget, over the volumetric master
+and final pools of $551$ to $3\,518$ columns over all eight: \emph{every} incumbent any
+of the eight produced came from the walk, and none from the closing
+integer master over the whole horizon, which is the obstruction the walk
+exists to get round. The best was $206\,492.17$ with $137$ trucks
+against a certified bound of $200\,013.36$ --- a gap of $3.14\%$ of the
+incumbent, on the definition of Section~\ref{sec:protocol}. Under period
+scoping and without the pricing repair, two of the eight returned no
+plan at all.
+
+These runs are not comparable with the fleet-tree rows above: a
+different budget, a different machine configuration, and a procedure
+that was never asked for the same thing. What they establish is the one
+structural fact the walk was built for --- that at twenty periods the
+monolithic integer master produces nothing and a committed prefix
+produces something --- and nothing about which primal is better.
+% results/period_scope_dive.csv (4 rows: no plan on the two period-scoped rows,
+%   206900.86 / 139 and 207809.60 / 140 on the shared-scope rows) and
+%   results/period_scope_dive_priced.csv (4 rows: 210052.85 / 139, 209845.84 / 139,
+%   206492.17 / 137, 206565.21 / 137).  first_source = relax_fix on every row that
+%   has a plan; bound 200013.36-200013.72 with bound_valid 1; runtime 600 s;
+%   columns 551-3518.  3.14% = (206492.17-200013.36)/206492.17.
+
+% ---------------------------------------------------------------
+\subsection{The 3D problem}
+\label{sec:res-3d}
+
+\input{tab_3d}
+
+\input{tab_bench}
+
+\paragraph{The compact 3D model cannot serve as a yardstick.}
+Table~\ref{tab:3d-head} sets the compact 3D-SCPTOP model against the
+method on four rungs of the ladder, and the finding is a negative one
+that the rest of this section depends on. On $I\_8\_5\_2\_90$ --- the
+one instance on which the compact model returns a plan --- it has three
+shared layouts per direction, $67\,674$ variables and $92\,092$
+constraints, and stops on its $1\,800$ s time limit at $18\,816.13$ with
+a dual bound of $18\,795.76$, no phantom freight, twelve loads that pass
+the independent verifier, and a peak resident set of $3.8$ GB against
+the $20$ GB cap. The method reaches $18\,796.96$ with twelve verified
+trucks at $140.2$ s, a plan $0.102\%$ cheaper, which the $67$ nodes the
+tree then opens do not improve.
+
+From ten periods on the compact model returns \emph{no feasible
+solution at all}. On $I\_8\_10\_2\_90\_k25$ ($119\,424$ variables,
+$164\,692$ constraints at $n_{\mathrm{LC}}=3$), on $I\_12\_12\_2\_90\_k25$
+($200\,748$ and $256\,180$) and on $I\_16\_15\_2\_90\_k25$ ($322\,734$
+and $393\,412$) it finds none in $1\,800$ s. All three stopped on time,
+not on memory: their peak resident sets were $6.1$, $2.7$ and $4.5$ GB
+against the declared $20$ GB cap, so the runs had their memory budget
+and did not use it, and the honest statement is that the model could
+not reach a first incumbent in the time it was given. Nor is this a
+guard rejecting a corrupt solution: the leak counter is zero because
+there was no solution to leak. Four rungs are four rungs and we do not
+generalise beyond the sizes they cover; what they establish is that
+beyond five periods the compact 3D model supplies neither a plan to
+compare against nor a bound that bounds the problem --- its dual bound
+bounds the three-layout restriction --- which is why the comparator for the
+3D rows has to be the procedure in use rather than the exact model.
+% Every compact-3D run used n_lc = 3: the `config.n_lc` field of all five files
+%   below, and src/rti3d/models/monolithic.py:42 (the default).
+% compact: results/compact_3d/compact3d_rerun_I_8_5_2_90.json (n_vars 67674, n_cons 92092,
+%   obj 18816.13, bound 18795.757, TIME_LIMIT, peak_rss_gb 3.80, leaked 0, plan_verified True)
+%   compact3d_I_8_10_2_90_k25.json (119424 / 164692, obj inf, bound 36458.753, peak 6.12)
+%   compact3d_I_12_12_2_90_k25.json (200748 / 256180, obj inf, bound 48516.860, peak 2.65)
+%   compact3d_I_16_15_2_90_k25.json (322734 / 393412, obj inf, bound 64053.225, peak 4.45)
+% 0.102% = (18816.13-18796.96)/18816.13
+
+\paragraph{One proved optimum, and it is not the method's.}
+On $I\_8\_5\_2\_90$ the volumetric relaxation solves to proved
+optimality at $18\,796.96$ in $0.18$ s, and the verified 3D plan costs
+the same to machine precision. Every placeable load is volumetrically
+feasible, so $z^{\star}_{\mathrm{3D}}\ge z^{\star}_{\mathrm{vol}}$, and
+a feasible 3D plan attaining the latter is optimal. That is the only
+optimum this paper reports, and it is established by inclusion from an
+exactly solved relaxation --- no tree, no pricing, no geometric
+certification. The method's own attempt at the same proof failed:
+certifying, under their own duals, the three regions its search could
+not refute returned $18\,795.57$, $18\,795.54$ and $18\,795.54$ against
+an incumbent of $18\,796.96$, none of them proved, at $237$ s per
+region. The reason is arithmetic rather than accidental --- with the
+fleet fixed at twelve trucks, refuting a leaf needs a maximum reduced
+cost below roughly $0.12$ per column, while pricing on the same
+instance was still returning columns an order of magnitude below that.
+The proof is available on this instance because its two container
+families have coinciding height-limited and crush-limited layer counts,
+which is precisely the condition under which
+Section~\ref{sec:res-abstraction} finds a volumetric capacity adequate.
+
+\paragraph{The size ladder.}
+Table~\ref{tab:3d-onecommit} reports the method on five rungs, every
+row on one commit and verified truck by truck. Read as a progression it
+says three things, and the gaps have to be read with one convention
+fixed: the gap column of that table is to the \emph{method's own}
+certified bound on every row, so that no row carries two gaps, and
+where the compact volumetric model supplies a tighter valid bound it is
+reported in Table~\ref{tab:volumetric} and used as the interval end in
+Table~\ref{tab:3d-head}, never as a second gap.
+
+Against its own bound the gap is $0.0076\%$ at five periods,
+$0.165\%$ at ten and $0.046\%$ at twelve --- so two of the first three
+rungs are under $0.05\%$ and the third is under $0.2\%$ --- and on all
+three the truck count is the minimum possible, because the region with
+one truck fewer is certified infeasible
+(Table~\ref{tab:fleetfloor}): $X\le11$, $X\le25$ and $X\le33$ are
+infeasible in $1.5$, $3.9$ and $16.3$ s, and the reported plans use
+twelve, twenty-six and thirty-four trucks. What remains of those three
+gaps is inventory cost. At fifteen and twenty periods the method still
+returns verified plans --- fifty-four trucks at $78\,549.14$ and one
+hundred and sixty at $230\,594.36$ --- but the gap jumps to $13.3\%$,
+and Section~\ref{sec:res-abstraction} attributes that to the bound
+rather than to the plan. Over the generated set the mean of the same gap is $8.8\%$, taken
+over the thirty of thirty-six instances that carry both a plan and a
+proved bound, and it reaches $30.72\%$ (Table~\ref{tab:summary}, whose
+``(30)'' is that denominator); nothing in
+this paper supports a blanket statement that the method's gaps are
+small, and the one that can be made is the conditional one: they are
+small where the volumetric relaxation is nearly exact, and that
+condition is checkable in advance (Section~\ref{sec:res-abstraction}). On
+$I\_16\_15\_2\_90\_k25$ neither $X\le52$ nor $X\le45$ is refuted, so
+nothing about the truck count is proved there, for the same reason the
+bound is loose: the volumetric relaxation admits forty-five-truck plans
+--- its own optimum has forty-five --- and cannot separate the
+fifty-four-truck 3D plan from fifty-three.
+
+\paragraph{Twenty periods: the round cap is what made the plan possible.}
+The twenty-period row deserves a note because an earlier revision of
+this work reported that instance as unsolved, and the difference is one
+parameter. Under an uncapped cut-and-repack walk the construction spent
+$2\,224$ s of a $3\,065$ s run inside the partition --- $387$ cut rounds
+over the first fourteen of forty (direction, period) pairs, $8\,709$
+placeability calls --- and reached the deadline with no plan at all.
+Step 3's deliverable is columns and not the partition, which the cover
+of Section~\ref{sec:relaxfix-flow} already conceded, so a pair whose
+parts will not place need not be pursued round after round: with the
+rounds capped at two, the parts that did place kept as columns and the
+failing pairs left to step 4, the same instance returns a verified
+one-hundred-and-sixty-truck plan at $230\,594.36$, the root
+construction finding it at $1\,418$ s. Forty-four of the eighty-seven
+(direction, period) pairs the construction attempted were left to step
+4 in that run. The cap is a parameter of a primal heuristic, so this is
+a statement about the heuristic and not about the problem.
+% uncapped: results/fleet_tree_3d/tree_3d_I_24_20_2_90_k50_pure_ladder_stk_3600.json
+%   (incumbent inf, part_rounds unset, cut_rounds 387, part_pairs 14, t_partition 2223.7,
+%    t_pack 1667.2, pack_calls 8709, wall 3064.8)
+% capped:   results/fleet_tree_3d/tree_3d_I_24_20_2_90_k50_table_3600.json
+%   (part_rounds 2, 230594.36 / 160 verified, trace "1418.2 root plan 230594.36 X=160",
+%    part_pairs 87, part_fail 44, wall 3492.5)
+
+\paragraph{The full factorial.}
+Tables~\ref{tab:bench} and~\ref{tab:summary} run the same method over
+the thirty-six generated instances at a uniform $900$ s, one commit,
+sequentially. It returns a verified plan on thirty-one of thirty-six
+and a proved bound on thirty-five; no plan carries a verification
+complaint. Wall times run from $603.1$ s to $900.1$ s, so the longest
+row overruns the $900$ s budget by $0.1$ s: every phase of the
+construction carries a floor, so a phase begun just before the wall
+still gets a token solve. The mean
+certified gap over the thirty rows that have both a plan and a proved
+bound is $8.8\%$, and the largest is $30.72\%$.
+
+The five failures are the informative part, and they are not spread
+across the factorial: all five have $v=60$, the coarsest granularity,
+where RTIs are largest and a single container is the largest fraction
+of a trailer. At $v=60$ the method returns a plan on seven of twelve
+instances, and the mean gap of $19.3\%$ is over the six of those seven
+whose bound was also proved ($I\_8\_10\_3\_60$ has a plan and an
+unproved bound, so it carries no gap); at $v=90$ and $v=120$ it returns
+a plan on twelve of twelve with mean gaps of $5.0\%$ and $7.4\%$ over
+twelve rows each. Table~\ref{tab:summary} prints each denominator
+beside its mean. The same granularity is where the volumetric benchmark's loads
+are least placeable ($91.8\%$ proved unplaceable, against $55.2\%$ and
+$66.7\%$), so the two difficulties have a common cause: when one
+container is a large fraction of the trailer, the integer structure of
+the loading problem is coarse, the volumetric relaxation is at its
+least informative, and the construction has the least room to cover a
+delivery vector with full trucks. A plan is not returned rather than an
+invalid one being returned, which is a consequence of the formulation:
+a column that the verifier would reject never enters the pool.
+
+\paragraph{What the tree contributes, and where.}
+The contribution is uneven across the ladder and is not averaged away.
+At five periods the tree opens $67$ nodes and improves nothing: the
+root construction returns $18\,796.96$ at $140.2$ s and that is the
+plan. At ten periods it opens $68$ and seven incumbent improvements
+take $38\,865.30$ at $135.9$ s to $38\,855.34$ at $590.7$ s, a gain of
+$0.026\%$. At twelve periods it opens $11$ and five improvements take
+$53\,195.84$ at $459.0$ s to $52\,129.45$ at $1\,648.5$ s, a gain of
+$2.005\%$ --- this is where branching does the most work in the paper.
+At fifteen and twenty it opens $1$ and $2$ nodes and the reported plan
+is the root construction's. Over the thirty-six generated instances the
+node counts range from $0$ to $126$; they are not a predictor of the
+gap, which $I\_4\_5\_2\_90$ makes plain at $126$ nodes and $10.0\%$.
+
+Repeat runs matter at these margins, and the exclusion is stated rather
+than applied. On $I\_12\_12\_2\_90\_k25$ two runs of the same knob set
+on two commits returned $52\,129.45$ and $52\,127.89$, both with
+thirty-four trucks, a spread of $0.003\%$; two further runs under a
+delivery-branching variant since withdrawn for a diagnosed defect
+returned $53\,005.78$ and $53\,425.07$, both with thirty-five trucks.
+The method is deadline-driven at every phase, so a step-2 solve landing
+at $299$ s rather than $301$ s takes a different branch; no objective
+delta below a few hundredths of a percent on an instance of this kind
+is reported here without its measured spread beside it.
+% one-commit traces: results/fleet_tree_3d/tree_3d_*_table_*.json
+%   I_8_5:  "140.2 root plan 18796.96 X=12", 67 nodes, no incumbent line after it
+%   I_8_10: "135.9 root plan 38865.30 X=26" ... "590.7 ... NEW INCUMBENT 38855.34" (7 lines)
+%   I_12_12:"459.0 root plan 53195.84 X=34" ... "1648.5 ... NEW INCUMBENT 52129.45" (5 lines)
+%   I_16_15:"1180.9 root plan 78549.14 X=54", nodes 1;  I_24_20: "1418.2 root plan 230594.36", nodes 2
+% 0.026% = (38865.30-38855.34)/38865.30; 2.005% = (53195.84-52129.45)/53195.84
+% repeats: tree_3d_I_12_12_2_90_k25_table_1800.json (52129.45 / 34, commit 73411b9),
+%   _condcert_1800.json (52127.89 / 34, commit 11db34b) -- same frontier_share 0.03,
+%   part_rounds 2, region_cert_share 0.15; _deliv_1800.json (53425.07 / 35, 5404345) and
+%   _deliv2_1800.json (53005.78 / 35, 4461846) under delivery branching
+
+\paragraph{Where the time goes.}
+It depends on whether the crush limit binds, and the split is read from
+each run's own clock. On $I\_8\_5\_2\_90$ column generation takes
+$864$ s of an $873$ s run and everything else $8$ s: the geometry is
+free and the budget goes into pricing columns that do not improve the
+plan. On $I\_8\_10\_2\_90\_k25$ the aggregate master of step 2 takes
+$573$ s of $883$, column generation $181$ s, the partitions $79$ s of
+which $65$ s are placeability calls, and the integer master $35$ s. On
+$I\_12\_12\_2\_90\_k25$ the integer master of step 4 takes $1\,024$ s
+of $1\,761$ and the partitions $325$ s. On the two crush-binding rungs
+the partition dominates: $934$ s of $1\,746$ on
+$I\_16\_15\_2\_90\_k25$ and $1\,677$ s of $3\,492$ on
+$I\_24\_20\_2\_90\_k50$, of which $369$ s and $1\,246$ s are
+placeability calls. The aggregate and integer masters are the scaling
+limit where the crush limit does not bind, and they are shared with the
+volumetric method; where it does bind, proving parts unplaceable is.
+Within placeability, the constructive shelf design answers essentially
+every positive verdict and the constraint programme supplies the
+proofs of impossibility: over the thirty-six generated instances the
+shelf design placed $24\,686$ loads and the constraint programme $246$,
+while the programme proved $4\,327$ of the $11\,866$ distinct
+compositions proposed unplaceable and left $397$ undecided.
+% t_cg / t_step2 / t_partition / t_pack / t_ip / wall, results/fleet_tree_3d/tree_3d_*_table_*:
+%   I_8_5    864.2 /   1.4 /    5.7 /    5.0 /    0.3 /  873.1
+%   I_8_10   181.0 / 572.7 /   79.3 /   65.5 /   35.2 /  883.1
+%   I_12_12  298.0 /  92.4 /  325.4 /  314.6 / 1024.5 / 1761.3
+%   I_16_15  250.1 / 420.0 /  934.4 /  368.9 /  120.0 / 1746.3
+%   I_24_20  782.7 / 660.1 / 1676.7 / 1245.6 /  360.0 / 3492.5
+% shelf / cpsat / unplaceable / undecided summed over results/bench_tree/*.json:
+%   pack_ok_shelf 24686, pack_ok_cpsat 246, distinct_parts 11866,
+%   distinct_parts_unplaceable 4327, distinct_parts_undecided 397
+
+\paragraph{The pool and the pricing ladder.}
+Tables~\ref{tab:pool} and~\ref{tab:ladder} isolate two decisions. The
+pure single-commodity pool costs nothing on $I\_8\_5\_2\_90$ once step
+2 counts stacks in integers and the region $X\le X^{\star}-1$ is
+constructed first: the method returns the twelve-truck plan at
+$18\,796.96$, to the cent the value of the hand-seeded reference that
+was removed from the method. Without those two decisions it returned
+thirteen trucks at $19\,682.36$, for the reason given in
+Section~\ref{sec:relaxfix-flow}.
+
+The heuristic rung is isolated by a three-arm experiment from one pure
+pool --- the exact oracle alone, the rung pre-empting the oracle
+wherever it qualifies, and the two additively --- run in two
+configurations that answer two different questions. At $5$ s per call
+the exact oracle is invoked at every pair in \emph{all three} arms, so
+that the arms differ only in which columns enter the pool and the walls
+differ only by the rung's own cost; at $20$ s, the campaign's own
+per-call budget, the arms run the production structure, in which a
+pre-empted oracle is not called at all, so those walls are comparable.
+What the rung buys is \textbf{LP quality at equal work}, and it buys it
+only where the instance is large enough to need balanced loads.
+
+On $I\_8\_5\_2\_90$ all three arms land within $0.003\%$ of one another
+after five sweeps --- $18\,796.61$ exact-only, $18\,796.04$ with the
+rung pre-empting, $18\,796.11$ with both --- and the rung contributes
+no truck to the reported plan: there it is inert, not harmful. On
+$I\_16\_15\_2\_90\_k25$ the separation is wide. At $20$ s and six
+sweeps, exact-only reaches $76\,103.92$ in $744.5$ s, the rung-fed arm
+reaches $75\,983.75$ in $405.6$ s --- a better value $1.8\times$ sooner
+--- and running both generators reaches $75\,361.05$. At matched wall
+within that configuration the rung-fed arm is $2.0\%$ tighter at
+${\sim}235$ s and $1.6\%$ at ${\sim}410$ s. The two configurations ran
+at $1.96$ and ${\sim}8$ sampled cores, so no figure of one is compared
+with a figure of the other.
+
+One claim this paper made in an earlier revision is withdrawn here. At
+$5$ s per call the exact oracle alone leaves $99.6$ units of
+artificials in this master after three sweeps while one rung-fed sweep
+clears them, and that was reported as a structural limit of exact
+pricing. It is not one: at $20$ s the exact arm reaches zero
+artificials at \emph{sweep one}, with an LP of $78\,746.59$, and
+finishes feasible. The infeasible master was an artefact of a
+five-second cap, and the case for the rung rests on LP quality at equal
+work and not on feasibility. What remains true, and is a different
+statement, is that the pure pool of seventeen single-commodity trucks
+\emph{by itself} cannot cover demand within the fleet: the master over
+that pool alone carries $1.55\cdot10^{8}$ of artificials, and some
+generator has to clear them.
+
+The two generators are complementary rather than alternative, which is
+why the best of the three arms is the one that runs both. Within that
+arm, where both generators are called at every pair and so compared
+under one dual trajectory, the oracle's columns carry $4.72$ distinct
+commodities (median $5$) with $0.522$ of the load in the heaviest and
+the rung's carry $10.17$ (median $14$ of $16$) at $0.374$; pricing
+maximises a linear objective and so returns extreme,
+concentrated loads, and a balanced load is not an extreme point of
+$\operatorname{conv}(\Omega^{g})$ at any duals. Which arrangement to
+run is a budget question rather than a choice between the two, and
+Section~\ref{sec:pp} states the condition: both while the mean per-pair
+oracle time is at or under $5$ s, the rung pre-empting above it. At
+$20$ s that is pre-emption, which is what the code already did, so
+every row of this section was produced by the algorithm just described.
+
+In the one-commit runs the rung served $13$, $15$, $66$, $206$ and
+$318$ of the $215$, $69$, $227$, $585$ and $873$ pricing calls, and the
+trucks it contributed to the reported plan are none, none, none, $44$
+of $54$ and $122$ of $160$: nothing on the three instances whose
+certified gap is under $0.05\%$, and most of the fleet on the two whose
+catalogue makes the crush limit bind, which are also the two on which
+the pure pool alone cannot cover demand (Table~\ref{tab:ladder}). It
+costs $18.9$ s of the $405.6$ s arm, $4.7\%$. The certificate is never
+the rung's: the bound of every row is one uncapped exact sweep of the
+volumetric oracle, and a sweep at which the rung served any pair cannot
+report \emph{proved}.
+% Three-arm experiment, same pure pool, exact oracle run at every pair in every
+% arm so that only the COLUMN SET differs:
+%   results/fleet_tree_3d/ladder_both_I_8_5_2_90.json (price_tl 5, 5 sweeps,
+%     pool 10, 2 threads / 2 workers): exact 18796.607 / 30 cols / 115.7 s,
+%     ladder 18796.038 / 39 / 116.5 s, both 18796.110 / 44 / 120.0 s.
+%   results/fleet_tree_3d/ladder_both_I_16_15_2_90_k25.json (price_tl 5, 3
+%     sweeps, pool 17): exact final_lp 9.9633e7 with artif 99.554 / 60 cols /
+%     230.8 s, ladder 76839.25 / 103 / 237.3 s with added_exact 0, both
+%     76304.92 / 148 / 241.5 s.  Composition: rung ncomm_mean 10.29 (med 14 of
+%     16) at top_share 0.364 against the exact ARM's 4.70 (med 5) at 0.687 --
+%     different arms, hence different duals.  The same-duals pair is inside the
+%     `both' arm: exact_comp 4.72 / 5 / 0.522, rung_comp 10.17 / 14 / 0.374.
+%   results/fleet_tree_3d/ladder_exact_tl20_I_16_15_2_90_k25.json (price_tl 20,
+%     6 sweeps, 10 threads / 8 workers): 76103.92 / 102 cols / 744.5 s; its
+%     trace reaches artif 0.0 at it 1 with lp 78746.59.
+%   results/fleet_tree_3d/ladder_rung_tl20_I_16_15_2_90_k25.json (same config,
+%     PRODUCTION structure -- the pre-emptive arm skips the oracle at a served
+%     pair, t_exact 386.5 against 744.5): ladder 75983.75 / 185 / 405.6 s with
+%     t_heur 18.85; both 75361.05 / 265 / 799.1 s.
+%   Matched wall from those traces: 78409.83 (exact, 219.9 s) against 76824.77
+%     (ladder, 234.2 s) = 2.02%; 77387.10 (exact, 419.6 s) against 76170.03
+%     (ladder, 405.6 s) = 1.57%.  1.8x = 744.5 / 405.6.
+%   The 5 s and 20 s jobs differ in cores (1.96 against ~8 sampled), so the
+%     cross-budget sentences are labelled as such.
+% "ladder: N pairs served by GRASP" in the root LB trace line of each
+%   tree_3d_*_table_*.json.  Rule and reasoning: docs/DECISIONS.md decision 13.
+
+% ---------------------------------------------------------------
+\subsection{Against the procedure in use}
+\label{sec:res-case}
+
+The comparator for the 3D rows is the company procedure, because
+Section~\ref{sec:res-3d} established that the compact 3D model cannot
+serve as one. \textbf{That comparison is not reported in this
+revision.} The reason is stated here rather than deferred, because the
+file that would fill the table exists and must not be read as filling
+it.
+
+\begin{center}\small
+\fbox{\begin{minipage}{0.92\textwidth}
+\textsc{Not available in this revision.} The case study comparing
+MATH-3D-SCPTOP against PLC-SCPTOP on the nine company instances
+requires a run of the method of Section~\ref{sec:math} against
+baselines solved to the gap the comparison claims. Neither condition is
+met by the recorded run on disk, for two independent reasons given
+below, so no cost, truck count or percentage saving is quoted against
+the company procedure anywhere in this paper.
+\end{minipage}}
+\end{center}
+
+First, the method column of that run was produced by the earlier
+branch-and-price configuration of Section~\ref{sec:methods} and not by
+the method of Section~\ref{sec:math} --- a pool seeded with the
+company's own configurations, and the integer master rather than the
+flow-first relax and fix as the primal. Labelling it with the method's
+name would be the error this section is organised to avoid.
+
+Second, and independently, all nine company baselines stopped on their
+time limit rather than at the requested MIP gap of zero. The evaluation
+solve is given $315$ s of the instance's $900$ s budget and every one of
+the nine returned \textsc{time\_limit}; the stage's recorded wall times,
+$513.8$ to $1\,493.6$ s, are larger because the stage also rebuilds the
+configuration pool in up to four rounds of $180$ s before the evaluation
+solve, and three instances ran concurrently. A
+saving measured over a baseline that was not solved is a saving over
+whatever the baseline's solver happened to hold when the clock ran out;
+it bounds the true saving from one side only, and in the wrong
+direction for the claim, since a better-solved baseline can only reduce
+it. The same run makes the point against itself: its nine savings over
+the company procedure span $-1.25\%$ to $+18.47\%$ and are
+\emph{negative} on two instances, which is not a result that survives
+either defect being repaired in an unknown direction.
+
+Two observations from the same run do \emph{not} depend on the
+solution procedure and are reported, because they are properties of the
+company's configuration set rather than of anything the method did.
+Reconstructing that set from the planner's average mixes yields very few
+distinct configurations when demand is stable, and on three of the nine
+instances the reconstruction had to be extended by $77$, $66$ and $73$
+configurations before the programme could be served at all; on the
+other six it needed none. And on eight of the nine instances the
+\emph{dedicated} reading of a configuration --- one per product, rather
+than shared across an RTI family --- served the programme better than
+the shared one. Both say the same thing about the practical cost of a
+fixed configuration set: it is not that the procedure fails, since the
+plant plainly operates, but that keeping it feasible as the programme
+moves requires a planner to maintain a large and growing catalogue by
+hand, every entry of which was found by trial rather than by design.
+% results/case_study.csv (regenerated 2026-09-22): company_status TIME_LIMIT on all nine
+%   rows, company_time 513.8-1493.6 s, mipgap 0.0 requested by experiments/run_case.py;
+%   saving_pct -1.25, -0.94, 0.15, 1.15, 2.17, 3.82, 4.63, 6.45, 18.47;
+%   company_recovered 77 / 66 / 73 on CASE_low_2, CASE_low_3, CASE_normal_3 and 0 elsewhere;
+%   company_reading "dedicated" on eight rows, "shared" on CASE_low_2.
+%   The math_* columns of that file come from experiments/run_case.py -> solve_bp.
+
+The nine instances also carry the one piece of evidence about real
+containers that does not depend on the method at all. The volumetric
+benchmark, run on them under the same budgets, dispatches $392$ truck
+loads of which $169$ --- $43.1\%$ --- are \emph{proved} unplaceable by
+the same constraint programme used throughout. That run did not record
+how many of the remainder were left undecided, so $43.1\%$ is a lower
+bound on the share that cannot be placed and not an estimate of it, and
+it is not comparable with the $69.2\%$ of
+Section~\ref{sec:res-abstraction}, which is measured over the generated
+instances and reports its undecided share.
+% scp_loads / scp_loads_infeasible in results/case_study.csv: 47/41, 25/24, 52/7, 24/24,
+%   27/26, 70/8, 25/21, 49/10, 73/8; totals 392 and 169, i.e. 43.1%.  (An earlier revision
+%   of this paragraph printed 189 / 48.2% -- the addition was simply wrong, and the round-1
+%   referee caught it from this comment's own inputs.)  No undecided column is recorded.
+
+% ---------------------------------------------------------------
+\subsection{Is a volumetric capacity adequate?}
+\label{sec:res-abstraction}
+
+\begin{table}[!t]
+\centering
+\small
+\caption{\textbf{What volumetric planning costs, constructed rather than
+estimated.} Trucks dispatched, on the two instances where the per-stack
+crush limit binds. Row 1 is the volumetric benchmark's own plan, which
+is not executable: $41$ of its $45$ dispatched loads on the first
+instance and $119$ of its $137$ on the second are \emph{proved}
+unplaceable, with \emph{none} left undecided on either, so those two
+rows are fully decided and the shares --- $91.1\%$ and $86.9\%$ ---
+carry no undecided caveat. Row 2 splits each unplaceable
+load where it stands, with no consolidation; it is reported for
+contrast and is \emph{not} the comparison, because consolidation is
+worth twelve and forty-four trucks. Row 3 is the comparison: the
+volumetric plan's delivery quantities kept exactly, each period
+re-packed with the same partition-and-pack machinery the method uses,
+every resulting truck verified. Row 4 is MATH-3D-SCPTOP, which also
+chooses the quantities. The volumetric plan on
+$I\_24\_20\_2\_90\_k50$ is a \emph{memory stop} and not an optimum
+($200\,266.21$, Table~\ref{tab:volumetric}), so a better volumetric
+plan might repair into fewer than $212$ trucks and that row's margin is
+overstated by an unquantified amount in the method's favour; the
+$I\_16\_15\_2\_90\_k25$ plan is the proved volumetric optimum and
+carries no such caveat.}
+\label{tab:repack}
+% results/volumetric_loads_recheck.json (pack_tl 60 s, oracle
+% feasibility.pack_witness, every placed witness re-verified by verify_column):
+%   I_16_15_2_90_k25  source compact_ref (OPTIMAL 68139.17), dispatched 45,
+%     dispatched_placed 4, dispatched_unplaceable 41, dispatched_undecided 0
+%   I_24_20_2_90_k50  source compact_ref (MEM_LIMIT 200266.21), dispatched 137,
+%     dispatched_placed 18, dispatched_unplaceable 119, dispatched_undecided 0
+% results/repacked_volumetric.json for rows 2-4 (loadlocal_trucks, repacked_trucks,
+%   method_trucks; pairs_unpacked 0 and complaints 0 on both instances).
+\begin{tabular}{lrr}
+\toprule
+ & $I\_16\_15\_2\_90\_k25$ & $I\_24\_20\_2\_90\_k50$ \\
+\midrule
+volumetric plan (not executable)      & 45  & 137 \\
+repaired load by load (contrast only) & 86  & 256 \\
+\textbf{re-packed, quantities kept}   & \textbf{74} & \textbf{212} \\
+\textbf{MATH-3D-SCPTOP} (which also chooses the quantities) & \textbf{54} & \textbf{160} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This is the question that decides whether the 3D representation buys
+anything, and it is answered by proof rather than by argument: every
+truck load the volumetric benchmark dispatches is submitted to a
+constraint programme asking whether that exact set of RTIs can be
+stacked and placed in a trailer at all, with the true slot bound
+\eqref{sb:eq:Ibound} in force so that an infeasibility verdict is a
+proof and not a modelling artefact.
+
+\paragraph{The census.}
+Over the thirty-six generated instances the volumetric benchmark
+dispatches $724$ truck loads. Of those, $501$ ($69.2\%$) are
+\emph{proved} unplaceable, $49$ ($6.8\%$) are proved placeable, and
+$174$ ($24.0\%$) are left undecided within the limit. The undecided
+share must be read with the other two, and it is not noise: a
+constraint programme cannot decide easy loads quickly either, and the
+last column of Table~\ref{tab:bench} reports the count per instance ---
+not to be confused with the \emph{und.}\ column under
+\emph{partition}, which counts compositions the construction proposed
+rather than loads SCPTOP dispatched. What the census
+supports is therefore a statement about the loads it \emph{decided}:
+of the $550$ loads decided either way, $91.1\%$ cannot be placed.
+
+The error has a direction, and the direction is what matters
+operationally. A volumetric capacity ignores the remainders that
+footprints and layer heights leave unusable, so where it errs it errs
+by dispatching loads that do not fit. A planner handed such a plan
+discovers the shortfall on the loading dock, not in the model. By
+granularity the shares are $91.8\%$ proved unplaceable at $v=60$ (with
+only $2.7\%$ undecided, so that row is nearly fully decided), $55.2\%$
+at $v=90$ and $66.7\%$ at $v=120$.
+
+The two ladder instances on which the crush limit binds give the same
+finding with no undecided caveat at all, because there the oracle
+decided every load. On $I\_16\_15\_2\_90\_k25$, where the volumetric
+plan is the \emph{proved} optimum, $41$ of its $45$ dispatched loads are
+proved unplaceable and four are placeable, none undecided; on
+$I\_24\_20\_2\_90\_k50$ it is $119$ of $137$, again none undecided. A
+volumetric optimum can therefore be a plan nine tenths of which cannot
+be loaded, and that statement rests on a complete audit rather than on
+a share of the decided.
+
+\paragraph{What volumetric planning costs, constructed rather than estimated.}
+The census says a volumetric plan's loads frequently cannot be placed;
+it does not say what that costs, and the cost is the answer to the third
+question of this section. To answer that, each volumetric plan is
+repaired into an executable one on the two instances where the crush
+limit binds. The \emph{competent} repair keeps the volumetric plan's
+delivery quantities unchanged and re-packs each period's freight with
+the same partition-and-pack machinery the method itself uses; every
+resulting truck is verified. A weaker, load-local repair --- splitting
+each unplaceable load where it stands, with no consolidation --- is
+reported for contrast and is \emph{not} used as the comparison, because
+consolidation is worth twelve and forty-four trucks and a planner would
+do it. The outcome is Table~\ref{tab:repack}, at the head of this
+section.
+
+Against the re-packed baseline the method uses $27.0\%$ and $24.5\%$
+fewer trucks and costs $19.1\%$ and $16.2\%$ less, with no pair left
+unpacked and no truck failing verification in either case; the
+denominator of every one of those four percentages is the re-packed
+baseline. The difference between $74$ and $54$ is what optimising the
+delivery quantities against the geometry buys, over and above packing
+the same quantities well. Two qualifications. The re-pack solves a
+cover, so it ships $80$ and $137$ units beyond requirement, and pricing
+only its trucks therefore \emph{understates} its cost --- the margins
+are conservative in the method's favour only in the sense that they are
+lower bounds on the true difference. And the repaired plan is a
+\emph{baseline, not a bound}: on $I\_8\_5\_2\_90$ the load-local repair
+needs thirteen trucks where twelve is the proved optimum, because
+repairing a fixed assignment of freight to trucks is not the same as
+planning afresh.
+
+\paragraph{A harder volumetric baseline, and what is not yet known about it.}
+The comparison above is against a \emph{plain} volumetric model, and the
+obvious objection is that a planner who had read this section would not
+build one: the mechanism is computable from the catalogue, so the
+capacity could be deflated to reflect it. The honest answer is that a
+step in that direction has been measured and does not close the gap,
+and that the rest of it has not been measured at all. Adding to the
+compact volumetric model the stack-count rows of
+Section~\ref{sec:geo3d} --- an integer number of stacks per footprint,
+each within the crush limit and the height budget, their floor areas
+summed against the trailer floor, which is a valid inequality for every
+placeable load --- raises its answer on $I\_16\_15\_2\_90\_k25$ from
+forty-five trucks to forty-eight, at $71\,072.06$ with a dual bound of
+$70\,435.04$ after $600$ s, and raises the dual bound of the relaxation
+by $2\,303$, about a fifth of the gap the plain bound leaves. On
+$I\_12\_12\_2\_90\_k25$, where the crush limit does not bind, the same
+rows change the truck count not at all.
+
+Two things follow, and we draw only those. The rows are a real
+tightening of the \emph{bound} and are named in the conclusions as the
+next step for it. But forty-eight trucks is still eleven percent below
+the method's verified fifty-four, and \emph{whether those forty-eight
+loads can be placed has not been tested}: the stack rows are necessary
+for placeability, not sufficient, since they say nothing about how the
+stacks tile the floor. Until that test is run, the stack-aware
+volumetric model is not a baseline this paper can report a saving over,
+and claiming one would repeat exactly the error the plain volumetric
+model is being faulted for.
+% results/compact_ref/compact_ab_I_16_15_2_90_k25.json (stack_rows true, obj 71072.06,
+%   bound 70435.0382, 48 trucks, TIME_LIMIT at 600 s, threads 10, soft_mem_gb 20, seed 0)
+%   against compact_ref_I_16_15_2_90_k25.json (no stack rows, OPTIMAL 68139.17, 45 trucks):
+%   bound 70435.04 - 68139.17 = 2295.87 over the proved plain optimum, and 70435.04 -
+%   68131.43 = 2303.61 over the method's certified plain bound, which is the 2303 quoted.
+% results/compact_ref/compact_ab_I_12_12_2_90_k25.json (stack_rows true, 34 trucks,
+%   obj 52117.80) against compact_ref_I_12_12_2_90_k25.json (34 trucks, obj 52116.69)
+% 11% = (54-48)/54 = 11.1%
+
+% results/repacked_volumetric.json (config pack_tl 20, part_tl 90, workers 8, rounds 3):
+%   I_16_15_2_90_k25 volumetric 45 / 68139.17, repacked 74 / 97139.17, loadlocal 86,
+%     method 54, pairs_unpacked 0, over_delivered_units 80, complaints 0
+%   I_24_20_2_90_k50 volumetric 137 / 200266.21, repacked 212 / 275266.21, loadlocal 256,
+%     method 160, pairs_unpacked 0, over_delivered_units 137, complaints 0
+% 27.0% = (74-54)/74; 24.5% = (212-160)/212;
+% 19.1% = (97139.17-78549.14)/97139.17; 16.2% = (275266.21-230594.36)/275266.21
+
+% ---------------------------------------------------------------
+\paragraph{The mechanism behind all of it.}
+Both the census and the cost above have one cause, and it is worth
+isolating because it is the part a planner can check in advance. The
+error of a volumetric capacity is governed by how much it over-credits a
+truck relative to what physically fits, and the clearest single case is
+measured directly. On $I\_16\_15\_2\_90\_k25$ the
+payload admits $57$ full RTIs of product $P_{1}$ in one truck, and $32$
+is the largest number that can be placed --- a proved bound, obtained by
+running the pricing problem for that commodity alone to optimality.
+The cause is that the family's container is $650$ mm tall, so four
+layers fit under the $3\,000$ mm roof, while at $378$ to $484$ kg full
+only two fit under the $1\,200$ kg crush limit. A volumetric fill
+therefore credits a truck with roughly twice the placeable count of
+that family. The same divergence is why the certified bound on the two
+crush-binding rungs of Table~\ref{tab:3d-onecommit} sits $13.3\%$ below
+the best verified plan: the bound credits every such stack with four
+layers where two can be carried, and we attribute the gap to the bound
+rather than to the plan on that evidence --- noting that nothing in this
+paper proves it, and that the fifty-four- and one-hundred-and-sixty-truck
+plans are reported as what they are, verified upper bounds under a
+stated budget.
+% 57 = floor(24000 / 419.2), w_full of P1 and pKw from instances_scale/I_16_15_2_90_k25.json
+% 32 = trace "single-commodity caps: ... p:P1=32" in
+%      results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_table_1800.json
+% R1 geometry 1200x1600x650, w_full 378.0-483.6 (same instance file)
+% 13.3% = (78549.14-68139.17)/78549.14 and (230594.36-200013.41)/230594.36
+
+\paragraph{The layer ratio alone does not predict it, and we say so.}
+It is tempting to turn the mechanism into a one-number test, and the
+obvious candidate fails. The sweep is eighteen generated instances: three seeds crossed with six
+dose levels, where the dose is a scaling of the product weights alone,
+so that within a seed the footprints, heights and demands are identical
+across the six levels and only the weights move. Over those eighteen,
+the share of a volumetric plan's own dispatched loads that a
+placeability proof rejects correlates at only $0.42$ with the ratio of
+height-limited to crush-limited layer counts. Three of the eighteen
+volumetric solves stopped on their time limit rather than at
+optimality, which affects which plan was audited but not the audit. The sweep
+contains three instances at $0\%$ with that ratio between $0.98$ and
+$1.25$, and one at $90.9\%$ with the ratio at $1.08$. The ratio is part
+of the mechanism and is not a predictor of the share, and a predictor
+validated across instances is not established here. What \emph{is}
+established is narrower, and it is a one-sided statement.
+
+Define, for one container type and the trailer of
+Section~\ref{sec:instances}, the \emph{analytic credit ratio} $\theta$:
+the numerator is the count a volumetric capacity credits a truck with,
+$\min\{\Gamma_{K}/\gamma_{pr},\,pK^{w}/\bar w_{r}\}$, and the
+denominator is an \emph{analytic} count of how many can be carried,
+$\min\{s_{r}\cdot\min(L^{h}_{r},L^{c}_{r}),\,pK^{w}/\bar w_{r}\}$. Here
+$\bar w_{r}$ is the catalogued gross weight of one full RTI of type
+$r$, $s_{r}$ the number of its footprints that a single orientation
+tiles onto the trailer floor, and $L^{h}_{r}=\lfloor rK/r_{pr}\rfloor$,
+$L^{c}_{r}=\lfloor W^{\max}/\bar w_{r}\rfloor$ its height-limited and
+crush-limited layer counts. Both ends obey the same
+payload: a grid count no truck can carry is not a count of what can be
+carried, and the earlier revision of this paper divided a
+payload-capped numerator by an uncapped denominator, which reported a
+spurious under-credit on eight of the fifteen types --- Container 9's
+$136$ ``placeable'' RTIs weigh $74.8$~t against a $24$~t cap. The
+denominator is also analytic and not proved: it is a grid count in a
+single orientation with \emph{no} packing oracle run, so it is an
+\emph{upper} estimate of what fits, and $\theta>1$ is correspondingly a
+conservative diagnosis of over-credit.
+
+Over the fifteen container types of the industrial catalogue $\theta$
+has median $1.000$, ranges from $1.000$ to $2.000$, and exceeds
+$1.20$ on four types. No type has $\theta<1$. Read correctly that says
+two things, and the first is stronger than the statement this revision
+replaces. On this catalogue a volumetric capacity is \emph{never}
+conservative: there is no real type it under-credits, so the error
+cannot run in the planner's favour. Nine of the fifteen sit exactly at
+the analytic count, and for a reason worth naming: on eight of those
+nine the $24$~t payload binds \emph{both} ends, so the volumetric
+capacity is exact there rather than merely safe, and the ninth is a
+pallet-sized container that tiles the trailer floor so closely that its
+volume count and its grid count coincide at $22$. And four of
+fifteen are over-credited by more than a fifth, which is enough for a
+plan drawn over a mixed catalogue to contain unplaceable loads, since a
+plan fails on its worst container and not on its median one.
+
+The instances on which the census above was taken are
+\emph{generated}, with $\theta$ in a range the generator controls, and
+the catalogue measurement is a realism check on that range rather than
+a second census. Three statements therefore survive and a fourth does
+not. It survives that a volumetric capacity can err badly and that
+where it errs it errs by prescribing loads that cannot be placed ---
+the census proves that on the generated set, and the mechanism explains
+it. It survives that $\theta$ is computable from the catalogue and the
+trailer alone, with no model solved, so a planner can tell in advance
+which regime a catalogue is in. It survives, and is new here, that on
+the industrial catalogue the error is one-sided: the generated sweep's
+range $0.83$ to $1.44$ reaches below $1$ where the real catalogue never
+does, so treating a volumetric capacity as a conservative
+simplification is not defensible on this catalogue in particular. What
+does \emph{not} survive is any transfer of the census \emph{share} to
+the real catalogue: $\theta\ge1$ on every type says the error never
+runs the other way, not what fraction of a real plan's loads would
+fail, and a study that wanted that number would have to take its census
+on real catalogues and not on generated ones.
+% results/dose_response.csv: 18 rows, columns rho (= height layers / crush layers) and
+%   unplaceable_share; Pearson correlation 0.423; rho 0.979 -> 0.0%, 1.208 -> 0.0%,
+%   1.250 -> 0.0% and 92.3% on two different seeds, 1.083 -> 90.9%
+% results/catalogue_realism.json (experiments/catalogue_realism.py): 15 types,
+%   theta_min 1.0, theta_median 1.0, theta_max 2.0, n_under (theta<1) 0,
+%   n_benign (theta<=1) 9, n_severe (theta>=1.2) 4,
+%   n_payload_bound_denominator 8 -- the eight types whose geometric grid count
+%   exceeds what the 24 t payload can carry, which the pre-2026-10-21 script
+%   used as an uncapped denominator.  Container 9: grid_count 136 at 550 kg =
+%   74.8 t, payload_count 43.
+
+\subsection{What the bounds and the claims rest on}
+\label{sec:res-bounds}
+
+Four statements belong with the results rather than with the claims, and
+they are made here so that every number in this section is read
+correctly.
+
+\paragraph{No optimum is proved by the method.}
+Optimality is claimed in this paper exactly once, on
+$I\_8\_5\_2\_90$, and it is established by inclusion from an exactly
+solved relaxation and not by the method's own certification
+(Section~\ref{sec:res-3d}). In every run reported here the global bound
+equals the root bound, because a region's certificate is taken from the
+volumetric relaxation and no such certificate can exceed the
+relaxation's own optimum; where that optimum coincides with the 3D
+optimum the method can prove optimality by inclusion, and where the
+crush limit binds and it does not, the residual gap is not closable by
+more search. Regions remain open on every row of
+Table~\ref{tab:3d-onecommit} but the first, and a run with open regions
+has not searched the space whatever its gap.
+
+\paragraph{What the bound costs and what the alternatives return.}
+Certifying the volumetric relaxation is cheap and is the reason the
+division of labour of Section~\ref{sec:bounds} is affordable: over the
+forty-one runs reported here the sweep returns in $2.5$ to $111.8$ s and
+comes back with every pair proved on forty of them, the exception being
+the one row of Table~\ref{tab:bench} that prints \emph{unproved}. The
+geometric sweep is the other extreme: it certified no region on any run
+in this study, and the three leaves of $I\_8\_5\_2\_90$ that the search
+could not refute took $237$ s each to attempt and returned nothing
+proved. The Lagrangian bound \eqref{eq:lagr} sits between them and is
+reported rather than relied on, for the reason given when it was
+stated: on $I\_8\_5\_2\_90$, whose optimum is $18\,796.96$, it returns
+$18\,778.31$ --- valid, and beaten by the volumetric certificate's
+$18\,795.54$, because ten proved pairs at $|K|=12$ accumulate $120$
+units of penalty against a target of $1.42$.
+% sweep times: the "volumetric relaxation LB ... proved=" trace line of each
+%   results/bench_tree/tree_3d_*.json (36) and
+%   results/fleet_tree_3d/tree_3d_*_table_*.json (5): min 2.5 s, max 111.8 s
+%   (I_24_20_2_90_k50), proved=False on I_8_10_3_60 alone.
+% Lagrangian: results/fleet_tree_3d/tree_3d_I_8_5_2_90_lag_900.json
+%   (lag_lb 18778.305958587145; trace "geometric Lagrangian bound 18778.31 does
+%   not beat the volumetric certified 18795.54").
+% the 237 s leaves: results/fleet_tree_3d/STATE.md and the per-region traces of
+%   tree_3d_I_8_5_2_90_pure_ladder_vcert_fs003_900.json
+
+\paragraph{A lower bound is printed only where a sweep proved it.}
+Where no full sweep completed with every pair proved, the value the run
+records is the restricted master's, which is an \emph{upper} bound on
+the master LP, and it is never printed as a bound. One row of
+Table~\ref{tab:bench} is in that position and says \emph{unproved}; it
+is excluded from the mean gap, and the count of rows behind every mean
+gap in Table~\ref{tab:summary} is printed beside it for that reason.
+
+\paragraph{The compact 3D model's bound is not a bound on the problem.}
+It restricts each direction a priori to a catalogue of
+$n_{\mathrm{LC}}=3$ layouts shared by all its trucks, where
+Section~\ref{sec:model} lets every truck design its own. A
+restriction's optimum is at or above the problem's, so its dual bound
+bounds that restriction and not $z^{\star}$. Its \emph{plan} is used as a comparator and its bound
+never as an end of an interval. In particular the compact model and the
+method do \emph{not} bracket the optimum on $I\_8\_5\_2\_90$; the
+interval that holds $z^{\star}$ there is $[18\,796.96,\,18\,796.96]$,
+and it comes from the volumetric relaxation.
+
+\paragraph{Every reported plan is verified, and the verifier is independent.}
+Every plan in Tables~\ref{tab:bench} and
+\ref{tab:3d-onecommit}--\ref{tab:fleetfloor} is re-derived truck by
+truck from each column's own fill and checked against
+\eqref{eq:col-geom}--\eqref{eq:col-agg} --- geometry, stack heights,
+the per-slot crush limit, the payload and the utilisation floor --- by a
+routine independent of the search and of the oracle that built the
+column; no plan reported here carries a complaint. That is a property of
+the formulation rather than of the search: a column is a witnessed
+layout, so a plan assembled from columns is executable by construction
+and can be handed to a loading crew as a drawing.
+
+Two things about its independence should be stated precisely rather
+than overstated. First, it is independent of the \emph{producer} and not
+disjoint from the implementation: the predicate that decides whether a
+truck is full on the binding resource is the same one the oracle, the
+column reductions and the partition floor use, as are the lookups from
+a commodity to its weight and to its RTI type. A defect in the
+\emph{definition} of a full truck would therefore not be caught here; a
+defect in a solver's \emph{satisfaction} of it would, and that is the
+failure mode the check exists for. Second, the per-slot crush limit is
+re-derived from the fill the slot carries, and the routine complains if
+that fill does not describe the stack it is attached to --- same RTI
+types, same layer counts --- so a load relabelled onto an old layout is
+rejected rather than passed. Only a slot carrying no fill at all falls
+back on the weight stored with the column, which is the family maximum
+and therefore the conservative reading for a \emph{cap}; it would not be
+sound for a floor, and no floor is checked that way.

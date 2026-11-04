@@ -17,7 +17,7 @@ There are two main dimensions of procurement transport problems according to the
 
 \autocite{Schoneberg2010AnNetworks} examine the concept of delivery profiles, which define the delivery frequency at a fixed rate, offering structured planning, minimizing management effort, and improving coordination in logistics. In this context, FTL transport is used when the goods' volume exceeds a vehicle's capacity, making direct shipment possible. LTL is applied when the volume is insufficient to fill a truck, and the goods are first sent to a consolidation center before reaching the final destination. In \autocite{Schoneberg2013ANetworks}, the proposed model accounts for demand uncertainty.
 
-\autocite{Diaz-Madronero2014APlanning} present a  fuzzy  multi-objective  integer  linear programming (FMOILP) model that focuses on operational procurement transport planning in an automotive supply chain, which involves a single source and a single destination while utilising FTL. The developed model aims to minimise the number of trucks employed for procurement transport and the inventory level by considering the uncertainties related to transport capacity levels.
+\autocite{Diaz-Madronero2014AChain} present a  fuzzy  multi-objective  integer  linear programming (FMOILP) model that focuses on operational procurement transport planning in an automotive supply chain, which involves a single source and a single destination while utilising FTL. The developed model aims to minimise the number of trucks employed for procurement transport and the inventory level by considering the uncertainties related to transport capacity levels.
 
 \autocite{Hein2016QuantitativeProblem} investigate the benefits of integrated procurement transport and production planning for supply and production processes by comparing a sequential approach, where production is firstly determined, followed by procurement transport decisions, plus an integrated approach in which decisions are jointly made. Numerical experiments reveal that the integrated planning approach leads to substantial cost savings.
 
@@ -31,7 +31,7 @@ There are two main dimensions of procurement transport problems according to the
 
 
 \subsection{Procurement Transport with RTIs}
-Some models further integrate the procurement and delivery of RTIs into the procurement transport literature. In this sense, RTIs are procured to the supplier, who loads the items and sends them to customer. We extend the SC definitions previously defined to contemplate the RTIs management strategies.
+Some models further integrate the procurement and delivery of RTIs into the procurement transport literature. In this sense, RTIs are procured to the supplier, who loads the items and sends them to customer. We extend the supply chain definitions previously defined to contemplate the RTIs management strategies.
 
 % TODO(author): ACTION REQUIRED BEFORE THIS PARAGRAPH IS RESTORED.
 % The paragraph below has no subject and no citation: the work it describes --- a
@@ -49,19 +49,19 @@ Some models further integrate the procurement and delivery of RTIs into the proc
 % Model a food closed-loop supply chain network design problem incorporating returnable transport items (RTIs), product perishability, facility location and demand uncertainty. A two-stage non-linear chance-constrained programming model minimizes fixed facility, production, transport, inventory holding and RTI costs while ensuring a target service level. It's linearized via sample average approximation and distribution-free methods to capture forward RTI-based shipments and reverse flows for reuse. To solve large instances, an improved Lagrangian relaxation algorithm decomposes facility-location and flow decisions, outperforming CPLEX on solution quality and speed.
 
 
-\autocite{SOYSAL2023101504} develop a tactical-level, multi-period closed-loop Vendor-Managed Inventory (VMI) system for RTIs in an agro-food SC. The SM SC integrates forward flows of full RTIs from a single vendor to multiple customers and reverse flows of empties back to the vendor for cleaning . All routing and inventory decisions are made centrally by the vendor under full information sharing. Sustainable plans in terms of amounts of energy spent and empty crates collected are devised and evaluated.
+\autocite{SOYSAL2023101504} develop a tactical-level, multi-period closed-loop Vendor-Managed Inventory (VMI) system for RTIs in an agro-food supply chain. The SM supply chain integrates forward flows of full RTIs from a single vendor to multiple customers and reverse flows of empties back to the vendor for cleaning . All routing and inventory decisions are made centrally by the vendor under full information sharing. Sustainable plans in terms of amounts of energy spent and empty crates collected are devised and evaluated.
 
 
 \autocite{GUO2024104339} model two-tier Container Management Centre (CMC) network . Empty RTIs are dispatched from central CMC hubs to upstream suppliers, loaded with products, carried by truck to downstream customers, then returned empty to regional CMCs for cleaning and storage before being shipped back to central hubs. A neural network is used for demand forecasting. A MILP is proposed that maximises total profit by optimally determining transport costs and the penalties applied to late RTIs returns.
 
 
-\autocite{Zhang17012024} formulate a perishable-food inventory-routing MILP with multiple RTI types in a SM supply chain, integrating procurement of products and pickup of both filled and empty RTIs. Decisions are made on a operational level, optimally determining per period the quantities to pack, deliver, pick up, purchase and lose, as well as the vehicle routes in order to maximise the total profit of the SC that is equal to the total quality-dependent revenue minus the total costs involved, including inventory holding costs, product cost, transportation costs, and RTI purchasing and loss costs. The model is solved exactly via CPLEX  solver and approximately via a tailored Kernel Search matheuristic.
+\autocite{Zhang17012024} formulate a perishable-food inventory-routing MILP with multiple RTI types in a SM supply chain, integrating procurement of products and pickup of both filled and empty RTIs. Decisions are made on a operational level, optimally determining per period the quantities to pack, deliver, pick up, purchase and lose, as well as the vehicle routes in order to maximise the total profit of the supply chain that is equal to the total quality-dependent revenue minus the total costs involved, including inventory holding costs, product cost, transportation costs, and RTI purchasing and loss costs. The model is solved exactly via CPLEX  solver and approximately via a tailored Kernel Search matheuristic.
 
 
 \subsection{Container loading}
 
 Container loading problems encompass a subset of geometric assignment problems known as cutting and packing ($C\&P$) problems. They revolve around the allocation of n-dimensional orthotope items in larger n-dimensional orthotope containers. Here the aim is to optimise an objective function while taking into account two key geometric constraints: complete containment of items inside containers and lack of item overlap. A loading pattern serves as a formal representation of a solution to such an assignment problem.
-Dyckhoff introduced in \autocite{Dyckhoff1990AProblems} a typology that unifies $C\&P$ problems using four different criteria: dimensionality of space, the objective of assignment, containers types and box type. Consequently, \autocite{Wascher2007AnProblems} develop a new typology that has become the standard in the $C\&P$ literature. We   briefly  describe  the  typology  used  in  \autocite{Wascher2007AnProblems}  based  on  five different criteria: (i) dimensionality of space; (ii) kind of assignment (input minimisation of containers for all small items and loading patterns; output maximisation to pack a subset of small items with limited container availability;) (iii) assortment of small item by distinguishing if they are either a weakly (or strongly) heterogeneous assortment or identical small items ; (iv) assortment of large objects (if it is either several large objects or one large object); (v) shape of small items (circular or of another shape).
+Dyckhoff introduced in \autocite{Dyckhoff1990AProblems} a typology that unifies $C\&P$ problems using four different criteria: dimensionality of space, the objective of assignment, containers types and box type. Consequently, \autocite{Wascher2007AnProblems} develop a new typology that has become the standard in the $C\&P$ literature. We   briefly  describe  the  typology  used  in  \autocite{Wascher2007AnProblems}  based  on  five different criteria: (i) dimensionality of space; (ii) kind of assignment (input minimisation of containers for all small items and loading patterns; output maximisation to pack a subset of small items with limited container availability;) (iii) assortment of small item by distinguishing if they are either a weakly (or strongly) heterogeneous assortment or identical small items ; (iv) assortment of large objects (if it is either several large objects or one large object); (v) shape of small items (circular or of another shape). In that typology's names, the problems cited below are the single large object placement problem (SLOPP), the multiple identical large object placement problem (MILOPP) and the single knapsack problem (SKP) on the output-maximisation side, and the single stock size cutting stock problem (SSSCSP), the multiple stock size cutting stock problem (MSSCSP) and the single and multiple bin size bin packing problems (SBSBPP, MBSBPP) on the input-minimisation side; 3D-BPP is the three-dimensional bin packing problem.
 
 
 
@@ -85,7 +85,7 @@ truck with boxes for different customers at various destinations. The goal is to
 
 
 
-\autocite{Silva2019ExactProblems} study SSLOP models with 3D constraints. These authors compare the different approaches that exist in the literature for model packing problems based on two fundamental approaches: discretised formulation \autocite{Junqueira2013AnConstraints} and continuous formulation \autocite{Chen1995EUROPEANProblem} with subsequent modifications. They also indicate that discretised formulation\autocite{Junqueira2012MIP-basedConstraints} performs the best for instances with similar sized boxes. However, it encounters memory limitations for large instances. For other sets of instances, the adapted formulations of \autocite{Chen1995EUROPEANProblem} and \autocite{2016Paquay} outperform other adaptations. Further research topics suggest including the design of new formulations by considering the limited approaches in the literature.
+\autocite{Silva2019ExactProblems} study SLOPP models with 3D constraints. These authors compare the different approaches that exist in the literature for model packing problems based on two fundamental approaches: discretised formulation \autocite{Junqueira2013AnConstraints} and continuous formulation \autocite{Chen1995EUROPEANProblem} with subsequent modifications. They also indicate that discretised formulation\autocite{Junqueira2012MIP-basedConstraints} performs the best for instances with similar sized boxes. However, it encounters memory limitations for large instances. For other sets of instances, the adapted formulations of \autocite{Chen1995EUROPEANProblem} and \autocite{2016Paquay} outperform other adaptations. Further research topics suggest including the design of new formulations by considering the limited approaches in the literature.
 
 
 
@@ -96,12 +96,12 @@ truck with boxes for different customers at various destinations. The goal is to
 \autocite{Alonso2020AConstraints} develop an algorithm by the greedy randomised adaptive search procedure (GRASP) to tackle a practical container-loading problem with time-sensitive constraints. Their approach addresses dynamic stability constraints while stacking products on pallets and loading them onto trucks during different time periods. Their approach provides high-quality solutions and surpasses an integer programming formulation in efficiency and effectiveness terms.
 
 \autocite{Ali2022On-lineApproaches} conduct a comprehensive literature review by identifying constraints and solution methods for offline problems with full knowledge of the items to be packed and those tackling the online problems, where items are packed immediately when they arrive, and no prior knowledge of an item is known. The study also identifies and classifies solution approaches for offline packing into six categories: exact methods, constructive heuristics; local search and metaheuristic methods; approximation algorithms; machine learning and hyper-heuristic methods; tree search methods.
-\autocite{Harrath2022} proposed a thee stage heuristic based on layer generation to find good quality solutions  the SBSPP problem for large instance up to 993 bins and 200000 items taking into account load balancing constraints.
+\autocite{Harrath2022} proposed a three stage heuristic based on layer generation to find good quality solutions  the SBSBPP problem for large instance up to 993 bins and 200000 items taking into account load balancing constraints.
 
 
 \autocite{Tresca2022} develop a matheuristic to solve the SBSBPP that includes items with different IDs and different categories, to be delivered to different clients. The algorithm creates monoitem, monocategory, and mixed layers which then are used to compute the final loading configurations of the bins.
 
-\autocite{Li2022} develope a hybrid adaptaive large neighborhood search algoritm to solve the multiple container loading problem, which is tries pack a given set of items with the minimum number of containers while maximazing the space utilization of them. Therfore, it is both a MBSBPP and a MSSCSP. Their approach takes into account some practical applications such as supsension constraints, rotation and weight limit.
+\autocite{Li2022} develop a hybrid adaptive large neighborhood search algorithm to solve the multiple container loading problem, which is tries pack a given set of items with the minimum number of containers while maximizing the space utilization of them. Therefore, it is both a MBSBPP and a MSSCSP. Their approach takes into account some practical applications such as suspension constraints, rotation and weight limit.
 
 \autocite{Chen2023}  present a new approach to the 3D-BPP, introducing the 3D-BSDPP which focuses on optimizing both the design of bin sizes and the packing process. A novel Hybrid Biogeography-Based Optimization (HBBO) algorithm is proposed, integrating differential evolution and a local search strategy for enhanced performance.
 
@@ -113,14 +113,14 @@ One noteworthy trend in $C\&P$ is integrating loading problems with routing. Thi
 \subsection{Research Gaps \& Methodology}
 
 
-Here, we discuss the main differences between the 3D-SCPTOP model proposal and those reviewed by specifically focusing on procurement transport. The key distinction of the 3D-SCPTOP model compared to the existing literature is the incorporation of 3D constraints and vertical stability constraints to model transport capacity with a view to providing more realistic solutions and reducing the likelihood of infeasible outcomes.   Table \ref{table:ComProTra}  presents a comparison of inventory modelling, transport modelling, and supply chain configuration between the 3D-SCPTOP model proposal and those currently in the literature.
+Here, we discuss the main differences between the 3D-SCPTOP model proposal and those reviewed by specifically focusing on procurement transport. The key distinction of the 3D-SCPTOP model compared to the existing literature is the incorporation of 3D loading constraints, with vertical stability ensured by construction (Section~\ref{sec:problem}), to model transport capacity with a view to providing more realistic solutions and reducing the likelihood of infeasible outcomes.   Table \ref{table:ComProTra}  presents a comparison of inventory modelling, transport modelling, and supply chain configuration between the 3D-SCPTOP model proposal and those currently in the literature.
 Hence,  the 3D-SCPTOP approach is based on a SS supply chain configuration, and takes into account the FTL transportation mode.
 \begin{table}[!ht]
   \begin{adjustbox}{width=\textwidth}
     \begin{tabular}{|c|c|c|c|c|c|c|l|c|c|c|}
       \hline
       Article                                                                            &
-      \begin{tabular}[c]{@{}l@{}} SC \\ Configuration\end{tabular}                       &
+      \begin{tabular}[c]{@{}l@{}} Supply Chain \\ Configuration\end{tabular}                       &
       \begin{tabular}[c]{@{}l@{}}Decision\\  level\end{tabular}                          &
       \begin{tabular}[c]{@{}l@{}}Transportation \\ Mode\end{tabular}                     &
       \begin{tabular}[c]{@{}l@{}}Transportation \\ Capacity \\   Constraint\end{tabular} &
@@ -170,7 +170,7 @@ Hence,  the 3D-SCPTOP approach is based on a SS supply chain configuration, and 
       X                                                                                  &
                                                                                          &
       MILP                                                                                                                                              \\ \hline
-      \autocite{Diaz-Madronero2014APlanning}
+      \autocite{Diaz-Madronero2014AChain}
                                                                                          &
       SS                                                                                 &
       O                                                                                  &
@@ -247,7 +247,7 @@ Hence,  the 3D-SCPTOP approach is based on a SS supply chain configuration, and 
       FTL                                                                                &
       3D-Constraints                                                                     &
       X                                                                                  &
-      X                                                                                  &                &
+      X                                                                                  & M|F            &
       X                                                                                  &
       X                                                                                  &
       MILP                                                                                                                                              \\ \hline
@@ -256,21 +256,21 @@ Hence,  the 3D-SCPTOP approach is based on a SS supply chain configuration, and 
   \end{adjustbox}
   \begin{tablenotes}
     \scriptsize
-    \item  \textbf{Abbreviations.}  \textbf{T} (tactical), \textbf{O} Operational; \textbf{FTL} (full-truck load), \textbf{LTL} (less-than-truck load), \textbf{MR} (milk-run), \textbf{CES} (courier express service); \textbf{V} (volumetric), \textbf{W} (weight), \textbf{UH} Unit Holding;   \textbf{CCP} chance-constrained programming
+    \item  \textbf{Abbreviations.}  \textbf{T} (tactical), \textbf{O} Operational; \textbf{FTL} (full-truck load), \textbf{LTL} (less-than-truck load), \textbf{MR} (milk-run), \textbf{CES} (courier express service); \textbf{V} (volumetric), \textbf{W} (weight), \textbf{UH} Unit Holding;   \textbf{CCP} chance-constrained programming; \textbf{TO} (tactical and operational); \textbf{S}, \textbf{M} (single, multiple RTI types), \textbf{NF}, \textbf{F} (non-foldable, foldable RTIs); \textbf{ILP} (integer linear programming)
   \end{tablenotes}
   \caption{Comparison of procurement transport models}
   \label{table:ComProTra}
 \end{table}
 
-On the other hand, the 3D-SCTOP model diverges from those proposed in the packaging literature in several aspects. Firstly, the loading problem takes into account different time periods. Therefore, the specific container (small items or boxes in the $C\&P$ literature) that we utilise are yet to be defined, as the choice of container depends on the inventory levels of each product.
-Also, the objective function depends on inventory and transport costs, which are inherently connected to the loading problem at hand. Thefore, we simultaneously solve an input minimisation  and output maximisation problem. Both of these are a result of transport minimisation and inventory costs. Input minimisation comes because we want to find the minimum number of trucks needed. Meanwhile, output maximization comes from the FTL and the transport costs.
+On the other hand, the 3D-SCPTOP model diverges from those proposed in the packaging literature in several aspects. Firstly, the loading problem takes into account different time periods. Therefore, the specific container (small items or boxes in the $C\&P$ literature) that we utilise are yet to be defined, as the choice of container depends on the inventory levels of each product.
+Also, the objective function depends on inventory and transport costs, which are inherently connected to the loading problem at hand. Therefore, we simultaneously solve an input minimisation  and output maximisation problem. Both of these are a result of transport minimisation and inventory costs. Input minimisation comes because we want to find the minimum number of trucks needed. Meanwhile, output maximization comes from the FTL and the transport costs.
 
 \begin{table}
   \begin{adjustbox}{width=\textwidth}
     \begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
-      Article                           & Problem type     & Resolution procedure & Orientation & Weight & Load Balance & Stability & Time-Depenent \\
+      Article                           & Problem type     & Resolution procedure & Orientation & Weight & Load Balance & Stability & Time-Dependent \\
       \hline
-      \autocite{Zhu2012AProblem}        & SLOP|SKP         & TSM                  & X           & X      &              &           &               \\ \hline
+      \autocite{Zhu2012AProblem}        & SLOPP|SKP        & TSM                  & X           & X      &              &           &               \\ \hline
       \autocite{Goncalves2013AProblems} & SBSBPP           & BRKGA                & X           & X      &              & X         &               \\ \hline
       \autocite{2016Paquay}             & SBSBPP           & EM                   & X           & X      & X            & X         &               \\ \hline
       \autocite{Mahvash2018}            & SBSBPP           & CG                   & X           & X      &              &           &               \\ \hline \autocite{Alonso2020AConstraints}& SSSCSP& GRASP& X& X& X& X&X\\ \hline
@@ -281,12 +281,12 @@ Also, the objective function depends on inventory and transport costs, which are
       \hline
       \autocite{Chen2023}               & BSDPP            & HBBO                 & X           & X      &              &           &               \\
       \hline
-      3D-SCPTOP                         & SSSCSP \& MILOPP & BP                   & X           & X      & X            & X         & X             \\ \hline
+      3D-SCPTOP                         & SSSCSP \& MILOPP & BP                   & X           & X      &              & X         & X             \\ \hline
     \end{tabular}
   \end{adjustbox}
   \begin{tablenotes}
     \scriptsize
-    \item  \textbf{Abbreviations.}  \textbf{T}SM (Tree search method), \textbf{BRKGA} Biased Randomized Jey Genetic Algorithm; \textbf{EM} (Exact Metods), \textbf{MH} (MatHeuristic), \textbf{CG} (Column Generation), \textbf{H} (Heuristic); \textbf{BP} (Branch and Price); \textbf{HCLP} (Hybrid Adaptive Large Neighborhood Search), \textbf{HBBO} (Hybrid Biogeography-Based Optimization)
+    \item  \textbf{Abbreviations.}  \textbf{T}SM (Tree search method), \textbf{BRKGA} Biased Random-Key Genetic Algorithm; \textbf{EM} (Exact Methods), \textbf{MH} (MatHeuristic), \textbf{CG} (Column Generation), \textbf{H} (Heuristic); \textbf{BP} (Branch and Price); \textbf{HALNs} (Hybrid Adaptive Large Neighborhood Search), \textbf{HBBO} (Hybrid Biogeography-Based Optimization); \textbf{BSDPP} (bin size design and packing problem)
   \end{tablenotes}
   \label{tab:my_label}
   \caption{Comparison of C\&P problems}
@@ -330,10 +330,10 @@ Based on the literature review and the identified research gaps, our proposal is
       \node [grayblock, below=0.35cm of procedure] (comparison) {Model Comparison};
       \node[ aux_gene_group,fit=(comparison) (procedure)] (gr1) {};
 
-      \node [block, below=0.35cm of comparison] (case) {Managerial Implications};
+      \node [block, below=0.35cm of comparison] (case) {Is a Volumetric \\ Capacity Adequate?};
 
       % Side nodes
-      \node [sideblock, above=1cm of literature] (model) {Modelling \& \\ Resolution Appoach};
+      \node [sideblock, above=1cm of literature] (model) {Modelling \& \\ Resolution Approach};
       \node [sideblock, left=1cm of literature] (procurement) {Procurement Transport};
       \node [sideblock, right=1cm of literature] (3D) {3D Container Loading};
 
@@ -401,7 +401,7 @@ Based on the literature review and the identified research gaps, our proposal is
 
 
       % Side nodes
-      \node [sideblock, right=1cm of comparison] (reference) {With respect \autocite{Diaz-Madronero2014APlanning}};
+      \node [sideblock, right=1cm of comparison] (reference) {With respect \autocite{Diaz-Madronero2014AChain}};
 
       % Draw edges for side nodes (with dashed gray lines and arrows)
       \path [dashedline] (reference) -- (comparison);

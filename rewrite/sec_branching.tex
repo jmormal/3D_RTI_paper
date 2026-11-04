@@ -229,19 +229,19 @@ stack is no taller and no heavier, and an emptied slot is dropped. The
 full-truckload floor is no part of placeability, so it does not disturb
 the closure.
 
+% Shelf share: ladder_3d_final.csv pack_ok_shelf 6749 of pack_ok 7234 (93.3%).
 \paragraph{Deciding placeability.}
 A part is submitted to an oracle that returns one of three answers. A
 constructive \emph{shelf design} --- a small integer programme laying
 the part's stacks in shelves along the trailer, one integer count per
-shelf, footprint and orientation --- supplies essentially every
-positive answer, and its layout passes the independent verifier of
-Section~\ref{sec:res-setup} before it counts. An \emph{infeasibility}
-verdict must be a proof, and the two implementations of
-Section~\ref{sec:results} obtain it differently. The first submits the
-part to the pricing problem in feasibility mode, with the true slot
+shelf, footprint and orientation --- supplies most positive answers
+($93\%$ on the ladder of Section~\ref{sec:res-3d}), and its layout passes the independent verifier of
+Section~\ref{sec:res-setup} before it counts. Infeasibility proofs
+differ by implementation (Section~\ref{sec:results}). The first submits
+the part to the pricing problem in feasibility mode, with the true slot
 bound \eqref{sb:eq:Ibound}. The second decouples: a stack carries one
-footprint class only, so a load is placeable if and only if the
-multiset of $\underline{s}_{f}$ rectangles of each class $f$ can be
+footprint class only, so a load within the payload is placeable if and
+only if the multiset of $\underline{s}_{f}$ rectangles of each class $f$ can be
 placed on the floor, $\underline{s}_{f}$ being the least number of
 class-$f$ stacks its units need --- any layout has at least that many,
 and discarding rectangles from a placement leaves one. The least
@@ -280,7 +280,8 @@ analytic cap, then handed to the partition as $\bar u_{gc}$.
 
 \paragraph{A stack relaxation inside the partition.}
 The partition additionally carries, per truck $k$ and footprint class
-$f$, an integer number of stacks
+$f$ --- a stack type $h$ of Section~\ref{sec:model}, with
+$p_{f}=p_{h}$ and $q_{f}=q_{h}$ --- an integer number of stacks
 $s_{kf}\le\lfloor pK\cdot qK/p_{f}q_{f}\rfloor$, the crush limit and
 the height budget imposed per stack and the stacks' areas summed
 against the floor:
@@ -315,71 +316,70 @@ the per-truck split, which is why step~3 keeps its $n+1$ fallback.
 \paragraph{Necessary conditions of placeability as rows.}
 The rows \eqref{eq:stackrows} are the coarsest of the conditions by
 which the second implementation's oracle refutes a load, and the
-partition carries the
-finer ones as well, so that it stops proposing parts the oracle would
-refuse. With $C_{f}$ the commodities of class $f$ in direction $g$ and
-$L^{\max}_{f}$ the most units of them one stack can hold --- a
-two-resource knapsack under $rK$ and $W^{\max}$ over all of $C_{f}$, so
-that it bounds every subset --- each truck $k$ and class $f$ satisfy
+partition carries the finer ones too, so that it stops proposing parts
+the oracle would refuse. With $C_{f}$ the commodities of footprint class $f$ in
+direction $g$ and $L^{\max}_{f}$ the most units of them one stack can
+hold --- a two-resource knapsack under $rK$ and $W^{\max}$ over all of
+$C_{f}$ --- each truck $k$ and class $f$ satisfy
 \begin{equation}
 \begin{gathered}
-\sum_{\substack{c\in C_{f}\\ w_{c}\ge\tau}}a_{kc}\le
-  \Bigl\lfloor\frac{W^{\max}}{\tau}\Bigr\rfloor s_{kf}
-  \;\;\forall\tau\in\{w_{c}\}_{c\in C_{f}},
+\sum_{\substack{c\in C_{f}\\ w_{c}\ge\xi}}a_{kc}\le
+  \Bigl\lfloor\frac{W^{\max}}{\xi}\Bigr\rfloor s_{kf}
+  \;\;\forall\xi\in\{w_{c}\}_{c\in C_{f}},
 \qquad
-\sum_{\substack{c\in C_{f}\\ r_{gc}\ge\tau}}a_{kc}\le
-  \Bigl\lfloor\frac{rK}{\tau}\Bigr\rfloor s_{kf}
-  \;\;\forall\tau\in\{r_{gc}\}_{c\in C_{f}},
+\sum_{\substack{c\in C_{f}\\ r_{gc}\ge\xi}}a_{kc}\le
+  \Bigl\lfloor\frac{rK}{\xi}\Bigr\rfloor s_{kf}
+  \;\;\forall\xi\in\{r_{gc}\}_{c\in C_{f}},
 \\
 \sum_{c\in C_{f}}a_{kc}\le L^{\max}_{f}\,s_{kf},
 \end{gathered}
 \label{eq:geomrows}
 \end{equation}
-the height thresholds being written only where a class mixes RTI types
-of different heights. On the floor, split $s_{kf}=s^{0}_{kf}+s^{1}_{kf}$
+the height thresholds being written only where a class carries more
+than one RTI type. On the floor, split $s_{kf}=s^{0}_{kf}+s^{1}_{kf}$
 into integer counts of stacks laid with $p_{f}$ along the trailer's
 length $pK$ and along its width $qK$ ($s^{1}_{kf}=0$ for a square
 footprint); then
 \begin{equation}
-\sum_{f}\bigl(u(p_{f})\,q_{f}\,s^{0}_{kf}+u(q_{f})\,p_{f}\,s^{1}_{kf}\bigr)
-  \le u(pK)\,qK,
+\sum_{f}\bigl(u_{1}(p_{f})\,q_{f}\,s^{0}_{kf}+u_{1}(q_{f})\,p_{f}\,s^{1}_{kf}\bigr)
+  \le U_{1}\,qK,
 \qquad
-\sum_{f}\bigl(p_{f}\,v(q_{f})\,s^{0}_{kf}+q_{f}\,v(p_{f})\,s^{1}_{kf}\bigr)
-  \le pK\,v(qK),
+\sum_{f}\bigl(p_{f}\,u_{2}(q_{f})\,s^{0}_{kf}+q_{f}\,u_{2}(p_{f})\,s^{1}_{kf}\bigr)
+  \le pK\,U_{2},
 \label{eq:fibrerows}
 \end{equation}
-for every $u$ and $v$ of a finite family of \emph{dual-feasible
-functions} on $pK$ and on $qK$ --- $u$ is one when $\sum_{i}x_{i}\le pK$
-implies $\sum_{i}u(x_{i})\le u(pK)$
+for every pair $(u_{1},U_{1})$ on $pK$ and $(u_{2},U_{2})$ on $qK$ of a
+finite family of \emph{dual-feasible functions}: $(u,U)$ is one on a
+length $C$ when $\sum_{i}x_{i}\le C$ implies $\sum_{i}u(x_{i})\le U$
 \autocite{FeketeSchepers2001,Clautiaux2010Survey}. The family is the
-identity, which returns the area row of \eqref{eq:stackrows}; the
-thresholds $[x\ge\tau]$ at the footprint lengths that occur, with
-$u(pK)=\lfloor pK/\tau\rfloor$; and the scalings
-$\lfloor jx/pK\rfloor$, with $u(pK)=j$, for $j\le12$, dual feasible
-because the floor function is superadditive.
+identity with $U=C$, which returns the area row of
+\eqref{eq:stackrows}; the thresholds $[x\ge\ell]$ at the footprint
+lengths $\ell$ that occur, with $U=\lfloor C/\ell\rfloor$; and the
+scalings $\lfloor jx/C\rfloor$ with $U=j$, for $j\le12$, valid because
+the floor function is superadditive.
 
 Every row holds for every placeable truck once $s_{kf}$ and its split
 are read off the truck's own layout. A stack bears at most $W^{\max}$,
-so it holds at most $\lfloor W^{\max}/\tau\rfloor$ units weighing
-$\tau$ or more; the height threshold is the same argument on $rK$, and
-$L^{\max}_{f}$ is a maximum over a superset of what any stack of the
-class holds. For \eqref{eq:fibrerows}, a line across the floor parallel
-to its length meets slots whose extents along it are disjoint and sum
-to at most $pK$, so their $u$-values sum to at most $u(pK)$; integrating
-along the width gives the first row, and exchanging the axes the
-second --- the case of the conservative scales of
-\textcite{FeketeSchepers2004} with one dimension left unscaled. Like
-\eqref{eq:stackrows}, then, these rows remove only parts the oracle
-would refuse and never a placeable one. Step~2 carries their sum over
-the period's trucks: the deliveries $\overline{V}_{nt}$ or
-$\overline{V^{\mathrm{e}}}_{rt}$ in place of $a_{kc}$, integer
-stack and orientation counts summed over the trucks, and the right-hand
-sides of \eqref{eq:fibrerows} multiplied by $n_{gt}$, which holds
-whenever each truck of the period is placeable. They go nowhere else.
-Every point of the pricing problem's feasible set is a layout, so they
-are implied by its rows; and every column is a placeable truck that
-satisfies them, so in the master, where a row linear in the columns
-holds for every non-negative combination of them, they would be implied
-too and could raise no bound. They cut only where the load is a free
+so it holds at most $\lfloor W^{\max}/\xi\rfloor$ units weighing $\xi$
+or more; the height threshold is the same argument on $rK$, and
+$L^{\max}_{f}$ bounds what any stack of the class holds. For
+\eqref{eq:fibrerows}, a line across the floor parallel to its length
+meets slots whose extents along it are disjoint and sum to at most
+$pK$, so their $u_{1}$-values sum to at most $U_{1}$; integrating along
+the width gives the first row, and exchanging the axes the second ---
+the conservative scales of \textcite{FeketeSchepers2004} with one
+dimension left unscaled. Step~2 carries their sum over the
+period's trucks: the deliveries $\overline{V}_{nt}$ or
+$\overline{V^{\mathrm{e}}}_{rt}$ in place of $a_{kc}$, integer stack
+and orientation counts summed over the trucks, and the right-hand sides
+of \eqref{eq:fibrerows} times $n_{gt}$. They are implied wherever every
+point is already a placeable truck: in the pricing problem, whose
+integer points are layouts --- whether they would tighten its weak
+relaxation, as \eqref{bp:PP-areacut} does, is untested --- and in the
+master over placeable columns, each of which satisfies them, so that
+they hold for every non-negative combination of columns. They are \emph{not} implied
+in the volumetric relaxation that supplies every bound reported here,
+whose columns are not layouts; Section~\ref{sec:conclusions} returns
+to that. In the method as run they cut only where the load is a free
 integer vector: a part of step~3, or a delivery vector of step~2 over
 continuous column weights.

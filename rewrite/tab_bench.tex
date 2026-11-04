@@ -20,12 +20,13 @@ the first implementation, every row on one commit
 ($0\mathrm{c}0\mathrm{c}16\mathrm{c}$), a $900$ s budget, ten threads,
 a $20$ GB per-model cap and seed $0$, run sequentially. \textbf{Its
 configuration is not the one Sections~\ref{sec:pricing}
-and~\ref{sec:branching} describe}: a heuristic pricing rung ran ahead
-of the exact oracle, stopping at the first column that beat the pair's
-threshold, the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows} were
+and~\ref{sec:branching} describe}: a randomized greedy pricing
+heuristic was tried before the exact oracle, pricing calls stopped at
+the first column beating the pair's threshold, the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows} were
 absent, and every region popped was given a volumetric certificate
 while $15\%$ of the budget lasted. No bound
-here depends on that, the certifying sweeps never having used the rung;
+here depends on that, the certifying sweeps never having used the
+heuristic;
 the plans are that configuration's. Wall times run from $603.1$ s to
 $900.1$ s; the longest row exceeds the budget by $0.1$ s, because every
 phase of the construction carries a floor so that a phase begun just

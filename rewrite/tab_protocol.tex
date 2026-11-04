@@ -3,7 +3,13 @@
 % julia/scripts/ladder_3d_final.sh at f4c3b18 ("--ip-tl $(( $2 / 6 ))").  Other
 % per-call limits are solve_fleet_tree's defaults (julia/src/tree.jl:583-611):
 % step 2 300 s at the root and 120 s at a node, partition 60 s, pricing 20 s,
-% pack 20 s, root column generation 15% of the budget, frontier reserve 15%.
+% pack 20 s, root column generation 15% of the budget, frontier reserve 15%,
+% step2_gap 1e-4.  Volumetric pricing: julia/src/colgen.jl:156-157,
+% new_model(..., mem_gb=1.0); SoftMemLimit is compared with the shared
+% environment's MemUsed (results/julia/server_arms/README.md, "The volumetric
+% bound on rung 5 lost to a memory cap").  ladder_3d_final.log has no
+% "unproved" line; vol_lb_proved true on every row; results/julia/parity_vol.csv
+% root_proved true on all six (Table tab:volumetric's bounds).
 % The 120 s sentence: results/julia/ladder_3d.csv (campaign B, src_tree 246b883,
 % no ip_tl column = the 120 s default, no rows) row I_24_20_2_90_k50 has_plan
 % false; results/julia/ip_tl_600.csv (same code, ip_tl 600) 160 trucks.
@@ -18,20 +24,27 @@ placeability censuses differ in oracle as well as in limit: the
 thirty-six instances were put to the constraint programme alone, the
 size ladder to a constructive shelf witness with the constraint
 programme only for refutations, which is why only the first leaves
-loads undecided. Every line is read from the run files themselves. The
-volumetric parity runs declare their own configuration in each row,
-which is what lets Table~\ref{tab:volumetric} compare like with like;
+loads undecided. Every line is read from the run files, except the
+second implementation's solver version, read from its package manifest.
+The volumetric parity runs declare their own configuration in each row,
+which is what lets Table~\ref{tab:volumetric} compare like with like in
+budget, threads and cap, under Gurobi 13 against 12;
 the runs they replace recorded none, and a thread count asked for on
 the default Gurobi environment had not reached the models, so those
 used all twelve cores of the machine. No seed is set by the second
 implementation, which produced those runs and the size ladder, so the
-solver's default applies --- and no number
-reported here rests on a seed, every stage being either solved to
-proved optimality or stopped on a declared budget. On the size ladder
-the construction carries the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows}
-in steps~2 and~3, and step~4's integer master is limited, per call, to
-one sixth of the rung's budget; at a constant $120$ s, without those
-rows, the largest rung ended with no plan, and at $600$ s with one.}
+solver's default applies. On the size ladder the construction carries
+the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows} in steps~2 and~3,
+and step~4's integer master is limited, per call, to one sixth of the
+rung's budget; at a constant $120$ s, without those rows, the largest
+rung ended with no plan, and at $600$ s with one. The ladder's other
+per-call limits are the code's defaults: step~2 $300$ s at the root and $120$ s
+at a node, at relative gap $\varepsilon_{2}=10^{-4}$; partition $60$ s;
+pricing and placeability $20$ s each; root column generation $15\%$ of
+the budget and the frontier sweep another $15\%$. The second
+implementation's volumetric pricing models carry a $1$ GB soft cap,
+checked against the memory of the Gurobi environment they share, not
+the $20$ GB declared; every bound it reports came back proved.}
 \label{tab:protocol}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llllrrl}

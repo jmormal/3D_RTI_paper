@@ -26,17 +26,17 @@
 \caption{BP-3D-SCPTOP on the size ladder: the second implementation of
 Section~\ref{sec:res-setup}, every row from one source tree
 ($\mathrm{e}4830\mathrm{fe}$) run alone on one machine, ten threads, a
-$20$ GB per-model cap and no seed set, with the rows
+$20$ GB per-model cap ($1$ GB on volumetric pricing,
+Table~\ref{tab:protocol}) and no seed set, with the rows
 \eqref{eq:geomrows}--\eqref{eq:fibrerows} in steps~2 and~3 and step~4
 limited to one sixth of the budget per call.
 \emph{root} is the plan the construction returns before any node is
 popped, with the time it arrived, and \emph{tree} the improvement the
 search then makes on it, relative to the root plan's cost; both are
 read from the same run's trace, so what branching contributes is
-measured within a run rather than across runs. \emph{open} is the
-regions still on the stack at the deadline --- on row 4 four of the
-seven carry no bound of their own, the root's covering them --- and
-\emph{dropped} those left with no bound covering them. No row ends
+measured within a run rather than across runs. \emph{open} and
+\emph{dropped} are as in Table~\ref{tab:quantities}; on row 4 four of
+the seven open regions carry no bound of their own. No row ends
 with both at $0$, and both at $0$ would not mean the space was refuted
 either: a region closed with a certified bound below the incumbent is
 bounded and not excluded, and row 1 ends with three such regions, which

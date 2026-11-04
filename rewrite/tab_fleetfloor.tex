@@ -6,14 +6,16 @@
 \begin{table}[!htbp]
 \centering
 \small
-\caption{Fleet floors certified offline. The volumetric relaxation's
+\caption{Fleet floors certified offline by the first implementation
+(commit $\mathrm{dd}5\mathrm{f}039$). The volumetric relaxation's
 master, restricted to $\sum_{g,t}n_{gt}\le X$, is priced to convergence
 on one thread; \textsc{infeasible} means no plan with at most $X$ trucks
 exists, in 3D as well, since every placeable load is volumetrically
 feasible and the fleet row does not depend on the load model
 (Proposition~\ref{prop:inclusion}). \emph{time} is the region
 certification alone; the root certificate it rests on took $4$ to
-$32$ s. These are the only proofs of minimality in this paper.}
+$32$ s. The runs of Table~\ref{tab:3d-onecommit} prune the same
+regions by arithmetic (Section~\ref{sec:res-3d}).}
 \label{tab:fleetfloor}
 \begin{tabular}{lrrlr}
 \toprule

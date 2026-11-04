@@ -11,6 +11,8 @@
 % trucks 55 / 156 and incumbent 79703.31 / 223944.20 (Table
 % \ref{tab:3d-onecommit}).  Savings, each against the re-packed plan:
 % trucks (74-55)/74 = 25.68%, (212-156)/212 = 26.42%;
+% repacked_cost = volumetric_obj + 1000 x (repacked_trucks - volumetric_trucks):
+% 68139.17 + 29000 = 97139.17, 200266.21 + 75000 = 275266.21.
 % cost (97139.17-79703.31)/97139.17 = 17.95%,
 %      (275266.21-223944.20)/275266.21 = 18.64%.
 \begin{table}[!t]
@@ -27,7 +29,9 @@ with no consolidation; it is reported for contrast and is \emph{not}
 the comparison, consolidation being worth twelve and forty-four trucks.
 Row 3 is the comparison: the volumetric plan's delivery quantities
 kept, each period re-packed with the partition-and-pack machinery of
-the first implementation, every resulting truck verified, and at least the
+the first implementation, which lacks the rows
+\eqref{eq:geomrows}--\eqref{eq:fibrerows}, every resulting truck
+verified, and at least the
 original quantities delivered --- by $80$ and $137$ units, the
 partition being a cover. Row 4 is BP-3D-SCPTOP, which also chooses the
 quantities. The volumetric plan on $I\_24\_20\_2\_90\_k50$ is a
@@ -35,7 +39,10 @@ quantities. The volumetric plan on $I\_24\_20\_2\_90\_k50$ is a
 fewer than $212$ trucks and that column's margin is overstated by an
 unquantified amount in the method's favour; the
 $I\_16\_15\_2\_90\_k25$ plan is the proved volumetric optimum and
-carries no such caveat.}
+carries no such caveat, though a re-pack with the method's current
+partition might need fewer trucks on either instance. Row 3's cost is
+the volumetric plan's plus $cK$ per extra truck; it omits the holding
+cost of the over-delivered units, which could only raise it.}
 \label{tab:repack}
 \begin{tabular}{lrr}
 \toprule

@@ -2,7 +2,9 @@
 % 10 threads, 20 GB, seed 0, n_lc 3); row 1 is compact3d_rerun_I_8_5_2_90.json,
 % taken after the layout-extraction fix, with the same objective, bound and stop
 % as the first run but twelve loads that pass the verifier.  No compact 3D run
-% exists for I_24_20_2_90_k50.
+% exists for I_24_20_2_90_k50.  Compact runs: env.gurobi 12.0.1.  Row 4's better
+% plan: results/fleet_tree_3d/tree_3d_I_16_15_2_90_k25_table_1800.json (commit
+% 73411b9, plan_verified true, 54 trucks, incumbent 78549.14).
 % Method columns: Table \ref{tab:3d-onecommit}, i.e.
 % results/julia/final/ladder_3d_final.csv on branch final-3d (4c7471e; src_tree
 % e4830fe, geom_rows both, ip_tl = time_limit/6): incumbent, trucks, global_lb,
@@ -21,8 +23,8 @@
 \small
 \caption{The compact 3D-SCPTOP model (a catalogue of
 $n_{\mathrm{LC}}=3$ layouts shared by the trucks of a direction,
-$1\,800$ s) against BP-3D-SCPTOP on the size ladder, the method's rows
-being those of Table~\ref{tab:3d-onecommit}. \textbf{The budgets differ
+$1\,800$ s, Gurobi 12) against BP-3D-SCPTOP on the size ladder, the
+method's rows being those of Table~\ref{tab:3d-onecommit}. \textbf{The budgets differ
 on three rows}: the compact model had $1\,800$ s throughout, the method
 $900$ s on the first two rows, $1\,800$ s on the next two --- which are
 therefore the equal-budget pairs --- and $3\,600$ s on the last.
@@ -35,7 +37,9 @@ plan as the upper end and, as the lower end, the tighter bound
 restriction of Section~\ref{sec:model}, so the compact 3D model's dual
 bound bounds that restriction and not $z^{\star}$ and appears in its
 own column only, while a compact \emph{volumetric} dual bound is valid
-for 3D by inclusion and is used instead where one exists. Row 1 is the
+for 3D by inclusion and is used instead where one exists. On row 4 a
+verified plan of the first implementation at $78\,549.14$
+(Section~\ref{sec:res-3d}) tightens the upper end. Row 1 is the
 one optimum (Table~\ref{tab:3d-onecommit}).}
 \label{tab:3d-head}
 \resizebox{\textwidth}{!}{%

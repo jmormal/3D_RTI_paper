@@ -103,9 +103,14 @@ Murty leaf is a certificate rather than a further split --- and a leaf
 whose certificate sits below the incumbent is then bounded but not
 refuted, however much budget remains. That is a property of the
 configuration and not of the procedure: with the delivery level on,
-such a leaf is split again. It is also not what stopped these runs,
-which ended with between six and fifteen regions still on the stack,
-i.e. on their budget and not on the hierarchy.
+such a leaf is split again.
+% open_regions: results/julia/parity_vol.csv 7 / 7 / 8 / 8 / 7 / 15 and
+% results/julia/final/ladder_3d_final.csv 6 / 9 / 6 / 7 / 2; every one of those
+% runs reached its search window (seconds column).
+It is also not what stopped the runs of
+Tables~\ref{tab:volumetric} and~\ref{tab:3d-onecommit}, which ended
+with between two and fifteen regions still on the stack, i.e. on their
+budget and not on the hierarchy.
 
 \input{Alg_tree}
 
@@ -143,9 +148,10 @@ Algorithm~\ref{alg:construct}.
   $\overline{V}_{nt},\overline{V^{\mathrm{e}}}_{rt}$ integer and leave
   the column variables \emph{continuous}, with $\mathcal{R}$ imposed on
   the $n_{gt}$ as well as on the columns and, under 3D loading, the
-  stack-count rows \eqref{eq:stackrows} added. The objective is decided
-  here, and \emph{without a single call to a pricing problem}: the row
-  set is the master's own. Artificial slack above a tolerance means the
+  aggregate forms of the rows \eqref{eq:stackrows}--\eqref{eq:fibrerows}
+  added (Section~\ref{sec:geo3d}). The objective is decided
+  here, and \emph{without a single call to a pricing problem}: those
+  rows aside, the row set is the master's own. Artificial slack above a tolerance means the
   region is infeasible over this pool, and the node is abandoned.
 
 \item \emph{Partition, as a cover.} For each direction and period,
@@ -212,7 +218,9 @@ conditions are \emph{necessary} for geometric feasibility
 (Proposition~\ref{prop:inclusion}) the partition programme is kept as a
 \emph{relaxation} of the geometric one, and each part is then tested
 for placeability. Step~2 makes no oracle call, so the objective is
-still decided before any geometry is examined.
+still decided before any part is put to the placeability oracle; what
+step~2 sees of the geometry is the necessary rows at the end of this
+section.
 
 Everything here rests on one property. Placeability is \textbf{downward
 closed}: given a layout of $a\ge b$, removing the surplus units from
@@ -227,9 +235,27 @@ constructive \emph{shelf design} --- a small integer programme laying
 the part's stacks in shelves along the trailer, one integer count per
 shelf, footprint and orientation --- supplies essentially every
 positive answer, and its layout passes the independent verifier of
-Section~\ref{sec:res-setup} before it counts. The pricing problem, in
-feasibility mode with the true slot bound \eqref{sb:eq:Ibound},
-supplies the \emph{infeasibility} proofs.
+Section~\ref{sec:res-setup} before it counts. An \emph{infeasibility}
+verdict must be a proof, and the two implementations of
+Section~\ref{sec:results} obtain it differently. The first submits the
+part to the pricing problem in feasibility mode, with the true slot
+bound \eqref{sb:eq:Ibound}. The second decouples: a stack carries one
+footprint class only, so a load is placeable if and only if the
+multiset of $\underline{s}_{f}$ rectangles of each class $f$ can be
+placed on the floor, $\underline{s}_{f}$ being the least number of
+class-$f$ stacks its units need --- any layout has at least that many,
+and discarding rectangles from a placement leaves one. The least
+stack count is a small cutting-stock problem per class, and whether the
+rectangles fit is decided exactly by a position-indexed placement model
+over the normal patterns of the floor
+\autocite{ChristofidesWhitlock1977,Beasley1985}, after the arithmetic
+conditions below --- payload, area and
+\eqref{eq:geomrows}--\eqref{eq:fibrerows}, at the least stack counts
+they allow --- have had the chance to refute the load at no cost. Since unplaceability is
+monotone in the stack counts, an infeasible placement at a \emph{lower}
+bound on $\underline{s}_{f}$ already refutes; a positive answer counts
+only where the stacking attains $\underline{s}_{f}$ and the layout it
+lifts to passes the verifier.
 
 \paragraph{Two kinds of cut, which must never merge.}
 A part \emph{proved} unplaceable yields a \emph{dominance cut}
@@ -277,3 +303,83 @@ weight, so the height row takes the height-limited count, which is what
 the runs reported here used; the smaller of the two counts is also
 valid, and strictly tighter. These aggregates remain a relaxation of
 the per-truck split, which is why step~3 keeps its $n+1$ fallback.
+
+% Implementation: julia/src/cuts.jl, add_stack_relaxation!(...; strong=true),
+% _strong_class_rows!, _fibre_rows! and _add_aggregate_stack_area!(...;
+% strong=true); the necessary conditions and the DFF family are
+% julia/src/placeability.jl, min_stacks, max_units_per_stack, dffs, dff_rows
+% (the fibre lemma is proved in dff_rows' docstring).  Switched on by
+% --geom-rows both (julia/scripts/ladder_3d_final.sh at f4c3b18).  Note: the
+% dffs docstring calls floor "subadditive"; the inequality it uses,
+% floor(a)+floor(b) <= floor(a+b), is superadditivity.
+\paragraph{Necessary conditions of placeability as rows.}
+The rows \eqref{eq:stackrows} are the coarsest of the conditions by
+which the second implementation's oracle refutes a load, and the
+partition carries the
+finer ones as well, so that it stops proposing parts the oracle would
+refuse. With $C_{f}$ the commodities of class $f$ in direction $g$ and
+$L^{\max}_{f}$ the most units of them one stack can hold --- a
+two-resource knapsack under $rK$ and $W^{\max}$ over all of $C_{f}$, so
+that it bounds every subset --- each truck $k$ and class $f$ satisfy
+\begin{equation}
+\begin{gathered}
+\sum_{\substack{c\in C_{f}\\ w_{c}\ge\tau}}a_{kc}\le
+  \Bigl\lfloor\frac{W^{\max}}{\tau}\Bigr\rfloor s_{kf}
+  \;\;\forall\tau\in\{w_{c}\}_{c\in C_{f}},
+\qquad
+\sum_{\substack{c\in C_{f}\\ r_{gc}\ge\tau}}a_{kc}\le
+  \Bigl\lfloor\frac{rK}{\tau}\Bigr\rfloor s_{kf}
+  \;\;\forall\tau\in\{r_{gc}\}_{c\in C_{f}},
+\\
+\sum_{c\in C_{f}}a_{kc}\le L^{\max}_{f}\,s_{kf},
+\end{gathered}
+\label{eq:geomrows}
+\end{equation}
+the height thresholds being written only where a class mixes RTI types
+of different heights. On the floor, split $s_{kf}=s^{0}_{kf}+s^{1}_{kf}$
+into integer counts of stacks laid with $p_{f}$ along the trailer's
+length $pK$ and along its width $qK$ ($s^{1}_{kf}=0$ for a square
+footprint); then
+\begin{equation}
+\sum_{f}\bigl(u(p_{f})\,q_{f}\,s^{0}_{kf}+u(q_{f})\,p_{f}\,s^{1}_{kf}\bigr)
+  \le u(pK)\,qK,
+\qquad
+\sum_{f}\bigl(p_{f}\,v(q_{f})\,s^{0}_{kf}+q_{f}\,v(p_{f})\,s^{1}_{kf}\bigr)
+  \le pK\,v(qK),
+\label{eq:fibrerows}
+\end{equation}
+for every $u$ and $v$ of a finite family of \emph{dual-feasible
+functions} on $pK$ and on $qK$ --- $u$ is one when $\sum_{i}x_{i}\le pK$
+implies $\sum_{i}u(x_{i})\le u(pK)$
+\autocite{FeketeSchepers2001,Clautiaux2010Survey}. The family is the
+identity, which returns the area row of \eqref{eq:stackrows}; the
+thresholds $[x\ge\tau]$ at the footprint lengths that occur, with
+$u(pK)=\lfloor pK/\tau\rfloor$; and the scalings
+$\lfloor jx/pK\rfloor$, with $u(pK)=j$, for $j\le12$, dual feasible
+because the floor function is superadditive.
+
+Every row holds for every placeable truck once $s_{kf}$ and its split
+are read off the truck's own layout. A stack bears at most $W^{\max}$,
+so it holds at most $\lfloor W^{\max}/\tau\rfloor$ units weighing
+$\tau$ or more; the height threshold is the same argument on $rK$, and
+$L^{\max}_{f}$ is a maximum over a superset of what any stack of the
+class holds. For \eqref{eq:fibrerows}, a line across the floor parallel
+to its length meets slots whose extents along it are disjoint and sum
+to at most $pK$, so their $u$-values sum to at most $u(pK)$; integrating
+along the width gives the first row, and exchanging the axes the
+second --- the case of the conservative scales of
+\textcite{FeketeSchepers2004} with one dimension left unscaled. Like
+\eqref{eq:stackrows}, then, these rows remove only parts the oracle
+would refuse and never a placeable one. Step~2 carries their sum over
+the period's trucks: the deliveries $\overline{V}_{nt}$ or
+$\overline{V^{\mathrm{e}}}_{rt}$ in place of $a_{kc}$, integer
+stack and orientation counts summed over the trucks, and the right-hand
+sides of \eqref{eq:fibrerows} multiplied by $n_{gt}$, which holds
+whenever each truck of the period is placeable. They go nowhere else.
+Every point of the pricing problem's feasible set is a layout, so they
+are implied by its rows; and every column is a placeable truck that
+satisfies them, so in the master, where a row linear in the columns
+holds for every non-negative combination of them, they would be implied
+too and could raise no bound. They cut only where the load is a free
+integer vector: a part of step~3, or a delivery vector of step~2 over
+continuous column weights.

@@ -11,7 +11,7 @@ artificial slack means the region admits no plan over this pool.}
    \Comment{duals $\pi,\mu$ and the fractional point the node stands on}
 \State make $n_{gt},\overline{V}_{nt},\overline{V^{\mathrm{e}}}_{rt}$ integer;
    keep $\lambda$ continuous; impose $\mathcal{R}$ on $n_{gt}$ and on $\lambda$
-\State add the aggregate form of \eqref{eq:stackrows}
+\State add the aggregate forms of \eqref{eq:stackrows}--\eqref{eq:fibrerows}
    \Comment{3D only; layer coefficient $=$ the height count, the crush
       limit being its own row}
 \State solve to relative gap $\varepsilon_{2}$
@@ -23,7 +23,8 @@ artificial slack means the region admits no plan over this pool.}
         $\mathcal{R}$ allows}
       \State solve $\textsc{Partition}(Q^{\star}_{gt},m)$,
              \eqref{eq:part-obj}--\eqref{eq:part-sym}, with $\bar u_{gc}$ as
-             variable bounds
+             variable bounds and, in 3D,
+             \eqref{eq:stackrows}--\eqref{eq:fibrerows} per part
       \State \textbf{break} if feasible
       \Comment{a timeout is not a proof of infeasibility}
    \EndFor

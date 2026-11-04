@@ -1,59 +1,52 @@
-% results/volumetric_loads_recheck.json (pack_tl 60 s, oracle pack_witness, every
-% placed witness re-verified by verify_column): I_16_15_2_90_k25 dispatched 45,
-% unplaceable 41, undecided 0, source compact_ref OPTIMAL 68139.17;
-% I_24_20_2_90_k50 dispatched 137, unplaceable 119, undecided 0, source
-% compact_ref MEM_LIMIT 200266.21.
-% results/repacked_volumetric.json for rows 2-3 (loadlocal_trucks 86 / 256,
-% repacked_trucks 74 / 212, repacked_cost 97139.17 / 275266.21; pairs_unpacked 0
-% and complaints 0 on both; over_delivered_units 80 / 137).  Its method_trucks
-% field (54 / 160) is the reference implementation's ladder and is NOT used.
-% Row 4: results/julia/final/ladder_3d_final.csv on branch final-3d (4c7471e),
-% trucks 55 / 156 and incumbent 79703.31 / 223944.20 (Table
-% \ref{tab:3d-onecommit}).  Savings, each against the re-packed plan:
-% trucks (74-55)/74 = 25.68%, (212-156)/212 = 26.42%;
-% repacked_cost = volumetric_obj + 1000 x (repacked_trucks - volumetric_trucks):
-% 68139.17 + 29000 = 97139.17, 200266.21 + 75000 = 275266.21.
-% cost (97139.17-79703.31)/97139.17 = 17.95%,
-%      (275266.21-223944.20)/275266.21 = 18.64%.
+% Source: results/julia/final/repack_volumetric_r40.json on branch final-3d
+% (results committed at b029500), written by julia/scripts/repack_volumetric.jl
+% (commit b772bbd, src_tree e4830fe, load_path include) through
+% julia/scripts/repack_volumetric.sh with ROUNDS=40 PART_TL=600, on the
+% workstation, 10 threads, 20 GB, check_tl 60, pack_tl 20, geom_rows both,
+% oracle pack_witness.  Input: results/compact_ref/compact_ref_<instance>.json.
+%   I_16_15_2_90_k25: volumetric_status OPTIMAL, volumetric_obj 68139.17,
+%     volumetric_trucks 45; dispatched_verdicts unplaceable 41 / placed 4 /
+%     undecided 0; distinct_verdicts 39 of 43; repacked_trucks 61,
+%     repacked_cost 84139.17; over_delivered_units 24; complaints 0.
+%   I_24_20_2_90_k50: volumetric_status MEM_LIMIT, volumetric_obj 200266.21,
+%     volumetric_trucks 137; dispatched 119 of 137 unplaceable, 18 placed, 0
+%     undecided; distinct 111 of 129; repacked_trucks 186, repacked_cost
+%     249266.21; over_delivered_units 131; complaints 0.
+% repacked_cost = volumetric_obj + 1000 x (repacked - volumetric trucks).
+% Method row: results/julia/final/ladder_3d_final.csv (55 / 79703.31,
+% 156 / 223944.20).  Savings against the re-packed figure:
+%   trucks (61-55)/61 = 9.84%, (186-156)/186 = 16.13%;
+%   cost (84139.17-79703.31)/84139.17 = 5.27%,
+%        (249266.21-223944.20)/249266.21 = 10.16%.
 \begin{table}[!t]
 \centering
 \small
-\caption{\Pending{What volumetric planning costs, constructed rather than
-estimated: trucks dispatched on the two instances where the per-stack
-crush limit binds. Row 1 is the volumetric benchmark's own plan, which
-is not executable --- $41$ of its $45$ dispatched loads on the first
-instance and $119$ of its $137$ on the second are \emph{proved}
-unplaceable with \emph{none} left undecided, so those shares carry no
-undecided caveat. Row 2 splits each unplaceable load where it stands,
-with no consolidation; it is reported for contrast and is \emph{not}
-the comparison, consolidation being worth twelve and forty-four trucks.
-Row 3 is the comparison: the volumetric plan's delivery quantities
-kept, each period re-packed with the partition-and-pack machinery of
-the first implementation, which lacks the rows
-\eqref{eq:geomrows}--\eqref{eq:fibrerows}, every resulting truck
-verified, and at least the
-original quantities delivered --- by $80$ and $137$ units, the
-partition being a cover. Row 4 is BP-3D-SCPTOP, which also chooses the
-quantities. The volumetric plan on $I\_24\_20\_2\_90\_k50$ is a
-\emph{memory stop} and not an optimum, so a better one might repair into
-fewer than $212$ trucks and that column's margin is overstated by an
-unquantified amount in the method's favour; the
-$I\_16\_15\_2\_90\_k25$ plan is the proved volumetric optimum and
-carries no such caveat, though a re-pack with the method's current
-partition might need fewer trucks on either instance. Row 3's cost is
-the volumetric plan's plus $cK$ per extra truck; it omits the holding
-cost of the over-delivered units, which could only raise it.}}
+\caption{What volumetric planning costs once the loads must fit, on the
+two instances where the per-stack crush limit binds. Row 1 is the
+compact volumetric model's plan, which is not executable: $41$ of its
+$45$ dispatched loads on the first instance and $119$ of its $137$ on
+the second are proved unplaceable by the method's placeability oracle,
+none left undecided. Row 2 keeps that plan's delivery quantities and
+re-packs each period with the method's step~3, every truck verified;
+the partition being a cover, it delivers $24$ and $131$ units more, and
+its cost charges $cK$ per extra truck but not the holding cost of those
+units, which understates it. Its count is an upper bound on what
+re-packing those quantities needs, a partition that finds no cover at
+$n$ trucks not being a proof that $n$ cannot carry the period. Row 3
+is BP-3D-SCPTOP, which also chooses the quantities; savings are
+relative to row 2. On $I\_24\_20\_2\_90\_k50$ the volumetric plan is a
+memory stop, not an optimum, and the re-packed count may not be the
+least, so that column's saving may be overstated.}
 \label{tab:repack}
 \begin{tabular}{lrr}
 \toprule
  & $I\_16\_15\_2\_90\_k25$ & $I\_24\_20\_2\_90\_k50$ \\
 \midrule
-\Pending{volumetric plan (not executable)} & \Pending{45} & \Pending{137} \\
-\Pending{repaired load by load (contrast only)} & \Pending{86} & \Pending{256} \\
-\Pending{\textbf{re-packed, quantities kept}} & \Pending{\textbf{74}} & \Pending{\textbf{212}} \\
+volumetric plan (not executable)      & 45  & 137 \\
+\textbf{re-packed, quantities kept}   & \textbf{61} & \textbf{186} \\
 \textbf{BP-3D-SCPTOP} (which also chooses the quantities) & \textbf{55} & \textbf{156} \\
 \midrule
-\Pending{saving on trucks / on cost} & \Pending{$25.7\%$ / $17.9\%$} & \Pending{$26.4\%$ / $18.6\%$} \\
+saving on trucks / on cost & $9.8\%$ / $5.3\%$ & $16.1\%$ / $10.2\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}

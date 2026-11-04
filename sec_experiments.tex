@@ -7,12 +7,7 @@
 The method is implemented in Julia with JuMP and solves every model
 with Gurobi; Appendix~\ref{appendix:impl} describes the implementation
 and the settings of every run, and the code and data are available at
-\Pending{[repository URL]}. \Pending{The
-placeability checks and re-packs of Table~\ref{tab:repack} were
-computed with an earlier, Python implementation of the method's
-partition and placeability oracle,
-which that table and Section~\ref{sec:res-abstraction} call the first
-implementation.} Every 3D plan below is re-derived
+\Pending{[repository URL]}. Every 3D plan below is re-derived
 from its dispatch list alone and checked truck by truck against
 \eqref{eq:col-geom}--\eqref{eq:col-agg} by a routine independent of
 the search and of the oracle that built the column, re-deriving each
@@ -163,22 +158,24 @@ crush-limited layer counts, where a volumetric capacity is adequate
 
 \input{tab_repack}
 
-\Pending{What a volumetric capacity costs is constructed rather than estimated
-(Table~\ref{tab:repack}): each volumetric plan's delivery quantities
-are kept and each period's freight re-packed with the
-partition-and-pack machinery of the first implementation, every
-resulting truck verified. The re-packed plans need $74$ and $212$
-trucks where the method plans $55$ and $156$ directly --- savings
-of $25.7\%$ and $26.4\%$ on trucks and
-$17.9\%$ and $18.6\%$ on cost, each denominator
-the re-packed plan's own figure. Two caveats travel with them: the
-re-packed plan delivers \emph{at least} the volumetric quantities, by
-$80$ and $137$ units, the partition being a cover; and the
-$I\_24\_20\_2\_90\_k50$ volumetric plan is a memory stop rather than an
-optimum, so a better one might repair into fewer than $212$ trucks and
-that row's margin is overstated in the method's favour. The
-$I\_16\_15\_2\_90\_k25$ row, the proved optimum, carries no such
-caveat.}
+% Check and re-pack: results/julia/final/repack_volumetric_r40.json (see the
+% comment of tab_repack.tex).
+What a volumetric capacity costs is constructed rather than estimated
+(Table~\ref{tab:repack}). Every load the compact volumetric plan
+dispatches is put to the method's placeability oracle: $41$ of $45$ on
+$I\_16\_15\_2\_90\_k25$, whose volumetric plan is the proved optimum,
+and $119$ of $137$ on $I\_24\_20\_2\_90\_k50$ are proved unplaceable,
+none left undecided, so a volumetric optimum can be a plan nine tenths
+of which cannot be loaded. Keeping that plan's delivery quantities and
+re-packing each period with the method's step~3, every truck verified,
+takes $61$ and $186$ trucks where the method plans $55$ and $156$
+directly: savings of $9.8\%$ and $16.1\%$ on trucks and $5.3\%$ and
+$10.2\%$ on cost, each relative to the re-packed figure. The re-packed
+count is an upper bound on what re-packing those quantities needs, so
+the savings may be overstated, on $I\_24\_20\_2\_90\_k50$ in particular,
+whose volumetric plan is moreover a memory stop rather than an optimum;
+the re-packed cost omits the holding cost of the $24$ and $131$ units
+the cover over-delivers, which understates it.
 
 Deflating the capacity is the obvious remedy: adding the stack-count
 rows \eqref{eq:stackrows} to the compact volumetric model raises its

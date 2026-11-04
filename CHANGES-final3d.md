@@ -594,3 +594,50 @@ sites will be rewritten when the Julia re-pack arrives):
 | `sec_abstract.tex` | 10 | the shortened sentence "A volumetric model's plan prescribes loads proved impossible to place, so a volumetric transport capacity is not a conservative simplification;" |
 | `sec_conclusions.tex` | 13-18 | "a volumetric transport capacity is not a conservative simplification: ... 25.7 % and 26.4 % ..." |
 | `sec_experiments.tex`, `sec_appendix_impl.tex` | 10, 35 | new: `[repository URL]`, for the author to decide |
+
+## 16. Table 11 (now Table 8) from the Julia check and re-pack
+
+Source: `results/julia/final/repack_volumetric_r40.json` on branch `final-3d`
+(results committed at b029500), written by `julia/scripts/repack_volumetric.jl`
+through `repack_volumetric.sh` with ROUNDS=40, PART_TL=600, on the workstation,
+10 threads, 20 GB; `src_tree` e4830fe (the final method's). Provenance is in the
+`%` comments of `tab_repack.tex` and `sec_appendix_impl.tex`, and the settings in
+Appendix C's table; no hash is printed.
+
+| quantity | I_16_15_2_90_k25 | I_24_20_2_90_k50 | JSON field |
+| --- | --- | --- | --- |
+| compact plan | OPTIMAL 68 139.17, 45 trucks | MEM_LIMIT 200 266.21, 137 trucks | `volumetric_status`, `volumetric_obj`, `volumetric_trucks` |
+| dispatched loads proved unplaceable | 41 of 45 (0 undecided) | 119 of 137 (0 undecided) | `dispatched_verdicts` |
+| re-packed, quantities kept | 61 trucks, 84 139.17 | 186 trucks, 249 266.21 | `repacked_trucks`, `repacked_cost` |
+| units over-delivered | 24 | 131 | `over_delivered_units` |
+| complaints | 0 | 0 | `complaints`, `check_complaints` |
+| saving on trucks / cost vs the method (55 / 79 703.31, 156 / 223 944.20) | 9.8 % / 5.3 % | 16.1 % / 10.2 % | (61-55)/61, (84139.17-79703.31)/84139.17; (186-156)/186, (249266.21-223944.20)/249266.21 |
+
+Every `\Pending` mark on Table 11's sites is removed; only
+`\Pending{[repository URL]}` remains (Section 8.1 and Appendix C). Row 2,
+"repaired load by load", is dropped with everything that referred to it.
+
+| site | old | new |
+| --- | --- | --- |
+| `tab_repack.tex` caption | "What volumetric planning costs, constructed rather than estimated ... Row 2 splits each unplaceable load where it stands ... consolidation being worth twelve and forty-four trucks. Row 3 is the comparison: ... re-packed with the partition-and-pack machinery of the first implementation, which lacks the rows ... by 80 and 137 units ... fewer than 212 trucks ... though a re-pack with the method's current partition might need fewer trucks on either instance. Row 3's cost is the volumetric plan's plus cK per extra truck; it omits the holding cost of the over-delivered units, which could only raise it." | "What volumetric planning costs once the loads must fit ... Row 1 ... 41 of its 45 ... 119 of its 137 ... proved unplaceable by the method's placeability oracle, none left undecided. Row 2 keeps that plan's delivery quantities and re-packs each period with the method's step 3, every truck verified; the partition being a cover, it delivers 24 and 131 units more, and its cost charges cK per extra truck but not the holding cost of those units, which understates it. Its count is an upper bound on what re-packing those quantities needs, a partition that finds no cover at n trucks not being a proof that n cannot carry the period. Row 3 is BP-3D-SCPTOP, which also chooses the quantities; savings are relative to row 2. On I_24_20_2_90_k50 the volumetric plan is a memory stop, not an optimum, and the re-packed count may not be the least, so that column's saving may be overstated." |
+| `tab_repack.tex` rows | 45 / 137; **86 / 256** (row 2); 74 / 212; 55 / 156; 25.7 % / 17.9 %, 26.4 % / 18.6 % | 45 / 137; 61 / 186; 55 / 156; 9.8 % / 5.3 %, 16.1 % / 10.2 % |
+| `sec_experiments.tex` 8.1 | "The placeability checks and re-packs of Table 8 were computed with an earlier, Python implementation of the method's partition and placeability oracle, which that table and Section 8.5 call the first implementation." | removed |
+| `sec_experiments.tex` 8.5 | "What a volumetric capacity costs is constructed rather than estimated (Table 8): each volumetric plan's delivery quantities are kept and each period's freight re-packed with the partition-and-pack machinery of the first implementation, every resulting truck verified. The re-packed plans need 74 and 212 trucks where the method plans 55 and 156 directly --- savings of 25.7 % and 26.4 % on trucks and 17.9 % and 18.6 % on cost, each denominator the re-packed plan's own figure. Two caveats travel with them: the re-packed plan delivers at least the volumetric quantities, by 80 and 137 units, the partition being a cover; and the I_24_20_2_90_k50 volumetric plan is a memory stop rather than an optimum, so a better one might repair into fewer than 212 trucks and that row's margin is overstated in the method's favour. The I_16_15_2_90_k25 row, the proved optimum, carries no such caveat." | "What a volumetric capacity costs is constructed rather than estimated (Table 8). Every load the compact volumetric plan dispatches is put to the method's placeability oracle: 41 of 45 on I_16_15_2_90_k25, whose volumetric plan is the proved optimum, and 119 of 137 on I_24_20_2_90_k50 are proved unplaceable, none left undecided, so a volumetric optimum can be a plan nine tenths of which cannot be loaded. Keeping that plan's delivery quantities and re-packing each period with the method's step 3, every truck verified, takes 61 and 186 trucks where the method plans 55 and 156 directly: savings of 9.8 % and 16.1 % on trucks and 5.3 % and 10.2 % on cost, each relative to the re-packed figure. The re-packed count is an upper bound on what re-packing those quantities needs, so the savings may be overstated, on I_24_20_2_90_k50 in particular, whose volumetric plan is moreover a memory stop rather than an optimum; the re-packed cost omits the holding cost of the 24 and 131 units the cover over-delivers, which understates it." |
+| `sec_conclusions.tex` | "And a volumetric transport capacity is not a conservative simplification: the method needs 25.7 % and 26.4 % fewer trucks than two volumetric plans' quantities need once re-packed into loadable trucks, with the first implementation's earlier partition (Table 8), and on the industrial catalogue the error runs one way only." | "And a volumetric transport capacity is not a conservative simplification: most loads of the two volumetric plans checked cannot be placed, the method plans with 9.8 % and 16.1 % fewer trucks than re-packing two volumetric plans' quantities into loadable trucks used (Table 8), and on the industrial catalogue the error runs one way only." |
+| `sec_intro.tex` contribution (iv) | wrapped in `\Pending` | the same sentence, unwrapped (it has no number and stays true) |
+| `sec_abstract.tex` | "A volumetric model's plan prescribes loads proved impossible to place, so a volumetric transport capacity is not a conservative simplification;" wrapped in `\Pending` | the same sentence, unwrapped and qualitative: quoting the re-pack would break 250 words (the abstract is at 250) |
+| `sec_appendix_impl.tex`, Table 10 | "placeability check, Table 8: shelf + CP-SAT, 60 s per load" (pending) | "check and re-pack, Table 8: the method's placeability oracle, 60 s per load; its step 3 with the rows, 600 s per call, up to 40 cut rounds, 20 s per placeability call; 10 threads, 20 GB" |
+| `Renderer.tex` | comment on `\Pending` describing Table 11 | "Text still awaiting a decision or a result (purple)" |
+
+Mentions of the first/Python implementation: none left in the printed text.
+
+Build: `Renderer.pdf` 30 pages, exit 0, no undefined reference or citation,
+warnings as before; `Renderer-diff.pdf` against 100c362, 39 pages, exit 0, no
+undefined reference. Abstract: 250 words.
+
+### Pending (purple) after this pass
+
+| file | line | what |
+| --- | --- | --- |
+| `sec_experiments.tex` | 10 | `[repository URL]` |
+| `sec_appendix_impl.tex` | 39 | `[repository URL]` |

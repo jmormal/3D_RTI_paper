@@ -4,9 +4,17 @@
 \subsection{Protocol, instances and what each quantity means}
 \label{sec:res-setup}
 
-The masters, the partitions, the volumetric benchmark and the compact
-models are solved with Gurobi 12; the pricing problems and the
-placeability tests with CP-SAT from OR-Tools 9.12.
+% Solver versions: the Python runs record env.gurobi 12.0.1 (e.g.
+% results/bench_tree/*.json, results/compact_ref/*.json, results/compact_3d/*.json);
+% the Julia implementation loads Gurobi through Gurobi.jl 1.9.3 over the
+% Gurobi_jll 13.0.3 artifact (julia/Manifest.toml, unchanged since f7d5431; Gurobi.jl
+% deps.jl: "we're using the Artifact"), and calls no other solver
+% (julia/src/solver.jl:32).
+The compact models and the first implementation of the method below
+use Gurobi 12 for the masters, the partitions and the volumetric
+benchmark and CP-SAT from OR-Tools 9.12 for the pricing problems and
+the placeability tests; the second implementation solves every model
+with Gurobi 13.
 Table~\ref{tab:protocol} declares, per stage, the five parameters that
 can change a solver's answer: time limit, MIP gap, threads, per-model
 memory cap and seed. Memory is part of the budget --- Gurobi holds its
@@ -32,10 +40,16 @@ and no claim rests on one.
 
 Three settings that are not budgets also decide what the tables can
 say.
-Column generation is run to a certificate at the root and at the one
+% Leaf certification: julia/src/tree.jl:1230-1275 ("last-resort
+% certification"); region_certs = 78 / 4 / 6 / 0 / 0 on the ladder rows of
+% results/julia/final/ladder_3d_final.csv.  The first implementation's
+% config (results/bench_tree/*.json) has region_cert_policy "always".
+Column generation is run to a certificate at the root, at the one
 region that can refute the incumbent outright --- ``is there a plan
-with one truck fewer'' --- and nowhere else, which is the policy every
-run reported here used. Certifying every node instead is affordable on
+with one truck fewer'' --- and at a full-depth leaf, which cannot be
+split (below), and nowhere else, which is the policy of the second
+implementation's runs; Table~\ref{tab:bench} states the first's.
+Certifying every node instead is affordable on
 the volumetric model and closes far more of the space there, so the
 \emph{open} counts below are a property of that choice and not of the
 method; it is not affordable under 3D loading, where one geometric
@@ -91,15 +105,28 @@ agreement that is partly by construction, a port having been tested
 against the reference, and on $I\_4\_5\_2\_60$ the two plans in fact
 differ.
 
+% Configuration of the first implementation's runs: config block of every
+% results/bench_tree/tree_3d_*.json (36 of 36: ladder true, stop_early true,
+% commit 0c0c16c); the geometric rows of eq:geomrows-eq:fibrerows postdate it
+% (julia/src/cuts.jl, exp/partgeom, src_tree e4830fe).
 Which of the two produced which table is stated in that table's
 caption, together with the source tree it ran from and the budget it
-was given, rather than left to be inferred. Both implement the one
-procedure of Section~\ref{sec:pricing}: a single pricing oracle, exact,
-and a certificate that is a sweep which proves it. Provenance is stated
-because two runs of one method on two code bases are still two
-measurements, not because the two answer different questions, and a
-certificate is unaffected by which produced it --- an exact sweep that
-returns nothing is a certificate on its own.
+was given, rather than left to be inferred. The second implementation
+produced Tables~\ref{tab:volumetric} and~\ref{tab:3d-onecommit} and the
+method's columns of Tables~\ref{tab:3d-head} and~\ref{tab:repack}, in
+the configuration Sections~\ref{sec:pricing}
+and~\ref{sec:branching} describe: a single pricing oracle, exact, and a
+certificate that is a sweep which proves it. The first produced
+Table~\ref{tab:bench} before the method reached that form, with a
+heuristic pricing rung ahead of the exact oracle, stopping at the first
+column that beats the pair's threshold, and without the rows
+\eqref{eq:geomrows}--\eqref{eq:fibrerows}; the two also refute
+placeability by different exact tests (Section~\ref{sec:geo3d}). No
+certificate depends on those differences --- a certifying sweep never
+used the rung, and an exact sweep that returns nothing is a certificate
+on its own --- but the plans of Table~\ref{tab:bench} are that
+configuration's. Provenance is stated because two runs on two code
+bases are two measurements, and here two configurations as well.
 
 \subsection{What the volumetric side gives}
 \label{sec:res-vol}
@@ -168,7 +195,8 @@ tighter.
 
 \input{tab_summary}
 
-On the thirty-six generated instances at a uniform $900$ s the method
+On the thirty-six generated instances at a uniform $900$ s the first
+implementation, in the configuration Table~\ref{tab:bench} states,
 returns a verified plan on thirty-one and a proved bound on
 thirty-five, at a mean certified gap of $8.8\%$ over the thirty rows
 with both. The five failures are not spread across the factorial:
@@ -181,46 +209,104 @@ also why a volumetric capacity is least adequate there
 from the formulation: a column the verifier would reject never enters
 the pool.
 
-The ladder takes the same method to twenty periods and
-$\InFlight{160}$ trucks under the same guarantee. On the first three
+% Ladder: results/julia/final/ladder_3d_final.csv (branch final-3d, 4c7471e).
+% Reference ladder: results/fleet_tree_3d/tree_3d_<instance>_table_<budget>.json,
+% commit 73411b9, same per-rung budgets, 10 threads, 20 GB, config.ladder true,
+% config.stop_early true: 12 / 26 / 34 / 54 / 160 trucks, 78549.14 on rung 4 and
+% 230594.36 on rung 5.
+The size ladder takes the method, in the configuration of
+Sections~\ref{sec:pricing} and~\ref{sec:branching}, to twenty periods
+and $156$ trucks under the same guarantee. On the first three
 rungs the truck count is in addition the minimum possible, the region
 with one truck fewer being certified infeasible in $1.5$, $3.9$ and
 $16.3$ s (Table~\ref{tab:fleetfloor}), so
-what remains of those gaps, $\InFlight{0.0076\%}$--$\InFlight{0.165\%}$,
+what remains of those gaps, $0.0075\%$--$0.163\%$,
 is inventory cost. The jump to
-$\InFlight{13.3\%}$ on the last two rungs is attributed to the bound
+$14.5\%$ and $10.7\%$ on the last two rungs is attributed to the bound
 and not to the plan, on the mechanistic evidence of
 Section~\ref{sec:res-abstraction}; nothing here proves that
 attribution, and those two plans are reported as verified upper bounds
 under a stated budget. The claim about the gaps is therefore
 conditional: they are small where the volumetric relaxation is nearly
-exact, which is checkable in advance.
+exact, which is checkable in advance. Against the first
+implementation's ladder at the same budgets, in the configuration of
+Table~\ref{tab:bench}, the fleets agree on the first three rungs; on
+the fourth this run needs $55$ trucks where that one needed $54$, at
+$79\,703.31$ against $78\,549.14$, and on the fifth $156$ where it
+needed $160$. Each is one run of two implementations in two
+configurations, and neither difference is attributed to either.
 
+% Root plans and incumbents: the "root plan" and "NEW INCUMBENT" lines of
+% results/julia/final/ladder_3d_final.log.  Rung 4: root 92251.99 X=67 at
+% 948.4 s; "X<=66: NEW INCUMBENT 88070.31 X=65" at 1076.1 s; "X<=66,X<=64: NEW
+% INCUMBENT 79703.31 X=55" at 1530.3 s.  Rung 3: root 52215.42, eleven NEW
+% INCUMBENT lines down to 52116.76.  Rung 5: "root construction failed
+% (attempt 1): step 4 stopped on TIME_LIMIT after 600.0s of a 600.0s limit,
+% still carrying 86.0 artificial units" at 1473.1 s; root plan at 2771.5 s;
+% "X<=155: no plan in region" at 3063.2 s; nodes 1.  Search window
+% (1 - frontier_share) * time_limit = 0.85 * 3600 = 3060 s (tree.jl:620).
+% 3060 - 2771.5 = 288.5 s.
 What branching contributes is uneven and is not averaged away. Read
 within one run (Table~\ref{tab:3d-onecommit}), the tree improves the
-root construction by $\InFlight{2.00\%}$ on the third rung, five node
-improvements taking $\InFlight{53\,195.84}$ to $\InFlight{52\,129.45}$,
-and by $\InFlight{0.03\%}$ or nothing on the other four: the pattern
-follows what the root leaves the tree, and where the relaxation is
-nearly exact the construction is already there.
+root construction by $13.6\%$ on the fourth rung, where two level-1
+nodes take a $67$-truck root plan at $92\,251.99$ to $65$ trucks and
+then to $55$ at $79\,703.31$; by $0.19\%$ on the third, over eleven
+improvements; by $0.034\%$ and $0.003\%$ on the second and first; and
+not at all on the fifth, whose root plan arrived after one failed
+construction --- step~4 stopped on its limit still carrying artificial
+slack --- and under $290$ s before the search window closed, enough for one
+node, in which the region with fewer trucks returned no plan. The
+pattern follows what the root leaves the tree: where the relaxation is
+nearly exact the construction is already there, and where it is not
+the region with one truck fewer is where the plan improves.
 
-% Phase clock: results/fleet_tree_3d/tree_3d_I_8_5_2_90_table_900.json,
-% t_cg 864.16 of seconds 873.10.
+% Volumetric certificate: the "volumetric relaxation LB ... proved=" trace line.
+% results/bench_tree/tree_3d_*.json (36): 2.5 s (I_4_5_2_60) to 90.2 s
+% (I_8_10_3_60, proved=False, the only unproved row) into the run.  Ladder
+% (ladder_3d_final.log): 1.3 / 3.1 / 3.9 / 9.6 / 13.8 s between the "root CG
+% stopped" line and that line, all proved=true.
+% Phase clock, ladder_3d_final.csv: t_cg 125.37 / 119.99 / 223.08 / 250.0 /
+% 872.1 s; t_pack 1.58 / 0.21 / 1.6 / 2.71 / 14.2 s; seconds 765.03 / 770.47 /
+% 1547.81 / 1533.82 / 3093.57.  t_build is NOT quoted: in tree.jl the closures
+% `pack` and `build` share the outer variable `_t`, so t_build is corrupted.
+% Rung 4's root construction runs from the 279.7 s "root LB" line to the 948.4 s
+% "root plan" line (668.7 s); rung 5's first attempt from 553.9 s to the 1473.1 s
+% failure (919.2 s), its second from the 1833.2 s re-pricing to the 2771.5 s root
+% plan (938.3 s).
+% Placeability on the ladder, summed over the five rows: pack_calls 8335,
+% pack_ok_shelf 6749, pack_ok_mip 485, pack_unplaceable 1101, pack_undecided 0;
+% ref_2D = pack_unplaceable and ref_T1/T2/T4/T5 = 0 on every row.
+% Rows ablation: results/julia/ip_tl_600.csv on 3d-port (src_tree 246b883, julia/src
+% differing from e4830fe only by the rows code; ip_tl 600, 10 threads, 20 GB,
+% complaints 0, seconds 3091.52): 160 trucks, 230020.08, pack_unplaceable 1440.
 % Packing census, summed over the 36 results/bench_tree/tree_3d_*.json:
 % stats.pack_ok_shelf 24686, stats.pack_ok_cpsat 246,
 % stats.distinct_parts 11866, stats.distinct_parts_unplaceable 4327,
 % stats.distinct_parts_undecided 397.
 The bound is cheap, which makes the division of labour of
-Section~\ref{sec:bounds} affordable: over the forty-one runs reported
-here the volumetric sweep returns in $2.5$ to $111.8$ s with every pair
-proved on forty, the exception being the one row of
-Table~\ref{tab:bench} that prints \emph{unproved} and is excluded from
-every mean. The geometric sweep certified no region on any run. Where
-the time goes depends on whether the crush limit binds: column
-generation takes $\InFlight{864}$ s of the $\InFlight{873}$ s first
-rung with the geometry free, while on the two crush-binding rungs the
-partition and its placeability calls dominate. Over the thirty-six
-instances the shelf design placed $24\,686$ loads and the constraint
+Section~\ref{sec:bounds} affordable: over the thirty-six runs of
+Table~\ref{tab:bench} the volumetric certificate is in hand $2.5$ to
+$90.2$ s into the run, with every pair proved on thirty-five, the
+exception being the one row that prints \emph{unproved} and is excluded
+from every mean, and on the five ladder rungs it takes $1.3$ to
+$13.8$ s once root column generation stops, every pair proved. The
+geometric sweep certified no region on any run. Nor does the geometry
+take the time on the ladder: placeability calls cost $0.2$ to
+$14.2$ s per run, against $120$ to $872$ s of column generation, and on
+the last two rungs the construction takes most of what remains --- the
+fourth rung's root construction alone took $669$ s, and the fifth's two
+root attempts $919$ and $938$ s, the first ending when step~4 used its
+whole $600$ s. None of the ladder's $8\,335$ placeability calls was left
+undecided: the shelf design placed $6\,749$ loads, and the exact test
+of Section~\ref{sec:geo3d} placed $485$ and proved the other $1\,101$
+unplaceable --- none of them by the arithmetic conditions alone, which
+the partition now carries as rows. On the fifth rung one run isolates those rows: without them, at
+the same step-4 limit and otherwise the same code, the method returned
+$160$ verified trucks at $230\,020.08$ and packing proved $1\,440$
+loads unplaceable, against $156$ trucks and $913$ with them;
+one run each, so the counts and not the $2.6\%$ in cost are what it
+shows. Over the thirty-six instances of Table~\ref{tab:bench} the shelf
+design placed $24\,686$ loads and the constraint
 programme $246$, which proved $4\,327$ of the $11\,866$ distinct
 compositions proposed unplaceable and left $397$ undecided.
 
@@ -237,7 +323,7 @@ restriction and not $z^{\star}$ --- it returns a plan on one of four
 ladder instances. On $I\_8\_5\_2\_90$, at $67\,674$ variables and
 $92\,092$ constraints, it stops on its $1\,800$ s limit with no phantom
 freight and twelve loads that pass the independent verifier,
-$\InFlight{0.102\%}$ above the method's plan at twice the method's
+$0.102\%$ above the method's plan at twice the method's
 budget. From ten periods on, at $119\,424$ to $322\,734$ variables, it
 % Peak resident sets: results/compact_3d/compact3d_I_8_10_2_90_k25.json
 % 6.1205, compact3d_I_12_12_2_90_k25.json 2.6528,
@@ -254,14 +340,20 @@ an optimum, and the proof is not the method's. The compact
 \emph{volumetric} relaxation solves it to proved optimality at
 $18\,796.96$ in $0.198$ s, every placeable load is volumetrically
 feasible, and the verified 3D plan attains that value; the method's own
-% The three leaf certifications are a separate run:
+% Compact 3D vs method: (18816.13 - 18796.96)/18796.96 = 0.102%.
+% The three unrefuted regions of this run: results/julia/final/ladder_3d_final.log,
+% lines 30, 46 and 120, "covered by LB 18795.56 / 18795.54 / 18795.54 <
+% incumbent, unrefuted" (leaves_unrefuted 3, leaves_certified 0 in the CSV).
+% The geometric attempt on them is a separate run of the first implementation:
 % results/fleet_tree_3d/tree_3d_I_8_5_2_90_leafcert_900.json, leaves_certified 3,
 % log lines 151-153 "leaf certification 18795.57/18795.54/18795.54
-% proved=False; not refuted".  Table \ref{tab:3d-onecommit}'s row 1 is
-% tree_3d_I_8_5_2_90_table_900.json, whose bound is the volumetric certificate.
-attempt failed: geometric certification of the three regions its search
-could not refute returned $18\,795.57$, $18\,795.54$ and
-$18\,795.54$, none of the three \emph{proved}. The
+% proved=False; not refuted".
+search does not establish it: the run of Table~\ref{tab:3d-onecommit}
+ends with three regions covered by certified volumetric bounds of
+$18\,795.56$, $18\,795.54$ and $18\,795.54$, below the incumbent and so
+bounded rather than refuted, and a geometric certification of three such
+regions, in a separate run of the first implementation, proved none of
+them. The
 proof is available because this instance's two container families have
 coinciding height- and crush-limited layer counts --- exactly the
 condition under which Section~\ref{sec:res-abstraction} finds a
@@ -295,8 +387,8 @@ The two ladder instances where the crush limit binds carry no undecided
 caveat at all: on $I\_16\_15\_2\_90\_k25$, whose volumetric plan is the
 \emph{proved} optimum, $41$ of its $45$ dispatched loads are proved
 unplaceable and four placeable, and on $I\_24\_20\_2\_90\_k50$ it is
-$119$ of $137$. Those two went to the stronger oracle of
-Section~\ref{sec:geo3d} --- a constructive witness first, the
+$119$ of $137$. Those two went to the first implementation's stronger
+oracle of Section~\ref{sec:geo3d} --- a constructive witness first, the
 constraint programme only for refutations --- which left nothing
 undecided; the thirty-six went to the constraint programme alone, which
 is why a quarter of their loads are. A volumetric optimum can therefore
@@ -306,12 +398,12 @@ and layer heights leave unusable.
 
 What that costs is constructed rather than estimated
 (Table~\ref{tab:repack}): each volumetric plan's delivery quantities
-are kept and each period's freight re-packed with the same
-partition-and-pack machinery the method uses, every resulting truck
-verified. The re-packed plans need $74$ and $212$ trucks where the
-method plans $\InFlight{54}$ and $\InFlight{160}$ directly --- savings
-of $\InFlight{27.0\%}$ and $\InFlight{24.5\%}$ on trucks and
-$\InFlight{19.1\%}$ and $\InFlight{16.2\%}$ on cost, each denominator
+are kept and each period's freight re-packed with the
+partition-and-pack machinery of the first implementation, every
+resulting truck verified. The re-packed plans need $74$ and $212$
+trucks where the method plans $55$ and $156$ directly --- savings
+of $25.7\%$ and $26.4\%$ on trucks and
+$17.9\%$ and $18.6\%$ on cost, each denominator
 the re-packed plan's own figure. Two caveats travel with them: the
 re-packed plan delivers \emph{at least} the volumetric quantities, by
 $80$ and $137$ units, the partition being a cover; and the
@@ -342,7 +434,7 @@ $3\,000$ mm roof, while $P_{1}$ at $419$ kg full fits only two under
 the $1\,200$ kg crush limit, as do six of the family's eight products.
 A volumetric fill therefore credits a truck with roughly twice that
 family's placeable count, which is also why the certified bound on the
-two crush-binding rungs sits $\InFlight{13.3\%}$ below the best
+two crush-binding rungs sits $14.5\%$ and $10.7\%$ below the best
 verified plan.
 
 That mechanism can be checked before anything is solved, since it needs

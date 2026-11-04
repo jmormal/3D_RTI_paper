@@ -1,12 +1,12 @@
 # `\InFlight{}` sites in `3D_RTI_paper/rewrite/`
 
-Regenerated 2026-10-27 after the volumetric parity campaign was substituted,
-so the counts and line numbers are those of the files as they now stand.
-
-**105 marked values on 29 lines, 4 files** (112 until 2026-10-28; see *What decision 16 changes here*). Every marked value is a number the
-3D ladder re-run will replace; nothing else is marked. The macro is defined in
-`paper.tex` as `\providecommand{\InFlight}[1]{#1}`, so it prints its argument
-and the paper builds and reads normally.
+**None remain (2026-11-04).** Both campaigns are substituted, and the macro
+`\providecommand{\InFlight}[1]{#1}` has been removed from `paper.tex`, so a
+stray `\InFlight{...}` would now fail the build rather than print silently.
+The history below is kept because it says what each number replaced and why.
+Until 2026-11-04 the file read: *105 marked values on 29 lines, 4 files (112
+until 2026-10-28)*; every marked value was a number the 3D ladder re-run would
+replace, and nothing else was marked.
 
 ## Campaign A --- volumetric parity: DONE
 
@@ -33,7 +33,49 @@ unproved-root bound reported before `e85c70c`, and `pack_calls = 0` on all
 six, so none is touched by the `stack_patterns` defect fixed in `b85f174`
 (the packing layer never runs in volumetric mode).
 
-## Campaign B --- the 3D ladder, re-run in Julia
+## Campaign B --- the 3D ladder, re-run in Julia: DONE
+
+Substituted on 2026-11-04 from the **final** 3D ladder, not from campaign B's
+own run: `results/julia/final/ladder_3d_final.csv` and its trace
+`ladder_3d_final.log`, on branch `final-3d` of the outer repository
+(results committed at `4c7471e`; launcher `julia/scripts/ladder_3d_final.sh`
+at `f4c3b18`, tag `final-3d-2026-11-04`; `src_tree` `e4830fe`; workstation unit
+`rti-final`, alone, 2026-11-04 14:22-16:32; 10 threads, 20 GB, budgets
+900/900/1800/1800/3600 s, no seed set, include load path). It is campaign B's
+configuration plus two changes the author fixed on 2026-11-04: the geometric
+rows (`--geom-rows both`, now eq:geomrows and eq:fibrerows in
+`sec_branching.tex`) and step 4's per-call limit at one sixth of the budget
+(`--ip-tl` 150/150/300/300/600 s, now in `tab_protocol.tex`). Campaign B's own
+CSV (`results/julia/ladder_3d.csv` on `3d-port`, ip_tl 120, no rows) had no
+plan on rung 5 and is cited only in the protocol caption's one sentence about
+the 120 s limit.
+
+All 105 values were substituted; every cell had a counterpart in the CSV or
+the log (the *root* column and the *tree* improvement come from the log's
+`root plan` lines). `t_build` was **not** used anywhere: the closures `pack`
+and `build` in `julia/src/tree.jl` share the outer `_t`, so that field is
+corrupted. What changed besides the numbers:
+
+* rung 4 is **55** trucks (79 703.31) against the reference's 54 (78 549.14),
+  rung 5 **156** (223 944.20) against 160 (230 594.36); `sec_experiments.tex`
+  says both plainly and attributes neither;
+* the tree's contribution moved from rung 3 (2.00 %) to rung 4 (13.6 %, a
+  67-truck root plan to 55 in two level-1 nodes); rung 5 evaluated one node;
+* the last two gaps are 14.5 % and 10.7 %, not 13.3 % twice;
+* the phase-clock sentence ("column generation takes 864 s of the 873 s first
+  rung ... the partition and its placeability calls dominate") described the
+  reference; in the Julia run placeability costs 0.2-14.2 s per rung and was
+  rewritten from `t_cg`, `t_pack` and log timestamps;
+* the sweep range "2.5--111.8 s over 41 runs" counted the five reference
+  ladder runs; it is now 2.5-90.2 s over the 36 of `tab_bench.tex` plus
+  1.3-13.8 s on the five Julia rungs;
+* `tab_repack.tex`'s savings are 25.7 % / 17.9 % and 26.4 % / 18.6 %, and the
+  conclusions' 27.0 % / 24.5 % (never marked) followed them.
+
+`CHANGES-final3d.md` lists every edit with its source.
+
+### What follows is the plan as it stood before substitution
+
 
 Five rungs at the recorded per-rung budgets (900 / 900 / 1800 / 1800 /
 3600 s), 20 GB, ten threads. Replaces: every cell of `tab_ladder.tex`, the

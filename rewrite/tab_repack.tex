@@ -3,10 +3,16 @@
 % unplaceable 41, undecided 0, source compact_ref OPTIMAL 68139.17;
 % I_24_20_2_90_k50 dispatched 137, unplaceable 119, undecided 0, source
 % compact_ref MEM_LIMIT 200266.21.
-% results/repacked_volumetric.json for rows 2-4 (loadlocal_trucks 86 / 256,
-% repacked_trucks 74 / 212, method_trucks 54 / 160; pairs_unpacked 0 and
-% complaints 0 on both; over_delivered_units 80 / 137).
-% The method rows are replaced by the 3D ladder re-run (900-3600 s per rung).
+% results/repacked_volumetric.json for rows 2-3 (loadlocal_trucks 86 / 256,
+% repacked_trucks 74 / 212, repacked_cost 97139.17 / 275266.21; pairs_unpacked 0
+% and complaints 0 on both; over_delivered_units 80 / 137).  Its method_trucks
+% field (54 / 160) is the reference implementation's ladder and is NOT used.
+% Row 4: results/julia/final/ladder_3d_final.csv on branch final-3d (4c7471e),
+% trucks 55 / 156 and incumbent 79703.31 / 223944.20 (Table
+% \ref{tab:3d-onecommit}).  Savings, each against the re-packed plan:
+% trucks (74-55)/74 = 25.68%, (212-156)/212 = 26.42%;
+% cost (97139.17-79703.31)/97139.17 = 17.95%,
+%      (275266.21-223944.20)/275266.21 = 18.64%.
 \begin{table}[!t]
 \centering
 \small
@@ -20,8 +26,8 @@ undecided caveat. Row 2 splits each unplaceable load where it stands,
 with no consolidation; it is reported for contrast and is \emph{not}
 the comparison, consolidation being worth twelve and forty-four trucks.
 Row 3 is the comparison: the volumetric plan's delivery quantities
-kept, each period re-packed with the same partition-and-pack machinery
-the method uses, every resulting truck verified, and at least the
+kept, each period re-packed with the partition-and-pack machinery of
+the first implementation, every resulting truck verified, and at least the
 original quantities delivered --- by $80$ and $137$ units, the
 partition being a cover. Row 4 is BP-3D-SCPTOP, which also chooses the
 quantities. The volumetric plan on $I\_24\_20\_2\_90\_k50$ is a
@@ -38,9 +44,9 @@ carries no such caveat.}
 volumetric plan (not executable)      & 45  & 137 \\
 repaired load by load (contrast only) & 86  & 256 \\
 \textbf{re-packed, quantities kept}   & \textbf{74} & \textbf{212} \\
-\textbf{BP-3D-SCPTOP} (which also chooses the quantities) & \textbf{\InFlight{54}} & \textbf{\InFlight{160}} \\
+\textbf{BP-3D-SCPTOP} (which also chooses the quantities) & \textbf{55} & \textbf{156} \\
 \midrule
-saving on trucks / on cost & \InFlight{$27.0\%$ / $19.1\%$} & \InFlight{$24.5\%$ / $16.2\%$} \\
+saving on trucks / on cost & $25.7\%$ / $17.9\%$ & $26.4\%$ / $18.6\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}

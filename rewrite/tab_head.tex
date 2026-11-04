@@ -2,12 +2,20 @@
 % 10 threads, 20 GB, seed 0, n_lc 3); row 1 is compact3d_rerun_I_8_5_2_90.json,
 % taken after the layout-extraction fix, with the same objective, bound and stop
 % as the first run but twelve loads that pass the verifier.  No compact 3D run
-% exists for I_24_20_2_90_k50.  Method columns are Table \ref{tab:3d-onecommit}.
-% Only the ends that a campaign replaces are marked: a compact volumetric dual
-% bound (rows 2 and 4's lower end) is not in flight.
+% exists for I_24_20_2_90_k50.
+% Method columns: Table \ref{tab:3d-onecommit}, i.e.
+% results/julia/final/ladder_3d_final.csv on branch final-3d (4c7471e; src_tree
+% e4830fe, geom_rows both, ip_tl = time_limit/6): incumbent, trucks, global_lb,
+% gap_pct, time_limit.
 % The interval's lower end is the tighter bound THAT BOUNDS THE PROBLEM: the
 % compact volumetric dual bound where one exists, else the method's own
-% certificate -- never the compact 3D model's dual bound.
+% certificate -- never the compact 3D model's dual bound.  Row 1: compact
+% volumetric optimum 18796.96 (results/compact_ref/compact_ref_I_8_5_2_90.json);
+% row 2: compact volumetric dual bound 38851.93 at a memory stop; row 3: the
+% method's 52105.31 (the compact volumetric model's bound there is 51944.22 at
+% 600 s, lower); row 4: compact volumetric optimum 68139.17; row 5: the method's
+% 200013.57 (compact volumetric dual bound 199518.04, lower; Table
+% \ref{tab:volumetric}).
 \begin{table}[!htbp]
 \centering
 \small
@@ -37,11 +45,11 @@ one optimum (Table~\ref{tab:3d-onecommit}).}
 \cmidrule(lr){2-5}\cmidrule(lr){6-10}
 Instance & $z$ & trucks & LB & stop & $z$ & trucks & LB (cert.) & gap & budget (s) & $z^{\star}$ in \\
 \midrule
-$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time} & \InFlight{18\,796.96} & \InFlight{12} & \InFlight{18\,795.54} & \InFlight{$0.0076\%$} & 900 & $[\InFlight{18\,796.96},\,\InFlight{18\,796.96}]$ \\
-$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time} & \InFlight{38\,855.34} & \InFlight{26} & \InFlight{38\,791.14} & \InFlight{$0.165\%$} & 900 & $[38\,851.93,\,\InFlight{38\,855.34}]$ \\
-$I\_12\_12\_2\_90\_k25$ & \emph{none} & --- & 48\,516.86 & \textsc{time} & \InFlight{52\,129.45} & \InFlight{34} & \InFlight{52\,105.25} & \InFlight{$0.046\%$} & 1\,800 & $[\InFlight{52\,105.25},\,\InFlight{52\,129.45}]$ \\
-$I\_16\_15\_2\_90\_k25$ & \emph{none} & --- & 64\,053.23 & \textsc{time} & \InFlight{78\,549.14} & \InFlight{54} & \InFlight{68\,131.43} & \InFlight{$13.3\%$} & 1\,800 & $[68\,139.17,\,\InFlight{78\,549.14}]$ \\
-$I\_24\_20\_2\_90\_k50$ & \multicolumn{4}{c}{not run} & \InFlight{230\,594.36} & \InFlight{160} & \InFlight{200\,013.41} & \InFlight{$13.3\%$} & 3\,600 & $[\InFlight{200\,013.41},\,\InFlight{230\,594.36}]$ \\
+$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time} & 18\,796.96 & 12 & 18\,795.56 & $0.0075\%$ & 900 & $[18\,796.96,\,18\,796.96]$ \\
+$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time} & 38\,854.44 & 26 & 38\,791.19 & $0.163\%$ & 900 & $[38\,851.93,\,38\,854.44]$ \\
+$I\_12\_12\_2\_90\_k25$ & \emph{none} & --- & 48\,516.86 & \textsc{time} & 52\,116.76 & 34 & 52\,105.31 & $0.022\%$ & 1\,800 & $[52\,105.31,\,52\,116.76]$ \\
+$I\_16\_15\_2\_90\_k25$ & \emph{none} & --- & 64\,053.23 & \textsc{time} & 79\,703.31 & 55 & 68\,131.48 & $14.5\%$ & 1\,800 & $[68\,139.17,\,79\,703.31]$ \\
+$I\_24\_20\_2\_90\_k50$ & \multicolumn{4}{c}{not run} & 223\,944.20 & 156 & 200\,013.57 & $10.7\%$ & 3\,600 & $[200\,013.57,\,223\,944.20]$ \\
 \bottomrule
 \end{tabular}}
 \end{table}

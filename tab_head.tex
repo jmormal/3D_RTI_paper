@@ -21,22 +21,14 @@
 \small
 \caption{The compact 3D-SCPTOP model (a catalogue of
 $n_{\mathrm{LC}}=3$ layouts shared by the trucks of a direction,
-$1\,800$ s, Gurobi 12) against BP-3D-SCPTOP on the size ladder, the
-method's rows being those of Table~\ref{tab:3d-onecommit}. \textbf{The budgets differ
-on three rows}: the compact model had $1\,800$ s throughout, the method
-$900$ s on the first two rows, $1\,800$ s on the next two --- which are
-therefore the equal-budget pairs --- and $3\,600$ s on the last.
-\emph{none} means no feasible solution was found inside the budget, and
-all three such runs stopped on \emph{time} with peak resident sets of
-$6.1$, $2.7$ and $4.5$ GB against the declared $20$ GB cap. The last
-column is the interval in which $z^{\star}$ lies, taking the method's
-plan as the upper end and, as the lower end, the tighter bound
-\emph{that bounds the problem}: $n_{\mathrm{LC}}=3$ is an a-priori
-restriction of Section~\ref{sec:model}, so the compact 3D model's dual
-bound bounds that restriction and not $z^{\star}$ and appears in its
-own column only, while a compact \emph{volumetric} dual bound is valid
-for 3D by inclusion and is used instead where one exists. Row 1 is the
-one optimum (Table~\ref{tab:3d-onecommit}).}
+$1\,800$ s) against BP-3D-SCPTOP, whose rows are those of
+Table~\ref{tab:3d-onecommit} and whose budget is in the last-but-one
+column. \emph{none}: no feasible solution within the budget. The last
+column is the interval containing $z^{\star}$: the method's plan above,
+and below the tighter bound \emph{on the problem} --- a compact
+volumetric dual bound where one exists, else the method's certificate.
+The compact 3D model's own dual bound bounds its a-priori restriction,
+not $z^{\star}$, and appears in its own column only.}
 \label{tab:3d-head}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrlrrrrrl}

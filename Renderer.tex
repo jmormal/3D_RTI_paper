@@ -11,6 +11,8 @@
 % row 2, which will be dropped.  Listed in CHANGES-final3d.md, "Pending (purple)".
 \providecommand{\Pending}[1]{\textcolor{purple}{#1}}
 \usetikzlibrary{decorations.pathreplacing}
+% Some long reference titles leave no good break at this width.
+\AtBeginBibliography{\emergencystretch=2em}
 
 \title{An optimisation approach for supply chain procurement transport
 operational planning with 3D full-truckload constraints and returnable

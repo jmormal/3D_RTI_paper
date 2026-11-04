@@ -1,0 +1,65 @@
+% Implementation facts and their sources (not printed):
+%   language and solver: julia/Project.toml (JuMP, Gurobi.jl 1.9.3), julia/Manifest.toml
+%     (Gurobi_jll 13.0.3, loaded as the artifact); compact models: env.gurobi 12.0.1
+%     in results/compact_ref/*.json and results/compact_3d/*.json.
+%   3D runs: results/julia/final/ladder_3d_final.csv on branch final-3d (results
+%     4c7471e), launcher julia/scripts/ladder_3d_final.sh at f4c3b18 (tag
+%     final-3d-2026-11-04), src_tree e4830fe, load_path include, unit rti-final
+%     run alone 2026-11-04 14:22-16:32; geom_rows both, ip_tl = time_limit/6.
+%   Volumetric runs (Table tab:volumetric): results/julia/parity_vol.csv, commit
+%     10e633c, ip_tl default 120 s (julia/src/tree.jl at 10e633c, line 576).
+%   Defaults: julia/src/tree.jl:583-611 (step2_tl 300, node_step2_tl 120, part_tl
+%     60, step2_gap 1e-4, root_cg_share 0.15, frontier_share 0.15, price_tl 20,
+%     pack_tl 20, pool_tl 10, part_rounds 2, murty_depth 6, delivery_depth 0,
+%     certify_regions ratchet); julia/src/colgen.jl:156-157 (volumetric pricing
+%     mem_gb=1.0); julia/src/construct.jl (n+0..2 trucks per pair).
+%   Pack memoisation: julia/src/tree.jl:658-687.  Plan verification: tree.jl:1493-1520.
+\section{Implementation and reproducibility}
+\label{appendix:impl}
+
+The method is implemented in Julia with the JuMP modelling layer, and
+every model it solves --- masters, the construction's programmes,
+pricing and placeability models --- is solved with Gurobi 13.0; the
+compact reference models were solved with Gurobi 12.0. A run follows
+Algorithm~\ref{alg:bp3d}: root column generation within a share of the
+budget, the volumetric certificate, the root construction, then the
+tree until a reserve in which the open regions are certified. A
+placeability query tries the shelf design first and the exact test of
+Section~\ref{sec:geo3d} second, and its verdict is kept for the run.
+Every 3D plan is verified truck by truck before it is reported, and
+every certified bound came back with every pair proved. Each instance
+was solved once, alone on one workstation; since the phases run on
+wall-clock budgets, a run is reproducible given a build and a machine,
+and a difference of one or two trucks between rows is not read as an
+effect. Table~\ref{tab:impl} lists the settings; code and data:
+\Pending{[repository URL]}.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Settings of the reported runs.}
+\label{tab:impl}
+\label{tab:protocol}
+\begin{tabular}{@{}p{0.26\textwidth}p{0.41\textwidth}p{0.24\textwidth}@{}}
+\toprule
+ & 3D runs (Tables~\ref{tab:3d-onecommit}, \ref{tab:3d-head}) & volumetric runs (Table~\ref{tab:volumetric}) \\
+\midrule
+budget (wall clock) & $900$, $900$, $1\,800$, $1\,800$, $3\,600$ s & $3\,600$ s \\
+root column generation & $15\%$ of the budget & $15\%$ of the budget \\
+frontier reserve & $15\%$ of the budget & $15\%$ of the budget \\
+initial pool, per pricing call & $10$ s & --- \\
+step 2, per call & $300$ s at the root, $120$ s at a node, gap $10^{-4}$ & same \\
+step 3, per call & $60$ s, $2$ cut rounds, up to $n^{\star}_{gt}+2$ trucks & same \\
+step 4, per call & budget$/6$: $150$, $150$, $300$, $300$, $600$ s & $120$ s \\
+rows \eqref{eq:stackrows}--\eqref{eq:fibrerows} & steps 2 and 3 & --- \\
+pricing, per call & $20$ s & $20$ s \\
+placeability, per call & $20$ s & --- \\
+threads & $10$ & $10$ \\
+memory cap & $20$ GB per model; $1$ GB on volumetric pricing models & same \\
+seed & solver default & solver default \\
+\midrule
+compact models & \multicolumn{2}{p{0.67\textwidth}}{Gurobi 12.0, $10$ threads, $20$ GB, MIP gap $0$, seed $0$; $1\,800$ s (3D), $600$--$3\,600$ s (volumetric)} \\
+\Pending{placeability check, Table~\ref{tab:repack}} & \multicolumn{2}{p{0.67\textwidth}}{\Pending{shelf + CP-SAT, $60$ s per load}} \\
+\bottomrule
+\end{tabular}
+\end{table}

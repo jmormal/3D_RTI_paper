@@ -1,19 +1,20 @@
 \section{The pricing problem}
 \label{sec:pricing}
 
-By the Blocks and Classes steps of Section~\ref{sec:decomp} the
-pricing problem of class $(g,t)$ \emph{is} the block of 3D-SCPTOP with
-the quantifier over $\mathcal{B}$ removed: the same rows, with $g$
-supplying the data and the master the duals, the only rows below with
-no counterpart in Section~\ref{sec:model} being the valid inequalities
-\eqref{bp:PP-areacut}. There is one such problem per direction, written
-$(\mathrm{PP}^{g})$. With $c$ the commodity index of
+The pricing problem of class $(g,t)$ \emph{is} the block of 3D-SCPTOP
+with the quantifier over $\mathcal{B}$ removed: it designs one truck ---
+its slots, stacks, orientations, positions and load --- so as to
+maximise the dual value of its load, and it is the only place where the
+geometry lives. The rows are those of Section~\ref{sec:model}, with $g$
+supplying the data and the master the duals; the only additions are the
+valid inequalities \eqref{bp:PP-areacut}. There is one such problem per
+direction, $(\mathrm{PP}^{g})$. With $c$ the commodity index of
 Section~\ref{sec:columns}, $\mathrm{image}_{c}$, $w_{c}$,
 $\gamma_{gc}$ and $r_{gc}$ are
 $\overline{V}_{n},w_{n},\gamma_{p\rho(n)},r_{p\rho(n)}$ respectively
-$V^{\mathrm{e}}_{r},w^{\mathrm{f}}_{r},\gamma_{sr},r_{sr}$; the partition
-programme \eqref{eq:part-obj}--\eqref{eq:part-sym} uses the same
-convention. Figure~\ref{fig:truck} draws what the block designs.
+$V^{\mathrm{e}}_{r},w^{\mathrm{f}}_{r},\gamma_{sr},r_{sr}$, and the
+partition programme \eqref{eq:part-obj}--\eqref{eq:part-sym} uses the
+same convention. Figure~\ref{fig:truck} draws what the block designs.
 
 \begin{align}
   \min\;\; & \eta^{K}cK\cdot Z \;-\; \sum_{c}\pi_{ct}\,\mathrm{image}_{c}
@@ -52,24 +53,13 @@ the footprint of slot $i$ in its chosen orientation, and
 rows, so that at $Z=1$ the pair
 \eqref{bp:PP-util}--\eqref{bp:PP-utilw} is the disjunction
 \eqref{eq:col-truck}.
-
-Deleting a variable is a claim about the feasible set. With no
-loading-configuration index, $Z_{gkt}$ and $Y_{gkt}$ differ at exactly
-one kind of point, $Z=1$ with $Y=0$: a truck carrying a layout and no
-freight, whose image and cost are both $0$ by
-\eqref{fix:slot-link}--\eqref{fix:empty-link} and
-\eqref{sb:eq:obj-zK} --- precisely those of the empty column.
-Identifying the two binaries therefore removes no element of
-$\Omega^{g}$, and the master, which sees only images and costs, cannot
-tell the difference. The block keeps $Z$, charges it
-$\eta^{K}cK\cdot Z$ and hangs every load gate on it; the empty
-column, analytically known with reduced cost $-\mu_{gt}\ge0$, is
-excluded by fixing $Z=1$.
-
-Four implied rows are available and the oracles behind
-Section~\ref{sec:results} carry the second pair --- two restating the
-floor on the layer \emph{capacity} rather than on the load, and two
-bounding the occupied floor area:
+The truck binaries $Z$ and $Y$ of the compact model differ only at a
+truck with a layout and no freight, whose image and cost are those of
+the empty column; the block keeps $Z$, charges it $\eta^{K}cK\cdot Z$,
+and excludes the empty column by fixing $Z=1$. Four implied rows are
+available --- two restating the floor on the layer \emph{capacity}
+rather than on the load, and two bounding the occupied floor area ---
+and the oracles carry the second pair:
 \begin{align}
   & \sum_{h,\,r \in R(h)} \gamma_{gr}\,n_{hr}\,\overline{L}_{hr}
       \;\ge\;\alpha\,\Gamma_{K}\,(Z-1+\theta), \qquad
@@ -83,23 +73,10 @@ bounding the occupied floor area:
     \label{bp:PP-areacut}
 \end{align}
 \eqref{bp:PP-cap} is \eqref{sb:eq:util-cap} with the block index
-dropped. \eqref{bp:PP-areacut} is a valid inequality rather than a
-transcription, and is where the footprint consistency of
-Section~\ref{sb:sec:symm} earns its place: its first row says the
-footprints lie on the floor, and for the second, multiplying
-\eqref{bp:PP-height} by $p_{h}q_{h}$ and using
-$n_{hr}\gamma_{gr}=p_{h}q_{h}r_{gr}$ gives
-\[
-  \sum_{r\in R(h)} \gamma_{gr}\,n_{hr}\,L_{ihr}
-  \;=\;p_{h}q_{h}\sum_{r\in R(h)} r_{gr}\,L_{ihr}
-  \;\le\;p_{h}q_{h}\,\mathit{rK}\,X_{ih},
-\]
-so the volume the stacks hold is at most $\mathit{rK}$ times the
-occupied area; summing over $i$ and $h$ and chaining through
-\eqref{bp:PP-cap} gives the row, and a truck full by volume therefore
-has at least a fraction $\alpha$ of its floor occupied. Without the
-tiling assumption the step fails and the row can cut off feasible
-layouts.
+dropped, and \eqref{bp:PP-areacut} holds because, under the footprint
+consistency of Section~\ref{sb:sec:symm}, a stack holds at most $rK$
+times its footprint area of volume, so a truck full by volume occupies
+at least a fraction $\alpha$ of its floor.
 
 \subsection{The direction-specific rows}
 \label{sec:pp-dir}
@@ -128,66 +105,31 @@ $\mathrm{image}_{r}=V^{\mathrm{e}}_{r}$:
       \;\le\; W^{\max}
     && \forall i \in \mathcal{I} \label{bp:PP-s-stack-w}
 \end{align}
-The asymmetry is the compact model's own: the crush limit on a
-plant-bound truck depends on which products ride in the slot, so it
-needs the per-slot assignment $V_{in}$, and a supplier-bound truck does
-not.
+The crush limit on a plant-bound truck depends on which products ride
+in the slot, so it needs the per-slot assignment $V_{in}$; a
+supplier-bound truck does not.
 
-\paragraph{What the method requires of the oracle.}
-The oracle's only obligation is to return an optimal point of
-\emph{this} feasible set for the duals it is handed, and three
-conditions make its answer usable. The slot set must be the true bound
-\eqref{sb:eq:Ibound}, an optimum proved over fewer slots bounding a
-different problem. The floor must be imposed on the load carried, with
-each commodity's own weight. And the block must accept a per-commodity
-cap on the image, which is what Section~\ref{sec:initcols} asks of
-it: an oracle
-that silently ignores such a request answers a different question. The
-hard core is the disjunctive relation
-\eqref{bp:PP-nonov-x1}--\eqref{bp:PP-cover}, whose linear relaxation
-is weak, and which may equivalently be imposed as one two-dimensional
-disjointness relation over the slot rectangles with no separating
-binaries at all.
-
-\paragraph{The volumetric oracle.}
-The same master is also solved over the loads of the volumetric
-benchmark of Appendix~\ref{appendix:A}, where a load is a column iff
-its volume fits the trailer's, its weight the payload, and it clears
-the floor on the binding resource. Pricing is then a two-constraint
-integer knapsack, which proves optimality routinely and makes a
-certificate affordable at every node. Running both oracles through one
-master makes Section~\ref{sec:res-abstraction} an experiment about the
-loading representation rather than about two solution technologies.
-
-\paragraph{Improving, or optimal.}
-Any column of negative reduced cost improves the restricted master; the
-\emph{most} negative one is needed only for the certificate, so the two
-uses are priced differently. A sweep that may add columns passes the
-pair's threshold to the oracle as an objective limit, and a call that
-returns no point is then a proof that the pair has no improving column
-rather than a failure to find one. A sweep that certifies prices every
-pair to proven optimality, under no objective limit and no early stop,
-which is what Algorithm~\ref{alg:certify} requires. What separates them
-is cost, not validity: one sweep is $2|T|$ calls, one per count row, and
-a pair that has an improving column can spend its whole per-call budget
-proving that column optimal.
+\paragraph{The oracle.}
+The oracle must return an optimal point of this feasible set for the
+duals it is handed, over the true slot bound \eqref{sb:eq:Ibound}, with
+the floor imposed on the load carried and any per-commodity cap on the
+image honoured (Section~\ref{sec:initcols}). A sweep that only adds
+columns passes each pair's threshold to the oracle as an objective
+limit, so a call that returns no point proves that the pair has no
+improving column; a certifying sweep prices every pair to proven
+optimality (Algorithm~\ref{alg:certify}). Over the volumetric loads of
+Appendix~\ref{appendix:A} --- volume and payload within the trailer's,
+floor cleared on the binding resource --- pricing is a two-constraint
+integer knapsack, and the same master serves both load models.
 
 \input{Tikz_truck}
 
 \paragraph{What pricing cannot return.}
-For any dual vector \eqref{bp:PP-objective} is linear in the image, so
-it attains its optimum at an extreme point of
-$\operatorname{conv}(\Omega^{g})$: pricing returns extreme loads only.
-A balanced load inside the hull is dominated componentwise by a
-fractional blend of single-commodity trucks --- the relaxation buys
-that blend for one truck where an integer plan pays for each truck it
-mixes --- so no choice of duals returns it, however the search moves
-them (Figure~\ref{fig:hull}). Interior loads are precisely what an
+The pricing objective is linear in the image, so its optimum is an
+extreme point of $\operatorname{conv}(\Omega^{g})$. A balanced load
+inside the hull is dominated by a fractional blend of single-commodity
+trucks, and no dual vector returns it. Such interior loads are what an
 integer plan needs when a period's demand does not decompose into full
-trucks, which is why the method does not ask pricing for them. The
-flow-first construction of Section~\ref{sec:relaxfix-flow} reaches the
-interior directly, and branching on the fleet aggregates withdraws the
-dominating column, so the duals move and the oracle is asked for a load
-the pool does not yet hold.
-
-\input{TikzHullFigure}
+trucks; the construction of Section~\ref{sec:relaxfix-flow} builds
+them directly, and branching on the fleet moves the duals so that
+pricing is asked for loads the pool lacks.

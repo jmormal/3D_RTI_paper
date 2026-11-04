@@ -440,3 +440,140 @@ This paper proposes a mixed integer linear programming model, dubbed 3D-SCPTOP, 
 
 \keywords{ Procurement, inventory, transport planning,  full-truckload, 3D container loading }
 ```
+
+## 15. Restructured for Applied Mathematical Modelling
+
+The author's brief (2026-11-04): restructure for *Applied Mathematical
+Modelling*, keep the model and the two propositions, move implementation and
+provenance to one appendix, cut the abstract, one paragraph of intuition per
+method step followed by its algorithm or figure, bring the paper towards 30
+pages, change no number, leave Table 11 and every `\Pending` site as they are.
+Two later instructions: no commit hashes or source-tree ids in the printed text
+(they stay in `%` comments), and describe only the final method, with no
+comparison against variants of itself and no history.
+
+**Journal requirements** (Guide for Authors,
+https://www.sciencedirect.com/journal/applied-mathematical-modelling/publish/guide-for-authors;
+the page returns 403 to direct fetches, so these were read from search-engine
+extracts of that page and should be confirmed): abstract at most 250 words;
+highlights required, 3-5 bullets of at most 85 characters including spaces, in
+a separate editable file with "highlights" in its name; 1-7 keywords, single
+words preferred; the LaTeX template is encouraged, not required; no page or
+word limit and no mandatory section structure found.
+
+**Pages:** 38 -> 30. **Words** (`detex -n`): body 15 389 -> 11 904; tables,
+figures and algorithms 6 741 -> 3 375.
+
+| file | before | after |
+| --- | ---: | ---: |
+| `sec_abstract.tex` (paragraph: 250) | 622 | 250 |
+| `sec_intro.tex` | 793 | 793 |
+| `sec_litreview.tex` | 3 436 | 3 436 |
+| `sec_problem.tex` | 286 | 286 |
+| `sec_model.tex` | 1 378 | 1 378 |
+| `sec_decomp.tex` | 593 | 290 |
+| `sec_master.tex` | 1 577 | 1 106 |
+| `sec_pricing.tex` | 1 109 | 716 |
+| `sec_branching.tex` | 2 643 | 1 298 |
+| `sec_experiments.tex` | 2 415 | 1 442 |
+| `sec_conclusions.tex` | 287 | 274 |
+| `sec_appendix_scptop.tex` | 250 | 250 |
+| `sec_appendix_rowmap.tex` (new) | -- | 31 |
+| `sec_appendix_impl.tex` (new) | -- | 354 |
+
+**Unchanged:** `sec_problem.tex`, `sec_model.tex`, both propositions and their
+proofs (verbatim), the introduction and literature review (except the two float
+specifiers `[h!]` -> `[!ht]` in the literature review, which removed a LaTeX
+warning), Table 11 and every `\Pending` text. No number changed: every number in
+the edited files was already in the previous version (checked by script; the only
+new tokens are a column width and "Gurobi 13.0").
+
+### Structure
+
+* Section 5 is now "Decomposition and master problem": `sec_decomp.tex` (intuition,
+  Figure 2, the block structure) followed by `sec_master.tex` as its subsections
+  5.1 Columns, 5.2 The master (Proposition 1), 5.3 The restricted master,
+  5.4 Lower bounds (Algorithm 1, Proposition 2).
+* Section 6 pricing (Figure 3, formerly 4), Section 7 branching with the
+  construction (Algorithms 2 and 3), Section 8 results, Section 9 conclusions.
+* New Appendix B, "The block rows and the pricing problem": the row map
+  (`tab_rowmap.tex`), moved from Section 5.
+* New Appendix C, "Implementation and reproducibility" (`sec_appendix_impl.tex`):
+  Julia/JuMP, Gurobi 13.0 (compact models Gurobi 12.0), how a run is organised,
+  placeability order, plans verified truck by truck, every certified bound proved,
+  one run per instance and what that licenses, and Table 10 with every setting:
+  budgets, root column generation share, frontier reserve, initial-pool pricing
+  limit, step 2/3/4 limits (step 4 budget/6 for the 3D runs, 120 s for the
+  volumetric runs), the rows, pricing and placeability limits, threads, memory
+  cap (with the 1 GB soft cap on volumetric pricing), seeds, the compact models'
+  settings, and the pending placeability-check row. Hashes and source trees are
+  in its `%` comment only. `tab_protocol.tex` is retired into it.
+* Section 8.1 points to Appendix C and carries `\Pending{[repository URL]}`
+  (also in Appendix C).
+* `highlights.txt` (not input into the paper).
+
+### Removed figures
+
+Each method step now has one visual: Figure 2 (decomposition), Algorithm 1
+(certification), Figure 3 (pricing), Algorithm 2 (the fleet tree), Algorithm 3
+(the construction). Dropped (`git rm`, recoverable from history):
+`Tikz_loop.tex` (the restricted master's matrix), `Tikz_tree.tex` (the branching
+levels; Algorithm 2 carries the tree), `Tikz_construct.tex` (the construction on
+one period, with the old-run vector {R1:200, R2:30}; Algorithm 3 carries the
+steps) and `TikzHullFigure.tex` (old-run pricing data; the argument stays in
+Section 6, "What pricing cannot return").
+
+### Comparisons and history removed from the printed text
+
+| where | what |
+| --- | --- |
+| Section 9.3 (old) | the rows ablation: "On the fifth rung one run isolates those rows ... 156 verified trucks against 160, and 913 of 5 700 compositions ... against 1 440 of 6 812. One run each; the cost, 2.6 % lower relative to the run without the rows, is not claimed." |
+| Section 9.1 (old) | "Certifying every node instead is affordable on the volumetric model and closes far more of the space there, so the open counts below are a property of that choice ...; the two modes are reported under one policy ..." (policy comparison) |
+| Section 9.1 (old) | the determinism paragraph ("Every row is one run ... not deterministic across those ...") -> one sentence in Appendix C |
+| Section 6.3 (old) | "Rounding to nearest invalidates that certificate and ... convergence is never declared." |
+| Section 6.4 (old) | "Memoising duals, and pricing only the pairs whose aggregates are fractional, are legitimate while columns are still arriving and forfeit the right to certify" |
+| Section 8 (old) | "Two levels of the three ran ... with the delivery level on, such a leaf is split again ... It is also not what stopped the runs ..." -> one sentence: the delivery level is disabled in every run, so a full-depth leaf is covered by a certificate |
+| Section 8.3 (old) | "the smaller of the two counts is also valid, and strictly tighter" (an alternative row) |
+| Algorithm 2 | the comment "no demand mixes, no reduced variants" |
+| Table 4 (old protocol) | "volumetric parity" (the name compared two implementations) -> "volumetric runs"; the protocol's provenance sentences -> Appendix C |
+| Table 6 caption (old Table 7) | "one source tree (e4830fe) run alone on one machine ..." -> Appendix C |
+| Table 5 caption (old Table 6) | the frontier-reserve explanation ("$(1-0.15)\times3\,600=3\,060$ s ... returns here in 2 to 73 s") |
+
+Still printed, because they are `\Pending` and will be rewritten with the Julia
+re-pack: the Section 8.1 sentence on the Python provenance of Table 8's checks
+and re-packs, Table 8's caption ("first implementation"), the Section 8.5 re-pack
+paragraph and the conclusions' 25.7 % / 26.4 % sentence.
+
+### Cut, by kind
+
+* **Abstract:** 622 -> 250 words, same order (problem, model, method, results),
+  the `\Pending` volumetric sentence shortened as allowed.
+* **Redundancy:** the decomposition's five paragraphs (blocks, delete the
+  quantifier, identical blocks, classes, discretisation) -> two; the master's
+  restated column definition and the duplicated "a plan is a set of drawings";
+  pricing's "deleting a variable is a claim" paragraph -> one sentence; the
+  "improving or optimal" and "volumetric oracle" paragraphs merged into "The
+  oracle"; the volumetric results' four paragraphs -> two.
+* **Validity arguments -> one sentence each:** the implied rows of pricing; the
+  geometric rows (thresholds, unit count, DFF fibre rows: one sentence with the
+  Fekete-Schepers pointer); where the rows are implied (pricing and master) and
+  where not (the volumetric relaxation); dominance cut versus exact exclusion;
+  undecided is never a proof; why the partition must be a cover.
+* **Qualifiers kept** because they change a claim's truth: no optimality where
+  `proved` is false; "no plan", never "infeasible", for X <= 155; "bound" only
+  for a certified one; the RMP value is not a bound; the compact 3D dual bound
+  bounds a restriction; the attribution of the last two gaps to the bound is not
+  proved; volumetric plans are not verified geometrically.
+* **Captions:** Figures 2 and 3, Tables 4 (quantities), 5, 6 and 7 cut to what a
+  reader needs to read them.
+* **Bibliography:** `\AtBeginBibliography{\emergencystretch=2em}` in
+  `Renderer.tex`, so a long title in the new layout does not overflow.
+
+### Build
+
+`Renderer.pdf`: 30 pages, exit 0, no undefined reference or citation; warnings
+as in the previous commit (`No \author`, overfull 6.75 pt and 1.35 pt, the
+biber ISBN warning for `Zhao2022LearningPacking`). `Renderer-diff.pdf` against
+100c362 (latexpand of both, latexdiff with tables and TikZ as blocks, `\InFlight`
+defined and the removed floats' labels given their old numbers): 39 pages,
+exit 0, no undefined reference.

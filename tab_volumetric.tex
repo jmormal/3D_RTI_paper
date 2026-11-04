@@ -23,27 +23,19 @@
 \begin{table}[!htbp]
 \centering
 \small
-\caption{BP-3D-SCPTOP under its \emph{volumetric} oracle against the
-compact SCPTOP formulation, both solving the \emph{volumetric} problem
-of Appendix~\ref{appendix:A}, so that the two bracket one optimum.
-\textbf{This table is a check on the procedure, not a contest}: the
-volumetric problem is the one case here where an independent optimum
-exists, and the question each row answers is whether the procedure
-reaches it. $z$ is the incumbent at the stop; \textsc{opt} marks a
+\caption{The method under its volumetric oracle against the compact
+SCPTOP formulation, both solving the volumetric problem of
+Appendix~\ref{appendix:A}: a check on the method where an independent
+optimum exists. $z$ is the incumbent at the stop; \textsc{opt} marks a
 proved optimum, $^{\mathrm{m}}$ a stop on the memory cap,
 $^{\mathrm{t}}$ a stop on time. ``bound'' is Gurobi's dual bound for
-the compact model and the certified master-LP bound of
-Section~\ref{sec:bounds} for the method. $\Delta z$ is
-$(z_{\mathrm{DW}}-z_{\mathrm{compact}})/z_{\mathrm{compact}}$;
-negative means the method's plan is cheaper. Both sides had $3\,600$ s,
-$20$ GB and ten threads --- except that the compact model was given
-$1\,800$ s on $I\_8\_5\_2\_90$, where it proved the optimum in $0.2$ s
-and the budget never bound. The method's wall clock stops
-short of $3\,600$ s by construction: the search is given
-$(1-0.15)\times 3\,600 = 3\,060$ s and the rest is reserved for the
-frontier sweep that bounds the regions left open, which returns here in
-$2$ to $73$ s rather than spending its reserve. No plan in this table is verified truck by truck: a volumetric
-column carries no layout.}
+the compact model and the certified bound of Section~\ref{sec:bounds}
+for the method. $\Delta z=(z_{\mathrm{DW}}-z_{\mathrm{compact}})/
+z_{\mathrm{compact}}$, negative when the method's plan is cheaper. Both
+sides had $3\,600$ s ($1\,800$ s for the compact model on
+$I\_8\_5\_2\_90$, which it solved in $0.2$ s), $20$ GB and ten threads.
+A volumetric column carries no layout, so no plan here is verified
+truck by truck.}
 \label{tab:volumetric}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrrlrrrrr}

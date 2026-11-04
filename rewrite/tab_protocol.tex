@@ -1,3 +1,13 @@
+% Size-ladder lines: results/julia/final/ladder_3d_final.csv (time_limit,
+% threads, mem_gb, ip_tl columns; geom_rows both) and the launcher
+% julia/scripts/ladder_3d_final.sh at f4c3b18 ("--ip-tl $(( $2 / 6 ))").  Other
+% per-call limits are solve_fleet_tree's defaults (julia/src/tree.jl:583-611):
+% step 2 300 s at the root and 120 s at a node, partition 60 s, pricing 20 s,
+% pack 20 s, root column generation 15% of the budget, frontier reserve 15%.
+% The 120 s sentence: results/julia/ladder_3d.csv (campaign B, src_tree 246b883,
+% no ip_tl column = the 120 s default, no rows) row I_24_20_2_90_k50 has_plan
+% false; results/julia/ip_tl_600.csv (same code, ip_tl 600) 160 trucks.
+% 36-instance line: config blocks of results/bench_tree/tree_3d_*.json.
 \begin{table}[!htbp]
 \centering
 \small
@@ -13,24 +23,30 @@ volumetric parity runs declare their own configuration in each row,
 which is what lets Table~\ref{tab:volumetric} compare like with like;
 the runs they replace recorded none, and a thread count asked for on
 the default Gurobi environment had not reached the models, so those
-used all twelve cores of the machine. No seed is set by that
-implementation, so the solver's default applies --- and no number
+used all twelve cores of the machine. No seed is set by the second
+implementation, which produced those runs and the size ladder, so the
+solver's default applies --- and no number
 reported here rests on a seed, every stage being either solved to
-proved optimality or stopped on a declared budget.}
+proved optimality or stopped on a declared budget. On the size ladder
+the construction carries the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows}
+in steps~2 and~3, and step~4's integer master is limited, per call, to
+one sixth of the rung's budget; at a constant $120$ s, without those
+rows, the largest rung ended with no plan, and at $600$ s with one.}
 \label{tab:protocol}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llllrrl}
 \toprule
 Stage & solver & time (s) & gap & threads & mem (GB) & seed \\
 \midrule
-BP-3D-SCPTOP, 36 instances & Gurobi + CP-SAT & $900$ & --- & 10 & 20 & 0 \\
-BP-3D-SCPTOP, size ladder  & Gurobi + CP-SAT & $900$--$3\,600$ & --- & 10 & 20 & 0 \\
-Compact SCPTOP (volumetric) & Gurobi & $600$--$3\,600$ & $0$ & 10 & 20 & 0 \\
-Compact 3D-SCPTOP, $n_{\mathrm{LC}}=3$ & Gurobi & $1\,800$ & $0$ & 10 & 20 & 0 \\
+BP-3D-SCPTOP, 36 instances (first impl.) & Gurobi 12 + CP-SAT & $900$ & --- & 10 & 20 & 0 \\
+BP-3D-SCPTOP, size ladder  & Gurobi 13 & $900$--$3\,600$ & --- & 10 & 20 & not set \\
+\quad step 4, per call & Gurobi 13 & budget$/6$: $150$--$600$ & --- & 10 & 20 & not set \\
+Compact SCPTOP (volumetric) & Gurobi 12 & $600$--$3\,600$ & $0$ & 10 & 20 & 0 \\
+Compact 3D-SCPTOP, $n_{\mathrm{LC}}=3$ & Gurobi 12 & $1\,800$ & $0$ & 10 & 20 & 0 \\
 Fleet-floor certification & Gurobi & to convergence & --- & 1 & 20 & 0 \\
 Placeability census, 36 instances & CP-SAT & $300$ per load & --- & --- & --- & --- \\
 Placeability census, size ladder & shelf + CP-SAT & $60$ per load & --- & --- & --- & --- \\
-BP-3D-SCPTOP, volumetric parity & Gurobi & $3\,600$ & --- & 10 & 20 & not set \\
+BP-3D-SCPTOP, volumetric parity & Gurobi 13 & $3\,600$ & --- & 10 & 20 & not set \\
 \bottomrule
 \end{tabular}}
 \end{table}

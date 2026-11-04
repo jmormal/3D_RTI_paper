@@ -1,15 +1,32 @@
 % results/bench_tree/tree_3d_<instance>.json for the method columns (every row
 % commit 0c0c16c, 900 s, 10 threads, 20 GB per model, seed 0, run sequentially)
 % and results/loads_recheck.csv for the volumetric benchmark's census.
+% Configuration, read from the config block of all 36 files: ladder true,
+% stop_early true, ladder_margin 0.005, frontier_share 0.03, region_cert_policy
+% "always", certify_regions ratchet, pack_tl 5 s, delivery_depth 0, seed 0, env
+% gurobi 12.0.1; region_cert_share 0.15 (src/rti3d/fleet_tree.py at 0c0c16c,
+% lines 1205-1210 and 1660-1690: every popped region gets a volumetric
+% certificate while that share lasts).  The geometric rows eq:geomrows-eq:fibrerows did not exist then.
+% Row I_8_5_2_90 against Table \ref{tab:3d-onecommit}: global_lb 18795.5396 and
+% nodes 68 here; 18795.5578 and 301 in results/julia/final/ladder_3d_final.csv.
 % results/benchmark.csv is NOT a source for any column here: it was produced by a
 % different procedure (branch and price over column variables from a seeded
 % pool), so its method columns describe another algorithm.
 \begin{table}[!htbp]
 \centering
 \small
-\caption{The thirty-six generated instances through BP-3D-SCPTOP, every
-row on one commit, a $900$ s budget, ten threads, a $20$ GB per-model
-cap and seed $0$, run sequentially. Wall times run from $603.1$ s to
+\caption{The thirty-six generated instances through BP-3D-SCPTOP in
+the first implementation, every row on one commit
+($0\mathrm{c}0\mathrm{c}16\mathrm{c}$), a $900$ s budget, ten threads,
+a $20$ GB per-model cap and seed $0$, run sequentially. \textbf{Its
+configuration is not the one Sections~\ref{sec:pricing}
+and~\ref{sec:branching} describe}: a heuristic pricing rung ran ahead
+of the exact oracle, stopping at the first column that beat the pair's
+threshold, the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows} were
+absent, and every region popped was given a volumetric certificate
+while $15\%$ of the budget lasted. No bound
+here depends on that, the certifying sweeps never having used the rung;
+the plans are that configuration's. Wall times run from $603.1$ s to
 $900.1$ s; the longest row exceeds the budget by $0.1$ s, because every
 phase of the construction carries a floor so that a phase begun just
 before the wall still gets a token solve. \emph{ver} is the dispatched
@@ -24,8 +41,10 @@ trailer at all, and how many it left \emph{undecided} --- which must be
 read beside the previous column, a low count of proven infeasibilities
 meaning nothing on a row where most loads were undecided. Row
 $I\_8\_5\_2\_90$ is the first rung of
-Table~\ref{tab:3d-onecommit} under a \emph{different run and commit}:
-the two agree on $z$, trucks and bound and differ by one node.}
+Table~\ref{tab:3d-onecommit} under the \emph{other implementation and
+configuration}: the two agree on $z$ and trucks, the bounds are
+$18\,795.54$ here and $18\,795.56$ there, and the node counts $68$ and
+$301$.}
 \label{tab:bench}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrrrrlrrrrr}

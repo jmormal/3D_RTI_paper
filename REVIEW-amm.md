@@ -66,6 +66,15 @@ exit 0.
   - Line 18: "return (∞, proved)".
   - If wanted, add "regions are refuted only by arithmetic (Section 7)".
 
+- **Resolution (FIXED).** Algorithm 1 now matches `certified_lb`: an LP not
+  solved to optimality returns (0, false), "no verdict: the pool may be unable
+  to serve R"; positive artificials after the sweep return (∞, proved), "if
+  proved, no plan over Ω^g lies in R"; a deadline returns (raw LP value, false).
+  §5.4 says the same. The suggested "regions are refuted only by arithmetic" was
+  not added, because `tree.jl` does prune on `proved && isinf(bound)`; instead
+  §7's "only arithmetic is" now reads "only a proved sweep that leaves
+  artificials positive is, or arithmetic".
+
 ### A2. The restored literature review credits 3D-SCPTOP with constraints the paper says it does not have, and omits the RTIs it does have
 
 - **Where:** `sec_litreview.tex:116`, `:244-252` (Table 1, 3D-SCPTOP row) and
@@ -96,6 +105,13 @@ exit 0.
   - fill the RTIs cell with the code for multiple foldable types, defining the
     code in the table note.
 
+- **Resolution (FIXED, three minimal edits).** "3D constraints and vertical
+  stability constraints" -> "3D loading constraints, with vertical stability
+  ensured by construction (Section 3)"; Table 2's Load Balance X removed;
+  Table 1's RTIs cell filled with "M|F", defined in the note. Not changed and
+  listed for the author: Table 1 also marks 3D-SCPTOP with "Inventory Capacity
+  Restriction X", and Section 4 has no such row.
+
 ### A3. A review paper is cited as the fuzzy procurement model, as the coverage rule's source, and as the model the benchmark extends
 
 - **Where:**
@@ -122,6 +138,11 @@ exit 0.
 - **Fix:** replace the key at those five sites. If the review is cited
   anywhere on purpose, give it a journal field.
 
+- **Resolution (FIXED).** All five sites now cite `Diaz-Madronero2014AChain`.
+  The review is cited nowhere else, so it leaves the reference list; its entry
+  is an `@article` with a journal anyway. Table 1's codes for the AMM paper are
+  listed for the author under D9.
+
 ### A4. 22 symbols and abbreviations are used before they are defined, or collide (list N1–N22 below)
 
 - **Where:** throughout. The worst cases are Section 5.3–5.4 and the
@@ -144,7 +165,12 @@ exit 0.
 - **Fix:** see the list. Most items are a definition moved forward or a
   rename.
 
+- **Resolution (FIXED, except N14).** See the resolution under the notation
+  table below.
+
 ### T1 is the fifth major finding: see "Table 8 (10ed61c)".
+
+- **Resolution (PENDING re-pack).** Not touched, as instructed.
 
 ---
 
@@ -173,6 +199,10 @@ exit 0.
 - **Fix:** add "and no region was dropped" to both places, and "(a dropped
   region contributes its covering bound)" to line 35.
 
+- **Resolution (FIXED).** §7: "a dropped region contributing the root's bound"
+  and "no region was dropped" added to the optimality rule; Algorithm 2 line 35
+  "▷ a dropped region contributes LB₀", line 37 "no region was dropped".
+
 ### a2. The Lagrangian bound lost its validity condition
 
 - **Where:** `sec_master.tex:179-181`.
@@ -185,6 +215,11 @@ exit 0.
   docstring), and only when every pair has an entry. Without the condition,
   the expression is not a bound. The symbols are also undefined (N16).
 - **Fix:** restore "complete" and the "provided …" clause.
+
+- **Resolution (FIXED).** "A complete sweep ... yields only the Lagrangian bound
+  z_RMP + Σ|K| min(0, c̲_gt), with the artificials at zero and c̲_gt =
+  η^K cK − μ_gt − ζ̄_gt formed from an upper bound ζ̄_gt ≥ ζ_gt on the pricing
+  maximum, never from a load that was found".
 
 ### a3. The certification policy and the Murty depth cap are no longer in the printed text
 
@@ -203,6 +238,11 @@ exit 0.
   - "certified regions: root, X ≤ X*−1, full-depth leaves, frontier";
   - "Murty depth cap: 6".
 
+- **Resolution (FIXED).** One sentence in §7 (root, X ≤ X*−1, a region that
+  can be split no further, the frontier; Murty depth 6, raised by 2 when the
+  stack empties) and two rows in Table 10, both columns "same" (identical at
+  10e633c). Algorithm 2's "below the cap" points to Table 10.
+
 ### a4. On I_8_5_2_90 the layer counts do not coincide
 
 - **Where:** `sec_experiments.tex:157`.
@@ -218,6 +258,12 @@ exit 0.
 - **Fix:** state what does hold, or drop the causal "because". One version
   that holds: "the crush limit never halves a family's layer count".
 
+- **Resolution (FIXED).** Verified: R1 2 layers by height, crush 2-3; R2 3 by
+  height, crush 2 on P6 and P8. The causal sentence is replaced by "On this
+  instance the crush limit never halves a container family's layer count, as it
+  does on I_16_15_2_90_k25, where Section 8.5 measures the over-credit that
+  causes."
+
 ### a5. Appendix A says products may use several RTI types, and its own rows do not allow it
 
 - **Where:** `sec_appendix_scptop.tex:9`.
@@ -228,6 +274,8 @@ exit 0.
   product.
 - **Fix:** delete the clause, or say that it applies to the original model and
   not to the benchmark used here.
+
+- **Resolution (FIXED).** The clause is deleted.
 
 ### a6. Figure 1 promises two things the paper no longer contains
 
@@ -242,6 +290,10 @@ exit 0.
   "3D size ladder"), and point "Managerial Implications" at Section 8.5's
   catalogue test, or remove it.
 
+- **Resolution (FIXED in part, as instructed).** "Managerial Implications" ->
+  "Is a Volumetric Capacity Adequate?" (Section 8.5's title). Small/Medium/Large
+  Instances: AUTHOR (D5), left for the 36-instance re-run.
+
 ### a7. "Changes nothing where the crush limit does not bind" is stronger than the file
 
 - **Where:** `sec_experiments.tex:187`.
@@ -255,6 +307,10 @@ exit 0.
 - **Fix:** "leaves the fleet unchanged (34 trucks on I_12_12_2_90_k25 at
   600 s)".
 
+- **Resolution (FIXED).** Verified both JSONs (34 trucks each, 600 s); "leaves
+  the fleet unchanged where the crush limit does not bind (34 trucks on
+  I_12_12_2_90_k25 at 600 s)".
+
 ### a8. A percentage with an unnamed denominator
 
 - **Where:** `sec_experiments.tex:68`.
@@ -263,6 +319,8 @@ exit 0.
   bound it is 0.309%. Table 4 promises "the denominator named where it
   appears".
 - **Fix:** add "relative to the compact bound".
+
+- **Resolution (FIXED).** "..., relative to the compact bound."
 
 ### a9. The instances sentence reads as twelve instances
 
@@ -275,6 +333,9 @@ exit 0.
   - k80 at 24_20.
 - **Fix:** name the six, or say "of which Tables 5–8 use …".
 
+- **Resolution (FIXED).** The six are named by (|N|,|T|) and load, and the
+  size ladder and its rungs are defined in the same place (N22).
+
 ### a10. A non sequitur on reproducibility in Appendix C
 
 - **Where:** `sec_appendix_impl.tex:31-33`.
@@ -285,6 +346,9 @@ exit 0.
   No final-configuration run was repeated.
 - **Fix:** "since the phases run on wall-clock budgets, a run depends on the
   build, the machine and its load".
+
+- **Resolution (FIXED).** "a run depends on the build, the machine and its
+  load".
 
 ### a11. The bibliography carries malformed entries, inherited from the old references.bib
 
@@ -300,6 +364,10 @@ exit 0.
 - Guo 2024 and Soysal 2023 have "doi: https://doi.org/…".
 - **Fix:** correct the entries. This is not a rewrite of the restored text.
 
+- **Resolution (FIXED).** Every listed entry corrected against Crossref, plus
+  Zhao 2016's author list and Zhao 2022's two missing authors; URLs that
+  duplicate a DOI dropped. The biber ISBN warning is gone.
+
 ### a12. Typos in the restored literature review
 
 - **Where:** `sec_litreview.tex`.
@@ -312,12 +380,18 @@ exit 0.
     "Thefore" (2.4).
 - **Fix:** correct the spelling only.
 
+- **Resolution (FIXED).** Spelling only, plus "Appoach" in Figure 1 and three
+  misspelled typology codes (SSLOP, SBSPP, SLOP), counted under N3/N4.
+
 ### a13. The abstract sits exactly at the 250-word limit
 
 - **Where:** `sec_abstract.tex`.
 - **Evidence:** 250 words from the built PDF with hyphenation joined, 251 if
   "3 600" counts as two.
 - **Fix:** trim one or two words for margin.
+
+- **Resolution (FIXED).** "dubbed", "the problem" -> "it" and "container" cut:
+  247 words from the PDF ("3 600" as one), 248 with it as two.
 
 ### a14–a17 are in the Table 8 section (T2–T5).
 
@@ -383,6 +457,8 @@ Line numbers in this section are those of `10ed61c`.
 
   Contribution (iv)'s "we quantify what repairing them costs" depends on this.
 
+- **Resolution (PENDING re-pack).** Not touched, as instructed (D3).
+
 ### T2 (minor). The conclusions drop the qualifiers that Section 8.5 and Table 8 carry
 
 - **Where:** `sec_conclusions.tex:13-18`.
@@ -393,6 +469,11 @@ Line numbers in this section are those of `10ed61c`.
   memory stop. T1 adds that the re-packed trucks are not a feasible plan.
 - **Fix:** "up to 9.8% and 16.1% …", or state the comparison as trucks carrying
   at least the same quantities.
+
+- **Resolution (FIXED, numbers unchanged).** "the method plans with up to 9.8%
+  and 16.1% fewer trucks than re-packing ..., the re-packed counts being upper
+  bounds and the second volumetric plan a memory stop (Table 8)". The T1
+  qualifier waits for the re-pack.
 
 ### T3 (minor). Contribution (iv) says "independent placeability proof"; the check uses the method's own oracle
 
@@ -406,6 +487,8 @@ Line numbers in this section are those of `10ed61c`.
 - **Fix (minimal):** "by placeability proof". Its last clause stands or falls
   with T1.
 
+- **Resolution (FIXED).** "by placeability proof". Its last clause waits for T1.
+
 ### T4 (minor). Appendix C's re-pack row omits how the truck count is searched
 
 - **Where:** `sec_appendix_impl.tex:66` (row "check and re-pack, Table 8").
@@ -415,12 +498,17 @@ Line numbers in this section are those of `10ed61c`.
   step 3 row). The reader will assume the two procedures are the same.
 - **Fix:** add "from the volume/payload minimum, up to +12 trucks per period".
 
+- **Resolution (FIXED).** Table 10's re-pack row adds "trucks per period from
+  the volume and payload minimum up to +12" (R40 `max_extra` 12).
+
 ### T5 (minor). The over-delivered units are uncharged because they are folded RTIs, and the text should say so
 
 - This part of T1 stands on its own if T1 is fixed by option (c).
 - **Where:** `tab_repack.tex:31-33`; `sec_experiments.tex:177-178`.
 - **Fix:** "the 24 and 131 surplus units are folded RTIs, which carry no
   holding cost" in place of "which understates it".
+
+- **Resolution (PENDING re-pack).** Not touched, as instructed.
 
 ### Table 8: checked and correct
 
@@ -482,6 +570,23 @@ In reading order. "Define at" gives the earliest natural place.
 | N21 | `sec_branching.tex:171-179` | c ∈ f | (87) uses it; C_f is defined after (87), at line 181, and (88) uses c ∈ C_f | define C_f before (87) and use it there |
 | N22 | Table 6 caption; §8.3 | size ladder, rung | never defined; §8.1 describes the family only | §8.1: "the five instances of Table 6, the size ladder (its rungs)" |
 
+**Resolution of N1–N22** (details and old/new text in `CHANGES-final3d.md` §17):
+
+- N1–N13, N15–N22: **FIXED** as proposed, with these choices:
+  - N3/N4: one sentence after the typology defines SLOPP, MILOPP, SKP, SSSCSP,
+    MSSCSP, SBSBPP, MBSBPP and 3D-BPP; BSDPP goes in Table 2's note; "SSLOP",
+    "SBSPP" and Table 2's "SLOP" were misspellings of SLOPP and SBSBPP
+    (Silva et al. 2019 compare methods for the SLOPP and the SKP).
+  - N5: TO, S/M, NF/F and ILP added to Table 1's note; their meanings are
+    inferred from the rows, so they are listed for the author (D9 below).
+  - N12: ρ^g_ct -> β^g_ct.
+  - N13: the cover cut's ū^g -> ν^g; the placeability cap ū_gc -> ā_gc (the bound
+    on a_kc); ū^V_n and ū^e_r in Table 3 are the only ū left.
+  - N16: z̄ in §5.4 -> z_RMP, and c̲_gt defined; z̄ is only the incumbent now.
+  - N20: ℓ -> ξ, as the thresholds of (88).
+- N14: **NOT CHANGED.** Every occurrence in the sources is λ^g_ωt (Table 3,
+  (54)–(57), §7); there is no λ_gωt to unify.
+
 ---
 
 ## Needs the author, not a fix
@@ -506,18 +611,24 @@ In reading order. "Define at" gives the earliest natural place.
     `highlights.txt`;
   - keywords: 5;
   - abstract: 250 words (a13).
+
+  - **Resolution (AUTHOR).** Not touched; the abstract is now 247 words (a13).
 - **D2. Keywords** (restored verbatim). None names the method or the returnable
   items ("branch and price", "Dantzig–Wolfe decomposition", "returnable
   transport items"). Up to seven are usually allowed.
+  - **Resolution (AUTHOR).** Not touched.
 - **D3. T1's remedy:** constrained re-pack, step-4 re-solve, or counts only.
+  - **Resolution (AUTHOR / PENDING re-pack).** Not touched.
 - **D4. Contribution (iv)'s generality.** It rests on two instances chosen
   because the crush limit binds, plus the catalogue's κ ≥ 1. On I_8_5_2_90 the
   volumetric optimum equals the 3D optimum, so there a volumetric plan is
   attainable in 3D. The 36-instance census now being re-run is what could
   support "a volumetric representation … yields plans that cannot be loaded" in
   general.
+  - **Resolution (AUTHOR).** Not touched; contribution (iv) changed only by T3.
 - **D5. Figure 1's "Small/Medium/Large Instances"** (a6). Restore it after the
   36-instance re-run, or relabel now.
+  - **Resolution (AUTHOR).** Left as instructed; only "Managerial Implications" was relabelled (a6).
 - **D6. Rung 4's gap attribution.** It is "chiefly to the bound", which is
   honest as worded. Note, though, that the server rounds ran the *final*
   method (geomboth, `src_tree` e4830fe, three times the budget) and reached
@@ -525,12 +636,22 @@ In reading order. "Define at" gives the earliest natural place.
   least 0.88% of the 14.5% is the plan's under more compute. It is not
   printable as is (different machine and budget), but it bounds what "chiefly"
   can mean.
+  - **Resolution (AUTHOR).** Not touched.
 - **D7. The 1 GB volumetric-pricing cap,** declared in Table 10 but not
   changed.
+  - **Resolution (AUTHOR).** Not touched.
 - **D8. The paper's title page,** if AMM's review is single-anonymized; see D1.
+  - **Resolution (AUTHOR).** Not touched.
 - **D9. Wrong-key fix (A3).** The fix is mechanical, but Table 1's row for that
   paper would then describe the AMM model correctly. Confirm the row's codes
   (SS, O, FTL, UH, FMOILP) against Díaz-Madroñero, Peidro and Mula (2014).
+  - **Resolution (AUTHOR).** Crossref and the abstract confirm the paper (AMM
+    38(23):5705–5725) and support SS, O, FMOILP, safety stocks (minimum stock
+    coverage) and transport and inventory costs. Not confirmed: FTL (consistent
+    with "minimise the number of trucks") and UH ("Unit Holding"; Appendix A's
+    "rather than a maximum container count" suggests a unit-count capacity).
+    Also for the author: Table 1's TO for Zhang et al. (2024) against §2.2's
+    "operational level", and the readings of S/M and NF/F.
 
 ---
 

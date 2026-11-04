@@ -641,3 +641,117 @@ undefined reference. Abstract: 250 words.
 | --- | --- | --- |
 | `sec_experiments.tex` | 10 | `[repository URL]` |
 | `sec_appendix_impl.tex` | 39 | `[repository URL]` |
+
+## 17. Second referee pass (`REVIEW-amm.md`)
+
+Every finding was checked against the files before acting; the resolution of
+each is recorded under it in `REVIEW-amm.md`. Untouched, as instructed: T1 and
+T5 (Table 8's re-pack row and cost cells, the "understates it" clause, the
+Section 8.5 re-pack sentences, the conclusions' re-pack numbers) and D1-D9.
+
+### Major
+
+| finding | file | old | new |
+| --- | --- | --- | --- |
+| A1 | `Alg_certify.tex` l. 4-5 | "if infeasible then return (∞, true) ▷ region refuted" | "if it is not solved to optimality then return (0, false) ▷ no verdict: the pool may be unable to serve R" |
+| A1 | `Alg_certify.tex` (new line) | --- | "if the deadline has passed then return (raw LP value, false)" (`certified_lb`'s `:deadline` exit) |
+| A1 | `Alg_certify.tex` l. 20-21 | "return (∞, true) ▷ no plan over Ω^g lies in R" | "return (∞, proved) ▷ if proved, no plan over Ω^g lies in R" |
+| A1 | `sec_master.tex` §5.4 | "positive artificials at convergence mean the region admits no plan." | "positive artificials at the end of a proved sweep mean the region admits no plan; an LP the solver does not solve to optimality gives no verdict." |
+| A1 | `sec_branching.tex` §7 | "...stock non-negativity being rigid; only arithmetic is: the fleet box, ..." | "...stock non-negativity being rigid; only a proved sweep that leaves artificials positive is, or arithmetic: the fleet box, ..." (`tree.jl` prunes a region on `proved && isinf(bound)`, so "only arithmetic" was stronger than the code) |
+| A2 | `sec_litreview.tex` §2.4 | "the incorporation of 3D constraints and vertical stability constraints to model transport capacity" | "the incorporation of 3D loading constraints, with vertical stability ensured by construction (Section 3), to model transport capacity" |
+| A2 | Table 2, 3D-SCPTOP row | Load Balance "X" | empty |
+| A2 | Table 1, 3D-SCPTOP row | RTIs cell empty | "M\|F" (multiple foldable RTI types), defined in the note |
+| A3 | `sec_litreview.tex` §2.1 paragraph, Table 1 row, Figure 1 node; `sec_model.tex` (coverage tail rule); `sec_appendix_scptop.tex` l. 5 | `\autocite{Diaz-Madronero2014APlanning}` (the IJPR review) | `\autocite{Diaz-Madronero2014AChain}` (the AMM fuzzy procurement transport model). The review is now cited nowhere and drops out of the reference list; its entry is made an `@article` anyway. |
+
+A4, the notation (N1-N22):
+
+| # | fix |
+| --- | --- |
+| N1 | `sec_intro.tex`: "raw materials (RM), parts or finished goods (FG)" |
+| N2 | `sec_litreview.tex`: "SC" spelled out as "supply chain" in §2.2 (three sentences) and in Table 1's header ("Supply Chain Configuration") |
+| N3, N4 | `sec_litreview.tex` §2.3: one sentence after the typology defines SLOPP, MILOPP, SKP, SSSCSP, MSSCSP, SBSBPP, MBSBPP and 3D-BPP; three misspelled codes corrected: "SSLOP" -> "SLOPP" (Silva et al. 2019 compare methods for the SLOPP and the single knapsack problem), "SBSPP" -> "SBSBPP" (Harrath 2022, as in Table 2), Table 2's "SLOP" -> "SLOPP"; BSDPP defined in Table 2's note |
+| N5 | Table 1 note adds TO, S/M, NF/F and ILP (meanings inferred from the rows; see "for the author" below) |
+| N6 | Table 2 note: "HCLP" -> "HALNs", the code the table uses |
+| N7 | `sec_problem.tex`: "A dispatch arrives after a lead time of $lt\ge1$ periods" |
+| N8 | `sec_model.tex`: the "Throughout, g ∈ G ..." paragraph now opens Section 4, before the paragraph that uses G × K × T |
+| N9 | Figure 2 (`Tikz_blocks.tex`): "shared V̄, I, Q" -> "shared V̄, I, Ie" |
+| N10 | `sec_master.tex` §5.2: $\overline{\lambda}_{gt}$ -> $n_{gt}$ |
+| N11 | the commodity convention ($w_c$, $\gamma_{gc}$, $r_{gc}$) moved from the head of Section 6 to §5.1, where $c$ is introduced; §5.3 now writes "$\pi_{ct}$ ($\pi_{nt}$ or $\pi_{rt}$) the duals"; Section 6 refers back |
+| N12 | cumulative requirement $\rho^{g}_{ct}$ -> $\beta^{g}_{ct}$ (§5.3, eq. covercut) |
+| N13 | the cover cut's unit cap $\bar u^{g}$ -> $\nu^{g}$, glossed "the most units one truck can carry"; the placeability cap $\bar u_{gc}$ -> $\bar a_{gc}$ (§7.2, §7.3, Algorithm 3), the bound on $a_{kc}$; $\bar u^{V}_{n}$, $\bar u^{e}_{r}$ (Table 3) are now the only $\bar u$ |
+| N14 | not changed: every occurrence in the files is $\lambda^{g}_{\omega t}$ (Table 3, (54)-(57), Section 7); no $\lambda_{g\omega t}$ exists |
+| N15 | §5.4: "with $z_{\mathrm{RMP}}$ and $z_{\mathrm{MP}}$ the LP values of the RMP and of MP and $z^{\star}_{\text{3D-SCPTOP}}$ the optimum" |
+| N16 | §5.4: the Lagrangian bound written $z_{\mathrm{RMP}}+\sum|K|\min(0,\underline{c}_{gt})$ with $\underline{c}_{gt}=\eta^{K}cK-\mu_{gt}-\bar\zeta_{gt}$ defined; $\bar z$ is now only the incumbent (Algorithm 2) |
+| N17 | Algorithm 1's caption: "inside a region R: bounds on the fleet vector (Section 7), none at the root" |
+| N18 | SCPTOP named where first used: Table 5's caption ("against SCPTOP, the compact formulation of the volumetric problem of Appendix A") and §8.2 ("a compact formulation of it, SCPTOP,") |
+| N19 | Table 5: $z_{\mathrm{DW}}$ -> $z_{\mathrm{method}}$; the three "(DW)" cells -> "(method)" |
+| N20 | §7.3: the dual-feasible-function threshold $[x\ge\ell]$, $U=\lfloor C/\ell\rfloor$ -> $[x\ge\xi]$, $U=\lfloor C/\xi\rfloor$ "at the footprint lengths $\xi$ that occur", as the thresholds of (88) |
+| N21 | §7.3: $C_f$ defined with the footprint class, before (87); (87) and the height-limited count use $c\in C_f$ |
+| N22 | §8.1: "The five solved in 3D (Table 6), from I_8_5_2_90 to I_24_20_2_90_k50, form the size ladder, each instance a rung." |
+
+### Minor
+
+| finding | file | old | new |
+| --- | --- | --- | --- |
+| a1 | `sec_branching.tex` | "...the global bound the minimum over the frontier. Optimality is claimed only when the root is certified, no region remains open or merely bounded, and the incumbent meets the global bound" | "...the minimum over the frontier, a dropped region contributing the root's bound. Optimality is claimed only when the root is certified, no region remains open or merely bounded, no region was dropped, and the incumbent meets the global bound" |
+| a1 | `Alg_tree.tex` l. 35, 37 | "LB ← max{LB₀, min over the open and frontier bounds}, capped at z̄"; "only if LB₀ was proved, S = ∅, no restart occurred and z̄ = LB" | adds "▷ a dropped region contributes LB₀"; "only if LB₀ was proved, S = ∅, no region was dropped, no restart occurred and z̄ = LB" |
+| a2 | `sec_master.tex` §5.4 | "A sweep that still finds columns yields only the Lagrangian bound z̄ + Σ\|K\| min(0, c̄*_gt), too weak here to rely on." | "A complete sweep that still finds columns yields only the Lagrangian bound z_RMP + Σ\|K\| min(0, c̲_gt), with the artificials at zero and c̲_gt = η^K cK − μ_gt − ζ̄_gt formed from an upper bound ζ̄_gt ≥ ζ_gt on the pricing maximum, never from a load that was found; it is too weak here to rely on." |
+| a3 | `sec_branching.tex` §7 | --- | "The policy certifies the root, the regions X ≤ X*−1, a region that can be split no further, and, in a reserve at the end, the frontier; a Murty chain stops at depth 6, raised by 2 whenever the stack empties within the budget (Table 10)." |
+| a3 | Table 10 | --- | rows "certified regions: root; X ≤ X*−1; regions that cannot be split; the frontier / same" and "Murty depth cap: 6, raised by 2 when the stack empties within the budget / same" (`tree.jl` `certify_regions=:ratchet`, `murty_depth=6`, cap +2; identical at 10e633c for the volumetric runs); Algorithm 2's "below the cap" points to Table 10 |
+| a4 | `sec_experiments.tex` §8.4 | "The proof is available because this instance's container families have coinciding height- and crush-limited layer counts, where a volumetric capacity is adequate (Section 8.5)." | "On this instance the crush limit never halves a container family's layer count, as it does on I_16_15_2_90_k25, where Section 8.5 measures the over-credit that causes." (R1: 2 by height, crush 2-3; R2: 3 by height, crush 2-3; `instances/I_8_5_2_90.json`) |
+| a5 | `sec_appendix_scptop.tex` | "fuzzy parameters are dropped, transport capacity is expressed ... rather than a maximum container count, and a product may travel in more than one RTI type." | "fuzzy parameters are dropped, and transport capacity is expressed ... rather than a maximum container count." |
+| a6 | Figure 1 | "Managerial Implications" | "Is a Volumetric Capacity Adequate?" (Section 8.5's title); Small/Medium/Large Instances left as instructed |
+| a7 | `sec_experiments.tex` §8.5 | "and changes nothing where the crush limit does not bind." | "and leaves the fleet unchanged where the crush limit does not bind (34 trucks on I_12_12_2_90_k25 at 600 s)." (`compact_ab_` and `compact_ref_I_12_12_2_90_k25.json`: 34 trucks each) |
+| a8 | `sec_experiments.tex` §8.2 | "the decomposition's bound is 0.310% tighter." | "... 0.310% tighter, relative to the compact bound." |
+| a9 | `sec_experiments.tex` §8.1 | "the others cross (\|N\|,\|T\|) ∈ {(8,10),(12,12),(16,15),(24,20)} with 2.5, 5 or 8 truckloads per period, the name's suffix being that figure times ten." | "the other six pair (\|N\|,\|T\|) with 2.5, 5 or 8 truckloads per period, the name's suffix being that figure times ten: (8,10), (12,12) and (16,15) at 2.5, (16,15) and (24,20) at 5, and (24,20) at 8." |
+| a10 | Appendix C | "a run is reproducible given a build and a machine" | "a run depends on the build, the machine and its load" |
+| a11 | `references.bib` | see below | |
+| a12 | `sec_litreview.tex` | "thee", "develope", "adaptaive", "algoritm", "maximazing", "Therfore", "supsension", "3D-SCTOP", "Thefore", "Time-Depenent", "Biased Randomized Jey Genetic Algorithm", "Exact Metods", "Appoach" (Figure 1) | "three", "develop", "adaptive", "algorithm", "maximizing", "Therefore", "suspension", "3D-SCPTOP", "Therefore", "Time-Dependent", "Biased Random-Key Genetic Algorithm", "Exact Methods", "Approach" |
+| a13 | `sec_abstract.tex` | "model, dubbed 3D-SCPTOP"; "we reformulate the problem by"; "on the industrial container catalogue" | "model, 3D-SCPTOP"; "we reformulate it by"; "on the industrial catalogue" |
+| T2 | `sec_conclusions.tex` | "the method plans with 9.8% and 16.1% fewer trucks than re-packing two volumetric plans' quantities into loadable trucks used (Table 8)" | "the method plans with up to 9.8% and 16.1% fewer trucks than re-packing two volumetric plans' quantities into loadable trucks used, the re-packed counts being upper bounds and the second volumetric plan a memory stop (Table 8)" (numbers unchanged) |
+| T3 | `sec_intro.tex` (iv) | "We show by independent placeability proof that" | "We show by placeability proof that" |
+| T4 | Table 10, re-pack row | "... 20 s per placeability call; 10 threads, 20 GB" | "... 20 s per placeability call, trucks per period from the volume and payload minimum up to +12; 10 threads, 20 GB" (R40 `max_extra` 12) |
+
+a11, the bibliography, each entry checked against Crossref:
+
+| key | fix |
+| --- | --- |
+| `Chen1995EUROPEANProblem` | `@techreport` -> `@article`; journal name removed from the title; `journal`, issue 1, DOI 10.1016/0377-2217(94)00002-T |
+| `Dyckhoff1990AProblems` | `@techreport` -> `@article`; `journal`, issue 2, DOI 10.1016/0377-2217(90)90350-K |
+| `2016Paquay` | journal name removed from the title; journal spelled out; issue 1-2; URL duplicating the DOI dropped |
+| `Zhao2016INTERNATIONALAlgorithms` | journal name removed from the title; journal spelled out; issue 1-2; author list repaired (Bektaş, no duplicate); URL dropped |
+| `Alonso2022TheRevision` | duplicated title and "Second revision" removed |
+| `Zhao2022LearningPacking` | journal added (Science China Information Sciences 65(1), 112105); the two missing authors (Xu Xin, Xu Kai) added; invalid ISBN, bogus `pages` and URL dropped; this removes the biber warning |
+| `Diaz-Madronero2015ADecisions`, `Mosca2019IntegratedReview`, `Diaz-Madronero2014APlanning` | `@misc` with `booktitle` -> `@article` with `journal` (Mosca: article number 100101) |
+| `Stadtler2015SupplyPlanning` | "Vol. 5th Edition" -> 5th ed., Springer, Berlin, Heidelberg, DOI 10.1007/978-3-642-55309-7 |
+| `GUO2024104339`, `SOYSAL2023101504` | "https://doi.org/" removed from the DOI; publisher URL dropped |
+| `Zhang17012024` | `url` and `eprint` duplicating the DOI dropped |
+
+### For the author, not changed
+
+- **Table 1's codes for Díaz-Madroñero, Peidro and Mula (2014)** (D9): the paper
+  (AMM 38(23):5705-5725, Crossref) supports SS (first-tier supplier served by
+  one second-tier supplier), O, FMOILP, safety stocks (minimum stock coverage,
+  uncertain), transport and inventory costs (trucks and inventory minimised).
+  FTL is consistent with "minimise the number of trucks" but not confirmed, and
+  **UH** ("Unit Holding") is not confirmed; Appendix A's own "rather than a
+  maximum container count" suggests a unit-count capacity.
+- **Table 1 note, codes inferred from the rows**: TO read as "tactical and
+  operational"; but §2.2 says Zhang et al. (2024) decide "on a operational
+  level" while Table 1 gives them TO. S/M read as single/multiple RTI types and
+  NF/F as non-foldable/foldable; only M is supported by the text (Zhang et
+  al.'s "multiple RTI types", §2.2).
+- **Table 1, 3D-SCPTOP row, "Inventory Capacity Restriction X"**: Section 4 has
+  no inventory capacity row (only $I\ge ss$, $Ie\ge sse$ and non-negativity).
+  Outside the three edits A2 asked for, so left.
+- **Table 2, 3D-SCPTOP row, "Stability X"**: consistent with A2's "ensured by
+  construction"; left.
+
+### Build
+
+`Renderer.pdf` clean build (`latexmk -C`, then `latexmk -pdf`): 30 pages,
+exit 0, no undefined reference or citation; warnings "No \author given",
+overfull 6.75 pt (`sec_litreview.tex:106-107`, inherited) and 1.35 pt
+(`tab_nomenclature.tex:60`); no biber warning. `Renderer-diff.pdf` against
+100c362: 40 pages, exit 0, no undefined reference. Abstract: 247 words from
+the PDF with "3 600" as one word (248 as two).

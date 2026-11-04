@@ -593,4 +593,4 @@ sites will be rewritten when the Julia re-pack arrives):
 | `sec_intro.tex` | 14 | contribution (iv) |
 | `sec_abstract.tex` | 10 | the shortened sentence "A volumetric model's plan prescribes loads proved impossible to place, so a volumetric transport capacity is not a conservative simplification;" |
 | `sec_conclusions.tex` | 13-18 | "a volumetric transport capacity is not a conservative simplification: ... 25.7 % and 26.4 % ..." |
-| `sec_experiments.tex` | 10; `sec_appendix_impl.tex` | 35 | new: `[repository URL]`, for the author to decide |
+| `sec_experiments.tex`, `sec_appendix_impl.tex` | 10, 35 | new: `[repository URL]`, for the author to decide |

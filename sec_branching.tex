@@ -46,17 +46,22 @@ A node is a region imposed on the RMP as fleet rows. Its pool LP is a
 filter; where the filter allows and the policy admits the node, the
 region is certified (Algorithm~\ref{alg:certify}) and pruned if the
 certified value reaches the incumbent, and otherwise it keeps its
-parent's bound. An infeasible node relaxation is not a proof that a
-region is empty, stock non-negativity being rigid; only arithmetic is:
-the fleet box, availability caps telescoped from the sending rows, and
+parent's bound. The policy certifies the root, the regions
+$X\le X^{\star}-1$, a region that can be split no further, and, in a
+reserve at the end, the frontier; a Murty chain stops at depth $6$,
+raised by $2$ whenever the stack empties within the budget
+(Table~\ref{tab:impl}). An infeasible node relaxation is not a proof
+that a region is empty, stock non-negativity being rigid; only a proved
+sweep that leaves artificials positive is, or arithmetic: the fleet box, availability caps telescoped from the sending rows, and
 the constants of \eqref{eq:covercut} read as a requirement floor. Under
 3D loading every region's certificate comes from the volumetric
 relaxation with the region's fleet rows applied, which
 Proposition~\ref{prop:inclusion} covers. The incumbent is the cheapest
 verified plan any construction found and the global bound the minimum
-over the frontier. Optimality is claimed only when the root is
-certified, no region remains open or merely bounded, and the incumbent
-meets the global bound; no run here meets those conditions. A third
+over the frontier, a dropped region contributing the root's bound.
+Optimality is claimed only when the root is certified, no region
+remains open or merely bounded, no region was dropped, and the
+incumbent meets the global bound; no run here meets those conditions. A third
 level, on deliveries, is disabled in every run reported, so a
 full-depth leaf is covered by a certificate rather than split again.
 
@@ -110,10 +115,10 @@ inside the region $\mathcal{R}$ of its node, on a fresh copy of the RMP
     &\textstyle\sum_{c}w_{c}a_{kc}\;\ge\;\sum_{c}w_{c}a_{k+1,c}
       &&\forall k<n^{\star}_{gt}
       \label{eq:part-sym}\\
-    &a_{kc}\in\{0,\dots,\bar u_{gc}\},\qquad \theta_{k}\in\{0,1\}.\nonumber
+    &a_{kc}\in\{0,\dots,\bar a_{gc}\},\qquad \theta_{k}\in\{0,1\}.\nonumber
   \end{align}
   with $\theta_{k}$ selecting the resource on which part $k$ is full and
-  $\bar u_{gc}$ the placeability cap below. If $n^{\star}_{gt}$ parts
+  $\bar a_{gc}$ the placeability cap below. If $n^{\star}_{gt}$ parts
   cannot be formed, $n^{\star}_{gt}+1$ and $+2$ are tried.
 
 \item \emph{Integer master over pool plus parts}, warm-started with the
@@ -159,27 +164,27 @@ $\sigma\in(0,1]$, still proved unplaceable. A part left
 \emph{undecided} is excluded as a single point: a restriction of the
 heuristic, never a validity claim. The largest placeable count of each
 commodity is bisected once per run and handed to the partition as
-$\bar u_{gc}$.
+$\bar a_{gc}$.
 
 \paragraph{Necessary conditions of placeability as rows.}
 Per truck $k$ and footprint class $f$ --- a stack type $h$ of
-Section~\ref{sec:model}, with $p_{f}=p_{h}$ and $q_{f}=q_{h}$ --- the
-partition carries an integer number of stacks
+Section~\ref{sec:model}, with $p_{f}=p_{h}$ and $q_{f}=q_{h}$, and
+$C_{f}$ the commodities whose RTI types it carries --- the partition
+carries an integer number of stacks
 $s_{kf}\le\lfloor pK\cdot qK/p_{f}q_{f}\rfloor$ with the crush limit,
 the height budget and the floor area imposed:
 \begin{equation}
-\sum_{c\in f}w_{c}a_{kc}\le W^{\max}s_{kf},
+\sum_{c\in C_{f}}w_{c}a_{kc}\le W^{\max}s_{kf},
 \qquad
-\sum_{c\in f}r_{gc}\,a_{kc}\le rK\,s_{kf},
+\sum_{c\in C_{f}}r_{gc}\,a_{kc}\le rK\,s_{kf},
 \qquad
 \sum_{f}p_{f}q_{f}\,s_{kf}\le pK\cdot qK ,
 \label{eq:stackrows}
 \end{equation}
 where a class carries one RTI type the height row takes the
-height-limited count, $\sum_{c\in f}a_{kc}\le\lfloor
+height-limited count, $\sum_{c\in C_{f}}a_{kc}\le\lfloor
 rK/r_{gr}\rfloor s_{kf}$. It also carries the finer conditions by which
-the oracle refutes a load. With $C_{f}$ the commodities of class $f$
-and $L^{\max}_{f}$ the most units of them one stack can hold, a
+the oracle refutes a load. With $L^{\max}_{f}$ the most units of them one stack can hold, a
 two-resource knapsack under $rK$ and $W^{\max}$,
 \begin{equation}
 \begin{gathered}
@@ -211,8 +216,8 @@ for every pair $(u_{1},U_{1})$ on $pK$ and $(u_{2},U_{2})$ on $qK$ of a
 finite family of \emph{dual-feasible functions}, $(u,U)$ being one on a
 length $C$ when $\sum_{i}x_{i}\le C$ implies $\sum_{i}u(x_{i})\le U$
 \autocite{FeketeSchepers2001,Clautiaux2010Survey}: the identity
-($U=C$, the area row), the thresholds $[x\ge\ell]$ at the footprint
-lengths that occur ($U=\lfloor C/\ell\rfloor$), and the scalings
+($U=C$, the area row), the thresholds $[x\ge\xi]$ at the footprint
+lengths $\xi$ that occur ($U=\lfloor C/\xi\rfloor$), and the scalings
 $\lfloor jx/C\rfloor$ ($U=j$, $j\le12$). Every row holds for every
 placeable truck with $s_{kf}$ and its split read off the truck's own
 layout --- a stack bears at most $W^{\max}$ and $rK$, and

@@ -1,14 +1,17 @@
 \begin{algorithm}[!htb]
 \caption{$\textsc{Certify}(\bar\Omega,\mathcal{R})$ --- the sweep a
-lower bound rests on. No memoisation, no restriction to the pairs a
-branch has touched, every branching fix released.}
+lower bound rests on, inside a region $\mathcal{R}$: bounds on the
+fleet vector (Section~\ref{sec:branching}), none at the root. No
+memoisation, no restriction to the pairs a branch has touched, every
+branching fix released.}
 \label{alg:certify}
 \begin{algorithmic}[1]
 \State release every branching fix; impose $\mathcal{R}$ on the RMP as fleet rows
 \Loop
   \State solve the LP over $\bar\Omega$ inside $\mathcal{R}$
-  \If{infeasible} \State \Return $(\infty,\ \text{true})$
-     \Comment{region refuted} \EndIf
+  \If{it is not solved to optimality} \State \Return $(0,\ \text{false})$
+     \Comment{no verdict: the pool may be unable to serve $\mathcal{R}$} \EndIf
+  \If{the deadline has passed} \State \Return (raw LP value, false) \EndIf
   \State $\text{proved}\gets\text{true}$
   \ForAll{$(g,t)\in G\times T$}
      \State $\zeta_{gt}\gets\textsc{Price}(\pi,\mu,g,t)$ to proven optimality,
@@ -20,8 +23,8 @@ branch has touched, every branching fix released.}
   \EndFor
   \If{some $\zeta_{gt}$ prices out} \State add its columns to $\bar\Omega$ and
      \textbf{continue} \EndIf
-  \If{artificials $>0$} \State \Return $(\infty,\ \text{true})$
-     \Comment{no plan over $\Omega^{g}$ lies in $\mathcal{R}$} \EndIf
+  \If{artificials $>0$} \State \Return $(\infty,\ \text{proved})$
+     \Comment{if proved, no plan over $\Omega^{g}$ lies in $\mathcal{R}$} \EndIf
   \State \Return (raw LP value, $\text{proved}$)
      \Comment{a bound only if $\text{proved}$}
 \EndLoop

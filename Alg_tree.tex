@@ -32,7 +32,7 @@
    \If{$\mathcal{R}$ does not fix $X$}
       \State push the three regions of level 1 around
             $\sum_{g,t}\hat n_{gt}$ \Comment{level 1 recurses}
-   \ElsIf{the Murty depth $j$ is below the cap}
+   \ElsIf{the Murty depth $j$ is below the cap (Table~\ref{tab:impl})}
       \State push the three children \eqref{eq:murty} at the $j$-th pair,
              around $\hat{\mathbf{n}}$, equality last
    \EndIf
@@ -43,10 +43,11 @@
 \EndFor
 \State $\mathrm{LB}\gets\max\{\mathrm{LB}_{0},\,
    \min\text{ over the open and frontier bounds}\}$, capped at $\bar z$
+   \Comment{a dropped region contributes $\mathrm{LB}_{0}$}
 \State verify every dispatched truck of the incumbent against
    \eqref{eq:col-geom}--\eqref{eq:col-agg}
 \State \Return $(\bar z,\mathrm{LB})$; optimality is claimed only if
-   $\mathrm{LB}_{0}$ was proved, $\mathcal{S}=\emptyset$, no restart occurred
-   and $\bar z=\mathrm{LB}$
+   $\mathrm{LB}_{0}$ was proved, $\mathcal{S}=\emptyset$, no region was
+   dropped, no restart occurred and $\bar z=\mathrm{LB}$
 \end{algorithmic}
 \end{algorithm}

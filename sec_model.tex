@@ -1,6 +1,14 @@
 \section{The 3D-SCPTOP formulation}
 \label{sec:model}
 
+Throughout, $g\in G=\{s,p\}$ indexes nodes and directions (named by
+destination), $n\in N$ products, $r\in R$ RTI types, $h\in H$ stack
+types, $i,j\in I$ slot positions, $k\in K$ trucks and $t\in T$ periods,
+with $\rho(n)$ the RTI type product $n$ travels in and
+$M(r)=\{n:\rho(n)=r\}$; variables whose direction is fixed by
+definition omit $g$. Table \ref{tab:sb-Nomenclature} is the
+nomenclature.
+
 The model is written over \emph{trucks}. A dispatched truck designs its
 own layout --- the stack types, orientations, positions and layer
 compositions of its slots are variables of that truck and that period,
@@ -11,14 +19,6 @@ triple $(g,k,t)$ or none of it, so the model is block-angular over
 $G\times K\times T$ and the pricing problem of the Dantzig--Wolfe
 reformulation is obtained by deleting that quantifier and nothing
 else.
-
-Throughout, $g\in G=\{s,p\}$ indexes nodes and directions (named by
-destination), $n\in N$ products, $r\in R$ RTI types, $h\in H$ stack
-types, $i,j\in I$ slot positions, $k\in K$ trucks and $t\in T$ periods,
-with $\rho(n)$ the RTI type product $n$ travels in and
-$M(r)=\{n:\rho(n)=r\}$; variables whose direction is fixed by
-definition omit $g$. Table \ref{tab:sb-Nomenclature} is the
-nomenclature.
 
 \input{tab_nomenclature}
 
@@ -125,7 +125,7 @@ sse_{gtr}=\sum_{n\in M(r)} ss_{gnt},
 \end{equation}
 Near the end of the horizon \eqref{sb:eq:coverage} wraps the window
 back onto the last $SC$ periods rather than truncating it, following
-\autocite{Diaz-Madronero2014APlanning}: truncating lowers the
+\autocite{Diaz-Madronero2014AChain}: truncating lowers the
 requirement of the final periods and with it the optimal value, so the
 tail rule belongs to the problem statement.
 

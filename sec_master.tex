@@ -42,7 +42,10 @@ $e_{\omega r}\le\sum_{i\le m}n_{h_{i}r}\ell_{ir}$
 \eqref{eq:col-agg}. We write \eqref{eq:col-geom}--\eqref{eq:col-agg}
 for either direction and $\mathrm{image}_{c}(\omega)$ for the entry of
 $b_{\omega}$ or $e_{\omega}$ at the \emph{commodity} $c$ --- a product
-when $g=\mathrm{p}$, an RTI type when $g=\mathrm{s}$. Every column
+when $g=\mathrm{p}$, an RTI type when $g=\mathrm{s}$ --- with $w_{c}$,
+$\gamma_{gc}$ and $r_{gc}$ its weight, volume and height: $w_{n}$,
+$\gamma_{p\rho(n)}$ and $r_{p\rho(n)}$ for a product, $w^{\mathrm{f}}_{r}$,
+$\gamma_{sr}$ and $r_{sr}$ for an RTI type. Every column
 costs $c_{\omega}=\eta^{K}cK$, and $\Omega^{g}$ holds the non-empty
 columns only. Because a column holds its per-slot assignment,
 \eqref{eq:col-crush} is the period-exact cap
@@ -83,7 +86,7 @@ subject to
 Every column costs the same, so the transport term is $cK$ times the
 number dispatched, and \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} are
 \eqref{sb:eq:agg-V}--\eqref{sb:eq:agg-Ve} with each truck's load
-replaced by its column's image; $\overline{\lambda}_{gt}=\sum_{\omega}
+replaced by its column's image; $n_{gt}=\sum_{\omega}
 \lambda^{g}_{\omega t}$ is the number dispatched by class $(g,t)$, on
 which Section~\ref{sec:branching} branches.
 
@@ -114,7 +117,7 @@ layouts to be sized: a truck's layout is its own.
 MP is solved over a subset $\bar\Omega^{g}$ with integrality relaxed,
 the restricted master problem (RMP), whose duals the pricing problems
 use to look for columns of negative reduced cost. With
-$\pi_{nt},\pi_{rt}$ the duals of
+$\pi_{ct}$ ($\pi_{nt}$ or $\pi_{rt}$) the duals of
 \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve} and $\mu_{gt}\le0$ that of
 \eqref{bp:MP-count}, the reduced cost of a plant-bound column
 dispatched in $t$ is
@@ -133,18 +136,19 @@ RMP is \emph{elastic}: artificials at a large price on
 \eqref{bp:MP-def-V}--\eqref{bp:MP-def-Ve}, the coverage rows and the
 cuts keep it feasible for any pool, and a solution with positive
 artificials is not a plan. It carries cumulative cover cuts: with
-$\rho^{g}_{ct}$ the cumulative requirement of commodity $c$ at the
+$\beta^{g}_{ct}$ the cumulative requirement of commodity $c$ at the
 receiving node through $t$ --- demand to date plus the coverage stock
 of $t$, net of initial stock and freight in transit, floored at zero
 --- and
-$\bar u^{g}=\min\{\lfloor pK^{w}/\min_{c}w_{c}\rfloor,\,
-\lfloor\Gamma_{K}/\min_{c}\gamma_{gc}\rfloor\}$, every $t>lt$ gives
+$\nu^{g}=\min\{\lfloor pK^{w}/\min_{c}w_{c}\rfloor,\,
+\lfloor\Gamma_{K}/\min_{c}\gamma_{gc}\rfloor\}$ the most units one truck
+can carry, every $t>lt$ gives
 \begin{equation}
 \sum_{\tau\le t-lt}\ \sum_{\omega\in\Omega^{g}}\lambda^{g}_{\omega\tau}
 \;\ge\;
-\max\Bigl\{\Bigl\lceil\tfrac{\sum_{c}\gamma_{gc}\rho^{g}_{ct}}{\Gamma_{K}}\Bigr\rceil,\;
-\Bigl\lceil\tfrac{\sum_{c}w_{c}\rho^{g}_{ct}}{pK^{w}}\Bigr\rceil,\;
-\Bigl\lceil\tfrac{\sum_{c}\rho^{g}_{ct}}{\bar u^{g}}\Bigr\rceil\Bigr\}.
+\max\Bigl\{\Bigl\lceil\tfrac{\sum_{c}\gamma_{gc}\beta^{g}_{ct}}{\Gamma_{K}}\Bigr\rceil,\;
+\Bigl\lceil\tfrac{\sum_{c}w_{c}\beta^{g}_{ct}}{pK^{w}}\Bigr\rceil,\;
+\Bigl\lceil\tfrac{\sum_{c}\beta^{g}_{ct}}{\nu^{g}}\Bigr\rceil\Bigr\}.
 \label{eq:covercut}
 \end{equation}
 Each ratio divides a requirement by the most one truck carries of a
@@ -170,15 +174,21 @@ have \emph{proved}
 nothing outside $\bar\Omega^{g}$ prices out, the duals are feasible for
 the dual of MP, and weak duality gives
 $z_{\mathrm{RMP}}=z_{\mathrm{MP}}\le z^{\star}_{\text{3D-SCPTOP}}$
-(Algorithm~\ref{alg:certify}). Every pair must be priced to proven
+(Algorithm~\ref{alg:certify}), with $z_{\mathrm{RMP}}$ and
+$z_{\mathrm{MP}}$ the LP values of the RMP and of MP and
+$z^{\star}_{\text{3D-SCPTOP}}$ the optimum. Every pair must be priced to proven
 optimality with every branching fix released; a call stopped on its
 time limit forfeits the certificate, while one stopped by the objective
 cutoff without returning a point proves that no column beats the
 threshold. The bound is the raw LP value, penalty included, and
-positive artificials at convergence mean the region admits no plan. A
-sweep that still finds columns yields only the Lagrangian bound
-$\bar z+\sum_{g,t}|K|\min(0,\bar c^{\star}_{gt})$, too weak here to
-rely on.
+positive artificials at the end of a proved sweep mean the region
+admits no plan; an LP the solver does not solve to optimality gives no
+verdict. A complete sweep that still finds columns yields only the
+Lagrangian bound $z_{\mathrm{RMP}}+\sum_{g,t}|K|\min(0,\underline{c}_{gt})$,
+with the artificials at zero and
+$\underline{c}_{gt}=\eta^{K}cK-\mu_{gt}-\bar\zeta_{gt}$ formed from an
+upper bound $\bar\zeta_{gt}\ge\zeta_{gt}$ on the pricing maximum, never
+from a load that was found; it is too weak here to rely on.
 
 \input{Alg_certify}
 

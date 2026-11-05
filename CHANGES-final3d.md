@@ -789,3 +789,143 @@ Changes:
 
 Build: 31 pages (the longer Table 8 pushes four bibliography entries onto a
 new page), exit 0, no undefined reference.
+
+## 19. The 36-instance benchmark
+
+Sources, all in the outer repository on branch `final-3d` (pushed), directory
+`results/julia/final/bench36/`:
+
+| tag | file | commit |
+| --- | --- | --- |
+| **M** | `bench36_method.csv` (36 rows of `run_benchmark.jl`, plus `machine`) | 360c2ea |
+| **C** | `bench36_compact.csv` (36 runs of `run_compact_ref.py`) | 360c2ea |
+| **J** | `bench36_joined.csv` (`best_lb`, `best_lb_from`, `gap_pct` against `best_lb`, `trucks_minus_compact`) | 360c2ea |
+| **CEN** | `census_compact36.json` (`repack_volumetric.jl --check-only`, launcher `census_compact36.sh`) | 03a0ff7; README 844b90d |
+| **LOGS** | `<machine>/logs/method_<instance>.log` | 360c2ea |
+| **GEN** | `src/rti3d/instance.py`, `experiments/gen_instances.py`, `instances/I_*.json` | `final-3d` |
+| **CAL** | `results/julia/final/server/bench36_worker.sh` header (laptop x0.74 / x0.87), `bench36_server.sh` header and `results/julia/server_arms/README.md` (server pinned x3.4 / x3.8 against 9.1 s and 4.8 s on the workstation), script `results/julia/server_arms/launchers/calib.jl` | `final-3d` |
+
+`merge_bench36.py` was re-run on a copy of the directory: 0 problems, and the
+three CSVs come back byte-identical. Every number below was recomputed from
+these files, not copied from a message. The census figures follow the README
+at 844b90d.
+
+Run provenance (M, C): method `src_tree` e4830fe, mode 3d, `geom_rows` both,
+10 threads, `mem_gb` 20, `certify_regions` ratchet, `ip_tl` = time_limit/6,
+`load_path` include on all 36 rows; `complaints` 0, `pack_undecided` 0,
+`delivery_branches` 0, `restarts` 0 and `proved` false on all 36;
+`root_proved` true on all 36. Compact: `mipgap` 0, 10 threads, seed 0,
+Gurobi 12.0.1 on all 36; `soft_mem_gb` 20 (workstation, laptop) and 16
+(server, peak at most 6.31 GB, so the cap never bound there).
+
+### Files added
+
+| file | what |
+| --- | --- |
+| `tab_bench36.tex` (Table 8, body) | by factor: instances, plans, median / max gap against `best_lb`, plans within 1%, volumetric loads proved unplaceable / dispatched. Every cell re-derived by script and checked against the file (11 of 11 rows). |
+| `tab_bench36_full.tex` (Table 12, Appendix D) | every instance: method machine, trucks, z, LB, source (V/L/G), gap; compact machine, stop, trucks, z, bound; unplaceable / dispatched. The larger of the two bounds in bold. Typeset from M, C, J and CEN by a script; no cell copied by hand. |
+| `sec_appendix_bench.tex` (Appendix D) | two lines and the table; `main.tex` inputs it after Appendix C, so C keeps its letter. |
+
+### Changes, file by file
+
+| file | old | new | source |
+| --- | --- | --- | --- |
+| `sec_experiments.tex` §8.1 Setup | "A gap is always (z−LB)/z against the method's own certified bound;" | "A gap is always (z−LB)/z. Outside Section 8.5 and Appendix D, LB is the method's own certified bound; there, it is the best valid bound for the 3D problem on the instance, the method's own or the compact volumetric model's dual bound, whichever is larger." | J `best_lb` = max(M `global_lb`, C `bound`) on all 36 rows (checked) |
+| `sec_experiments.tex` §8.1 Instances | "with v the number of erected RTIs that fill one truck by volume"; "Every instance here has \|R\|=2 and v=90." | adds \|R\| (number of RTI types) and the nominal volume Γ_K/v; "There are two sets. In the first, every instance has \|R\|=2 and v=90."; after the ladder sentence, the second set: full factorial \|N\|∈{4,8}, \|T\|∈{5,10}, \|R\|∈{2,3,4}, v∈{60,90,120}, about 2.5 truckloads per period, I_8_5_2_90 shared with the ladder; products assigned to types in turn; types share footprints from \|R\|=3 on (two footprints for \|R\|≤3, three for \|R\|=4); content weight does not scale with v | GEN: `design_grid`, `rtis[j % n_rti]`, `n_foot = min(len(admissible), max(2, 1 + n_rti // 2))` (2 / 2 / 3 footprints, checked on the 36 JSONs), `base = 340 * vol_full / target_vol` (median content weight 368 / 371 / 366 kg at v = 60 / 90 / 120), `meta.trucks_per_period` 2.5 everywhere |
+| `sec_experiments.tex` §8.3 | "the geometric sweep certified no region on any run" | "... on any ladder run" | M: `bound_source` "geometry certified" on I_4_5_3_60 |
+| `sec_experiments.tex` §8.4 | "I_8_5_2_90 is the one instance with a reported optimum" | "the one ladder instance with a reported optimum (the benchmark adds I_4_5_3_90, Section 8.5)" | M `plan_cost` 21502.06 = C OPTIMAL `obj` = `bound` 21502.06 on I_4_5_3_90 |
+| `sec_experiments.tex` §8.5 (new, "A 36-instance benchmark") | --- | three paragraphs: what was run, the 32 plans and the 4 without; the bound sources and the gaps; where the gaps are large | see "Numbers printed" |
+| `sec_experiments.tex` §8.6 | --- | one sentence after Table 9's check: the same check on the 36 benchmark plans | CEN |
+| `sec_experiments.tex` §8.6 | the sentence "The stack rows being necessary for placeability" sat inside a `%` comment line, so the PDF printed "(34 trucks on I_12_12_2_90_k25 at 600 s). and not sufficient, ..." (since 27f808e) | moved out of the comment; the sentence prints whole | --- |
+| `tab_quantities.tex` (Table 4) | LB: "... printed only where every pair of its sweep was proved; ..."; gap: "against the method's own bound" | LB adds "or the Lagrangian bound of that section where it is larger"; gap adds "except in Section 8.5 and Appendix D, where LB is the larger of the method's and the compact volumetric model's bounds" | M `bound_source` Lagrangian on 6 rows |
+| `sec_master.tex` §5.4 | "...; it is too weak here to rely on." | "...; it needs no convergence, so a root stopped on its deadline still has it." | M: Lagrangian is the method's bound on 6 of 36 rows, two of them with the volumetric certificate unproved (I_4_10_3_90, I_8_10_3_60); `julia/src/colgen.jl` 459-475 |
+| `sec_master.tex` §5.4 | "every 3D lower bound in this paper comes instead from the volumetric relaxation, by the following inclusion." | "The method's 3D bound is the largest of three: the geometric certificate, when one completes; the Lagrangian bound; and the certified bound of the volumetric relaxation, valid by the following inclusion and the largest on most instances here." | `julia/src/tree.jl` 824-865 at e4830fe; volumetric on 5 of 5 ladder rows and 29 of 36 benchmark rows |
+| `sec_abstract.tex` | see "Abstract" below | | |
+| `highlights.txt` | "Verified plans of 12 to 156 trucks on instances of up to twenty periods" | "Verified plans up to 156 trucks and 20 periods, and on 32 of 36 benchmark instances" (83 characters; the others 75-78) | ladder CSV; M `has_plan` |
+| `sec_intro.tex` (iii) | "... beyond which the compact model returns no incumbent at all." | adds ", and that on a 36-instance benchmark it returns verified plans on 32, at a median gap of 6.46% to the best valid bound (Section 8.5)" | M, J |
+| `sec_conclusions.tex` ¶1 | "solved by branch and price over complete loaded trucks." | adds ", which on a 36-instance benchmark returns verified plans on 32, at a median gap of 6.46% to the best valid bound, and no plan within the budget on the other four" | M, J |
+| `sec_conclusions.tex` ¶1 | "Every lower bound reported rests on Proposition 2, which makes a bound affordable where a geometric certificate is not." | "Every lower bound on the ladder, and the best bound on 31 of the 36 benchmark instances, rests on Proposition 2, which makes a bound affordable where a geometric certificate rarely is." | J `best_lb_from`: compact 28 + method volumetric 3 = 31; Lagrangian 4, geometric 1 |
+| `sec_conclusions.tex` ¶1 | "most loads of the two volumetric plans checked cannot be placed, and the plans cannot be repaired ... (Table 8)" | "most loads of the volumetric plans checked cannot be placed, 527 of 723 over the benchmark's 36, and the two of Table 9 cannot be repaired by re-packing their own quantities, ..." | CEN |
+| `sec_conclusions.tex` ¶2 | "the one optimum reported is established by inclusion" | "the two optima reported, on I_8_5_2_90 and I_4_5_3_90, are established by inclusion" | M, C |
+| `sec_appendix_impl.tex` (Appendix C) | "Each instance was solved once, alone on one workstation;" | each instance solved once in each set, every job alone on its cores; the workstation (AMD Ryzen 5 5600X) for every run outside the benchmark; the benchmark from one queue on three machines (workstation, laptop AMD Ryzen 7 260, pinned 12-CPU block of a shared server under WSL2); budgets of 900 workstation-seconds converted by a fixed-work calibration (one Gurobi model at ten threads, one single-thread Julia code) to 720 s (method) and 670 s (compact) on the laptop and 2 700 s on the server, "a factor of three where the calibration measured 3.4 and 3.8"; only the budget and step 4's limit scale; four method runs end 0.01-1.47 s past their budget; a compact run's wall clock includes model building, up to 29.6 s past the solver's limit | README, CAL, M `time_limit`/`ip_tl`/`seconds`, C `time_limit`/`wall`, the JSONs' `runtime` (at most 0.02 s past the limit); `/proc/cpuinfo` on host jj-MS-7B86 for the workstation's CPU |
+| Table 11 (`tab:impl`) | header "3D runs (Tables 6, 7)"; budget row; step 4 row; compact row; re-pack row | header adds Tables 8 and 12; budget "ladder 900, 900, 1 800, 1 800, 3 600 s; benchmark 900 s on the workstation, 720 s on the laptop, 2 700 s on the server"; step 4 "ladder 150, 150, 300, 300, 600 s; benchmark 150, 120, 450 s"; compact "on the benchmark 900, 670 and 2 700 s on the workstation, laptop and server, with 16 GB on the server"; the re-pack row also covers the census ("the check alone, on the workstation") | M, C, CEN `config` |
+| `sec_appendix_impl.tex`, `tab_repack.tex` (comments) | "branch final-3d-repack" | "branch final-3d (final-3d-repack was fast-forwarded into it)" | `git branch --contains cc3e1b7` lists final-3d |
+
+### Abstract
+
+One sentence added: "On a 36-instance benchmark it returns 32 verified
+plans, at a median gap of 6.46% to the best valid bound." To stay within 250
+words, seven trims, none changing a claim:
+
+| old | new |
+| --- | --- |
+| "integrating the procurement, inventory and transport decisions" | "integrating procurement, inventory and transport decisions" |
+| "and the closed-loop management of" | "and closed-loop management of" |
+| "taking the complete loaded truck as the unit of decision" | "with the loaded truck as the unit of decision" |
+| "so a plan is executable by construction" | "so plans are executable by construction" |
+| "a certified bound of the volumetric relaxation is a valid lower bound" | "a certified volumetric bound is a valid lower bound" |
+| "within budgets of 900 to 3 600 s"; "and of 14.5% and 10.7%" | "within 900 to 3 600 s"; "and 14.5% and 10.7%" |
+| "A volumetric model's plan prescribes ... a volumetric transport capacity ... runs one way, as the catalogue alone shows." | "Volumetric plans prescribe ... a volumetric capacity ... runs one way." (the plural now rests on Table 9 and the census) |
+
+Words from the PDF: **249** with "3 600" as one word (250 as two).
+
+### Numbers printed, and where each comes from
+
+| printed | where | source |
+| --- | --- | --- |
+| 36 instances; \|N\|∈{4,8}, \|T\|∈{5,10}, \|R\|∈{2,3,4}, v∈{60,90,120}; 2.5 truckloads per period | §8.1 | GEN `design_grid`, `meta.trucks_per_period` |
+| two footprints for \|R\|≤3, three for \|R\|=4 | §8.1 | GEN, checked on the 36 JSONs |
+| 32 of 36 verified plans; 4 without (I_8_5_3_60, I_8_10_2_60, I_8_10_2_90, I_8_10_4_60) | abstract, highlights, (iii), §8.5, conclusions, Tables 8 and 12 | M `has_plan`; `complaints` 0, `pack_undecided` 0 on all rows |
+| root CG stopped on its deadline after one to three iterations | §8.5 | LOGS "root CG stopped on deadline after 2 / 2 / 1 / 3 iterations" |
+| step 2: pool could not cover the demand; last attempt out of time in step 3, or (I_8_10_2_90) refused by step 2 | §8.5 | LOGS "step 2 infeasible over the pool ... the pool cannot cover the demand" on an attempt of each; M `proof_reason` |
+| each of the four has a certified volumetric bound | §8.5 | M `vol_lb_proved` true, `bound_source` volumetric on all four |
+| bound sources 29 / 6 / 1 | §8.5 | M `bound_source` |
+| five instances with a bound above the volumetric optimum | §8.5 | M `global_lb` against C `obj`: I_4_5_2_90 19325.45 > 17769.29, I_4_5_3_60 18731.63 > 13627.04, I_4_5_3_120 25848.38 > 25817.50, I_4_10_2_120 54755.23 > 53433.76 (OPTIMAL); I_4_10_2_60 38833.74 > 31895.21 (TIME_LIMIT incumbent) |
+| compact: 28 optimal, 7 time limit, 1 memory cap | §8.5 | C `status` |
+| median gap 6.46%, mean 7.94%, max 29.49% | abstract (median), (iii), §8.5, conclusions, Table 8 | J `gap_pct` over the 32 rows: 6.4642, 7.9377, 29.4949 (I_8_5_2_60) |
+| nine within 1%, seven within 0.1% | §8.5, Table 8 | J `gap_pct` ≤ 1 / ≤ 0.1 |
+| two optimal by inclusion: I_8_5_2_90, I_4_5_3_90 | §8.4, §8.5, conclusions | J `gap_pct` 0; M `plan_cost` = C OPTIMAL `obj` = `bound` (18796.96; 21502.06), `mipgap` 0 |
+| own-bound gap median 6.71%, max 42.93% (I_4_10_3_90) | §8.5 | M `gap_pct`: 6.7067, 42.9268; I_4_10_3_90 `bound_source` Lagrangian 25391.03, `vol_lb_proved` false |
+| by factor: medians 6.46 / 5.75, 2.19 / 9.12, 7.00 / 4.69 / 4.71, 11.77 / 2.10 / 7.14; maxima; within-1% counts; plans 18 / 14, 17 / 15, 10 / 11 / 11, 9 / 11 / 12 | Table 8, §8.5 | J `gap_pct` grouped by the instance name's fields (values in the comment of `tab_bench36.tex`) |
+| 37.5% and at least 21.8% above the volumetric optimum (relative to it); gaps 4.69% and 11.77% | §8.5 | (18731.63 − 13627.04)/13627.04 = 37.46%; (38833.74 − 31895.21)/31895.21 = 21.75%; J `gap_pct` 4.6875, 11.7663 |
+| other seven v=60 plans: best bound volumetric, gaps 6.39%-29.49% | §8.5 | J `best_lb_from` compact; `gap_pct` 6.3871-29.4949 |
+| median nodes 3 at \|T\|=10, 38 at \|T\|=5 | §8.5 | M `nodes` over the 15 and 17 plans |
+| trucks: equal on ten, up to twelve more, never fewer | §8.5 | J `trucks_minus_compact` (0 on 10, 1-12 on 22) |
+| 35 of 36 volumetric plans with an unplaceable load; exception I_4_5_3_90 | §8.5, §8.6 | CEN `dispatched_verdicts.unplaceable` 0 only on I_4_5_3_90 (14 of 14 placed) |
+| 527 of 723 loads unplaceable; 512 of 706 distinct; none undecided | §8.6, conclusions, Table 8 | CEN sums: unplaceable 527, placed 196, undecided 0, witness_rejected 0; distinct 512 of 706 |
+| 347 of 505 over the 28 optima | §8.6 | CEN, `volumetric_status` OPTIMAL |
+| 171/182, 140/238, 216/303 by v; by N, T, R in Table 8 | §8.6, Table 8 | CEN grouped by name fields |
+| 31 of 36 best bounds by inclusion | conclusions | J `best_lb_from` |
+| every cell of Table 12 | Appendix D | M, C, J, CEN (column map in the comment of `tab_bench36_full.tex`) |
+| 900 / 720 / 2 700 s (method), 900 / 670 / 2 700 s (compact), step 4 150 / 120 / 450 s, 16 GB on the server | §8.5 (900 s only), Appendix C, Table 11, Table 12 caption | M `time_limit`, `ip_tl`; C `time_limit`, `soft_mem_gb` |
+| calibration factors 3.4 and 3.8 | Appendix C | CAL |
+| four runs 0.01-1.47 s past the budget | Appendix C | M `seconds` 900.03, 900.01, 2700.11, 2701.47 |
+| compact wall up to 29.6 s past the solver's limit | Appendix C | C `wall` − `time_limit`, max on I_8_10_2_120 (2729.6 s); the JSONs' `runtime` at most 0.02 s past |
+| AMD Ryzen 5 5600X; AMD Ryzen 7 260; 12-CPU pinned block under WSL2 | Appendix C | `/proc/cpuinfo` on jj-MS-7B86; README and launcher headers |
+
+### Not changed
+
+- Contribution (iv), the highlights other than the fourth, and Section 8.6's
+  re-pack paragraphs: the census supports them as written.
+- `Renderer-diff.pdf` (latexdiff against 100c362) was not regenerated; it has
+  been stale since a4cb2ca.
+
+### Numbering
+
+The new subsection is 8.5, so "Is a volumetric capacity adequate?" is now 8.6
+(earlier sections of this log and the REVIEW files call it 8.5). The new body
+table is Table 8, so the re-pack table is now Table 9, the row map Table 10 and
+the settings Table 11; the full benchmark table is Table 12 in the new
+Appendix D. Every reference is a `\ref`, so none is stale in the PDF.
+
+### Build
+
+Clean build (`latexmk -C`, then `PATH=/usr/bin:$PATH latexmk -pdf
+Renderer.tex`): **33 pages** (31 before: the subsection and Table 8 add about
+a page to the body, Appendix D one page), exit 0, no undefined reference or
+citation, no biber warning. Warnings, all inherited: "No \author given",
+overfull 6.75 pt (`sec_litreview.tex:106-107`) and 1.35 pt
+(`tab_nomenclature.tex:60`). Purple (`\Pending`) sites: the two
+`[repository URL]`s only; the census filled the places this pass would
+otherwise have left for it. Abstract: **249 words** from the PDF with "3 600"
+as one word (250 as two). Highlights: 75-83 characters.

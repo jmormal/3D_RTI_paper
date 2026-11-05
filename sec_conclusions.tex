@@ -1,26 +1,41 @@
 \section{Conclusions}
 \label{sec:conclusions}
+% 32 plans, median gap 6.46%, four without a plan:
+% results/julia/final/bench36/bench36_joined.csv (final-3d, 360c2ea), gap_pct
+% against best_lb over the 32 rows with method_cost (median 6.4642);
+% bench36_method.csv has_plan false on I_8_5_3_60, I_8_10_2_60, I_8_10_2_90,
+% I_8_10_4_60.  Optima by inclusion: plan_cost = compact OPTIMAL obj on
+% I_8_5_2_90 (18796.96) and I_4_5_3_90 (21502.06).
 
 Procurement transport planning with returnable transport items has
 been formulated with transport capacity as what it physically is --- a
 three-dimensional loading condition on every dispatched truck --- and
-solved by branch and price over complete loaded trucks. Because
+solved by branch and price over complete loaded trucks, which on a
+36-instance benchmark returns verified plans on $32$, at a median gap
+of $6.46\%$ to the best valid bound, and no plan within the budget on
+the other four. Because
 3D-SCPTOP is written over trucks it is block-angular, so the
 Dantzig--Wolfe master is obtained by aggregation and carries no loading
 configuration (Table~\ref{tab:rowmap}), and the equivalence needs no
-hypothesis. Every lower bound reported rests on
-Proposition~\ref{prop:inclusion}, which makes a bound affordable where
-a geometric certificate is not. And a volumetric transport capacity is not a conservative
-simplification: most loads of the two volumetric plans checked cannot
-be placed, and the plans cannot be repaired by re-packing their own
-quantities, which in six periods do not split into loadable full trucks
-(Table~\ref{tab:repack}); on the industrial catalogue the error runs
-one way only.
+hypothesis.
+% bench36_joined.csv best_lb_from: compact 28, method volumetric 3 (by
+% inclusion); method Lagrangian 4, method geometry certified 1.
+Every lower bound on the ladder, and the best bound on $31$ of the $36$
+benchmark instances, rests on Proposition~\ref{prop:inclusion}, which
+makes a bound affordable where a geometric certificate rarely is. And a
+volumetric transport capacity is not a conservative simplification:
+most loads of the volumetric plans checked cannot be placed, $527$ of
+$723$ over the benchmark's $36$, and the two of
+% 527 of 723: results/julia/final/bench36/census_compact36.json (final-3d,
+% 03a0ff7), dispatched_verdicts summed over the 36 instances.
+Table~\ref{tab:repack} cannot be repaired by re-packing their own
+quantities, which in six periods do not split into loadable full
+trucks; on the industrial catalogue the error runs one way only.
 
 Three limits are real, and each names its next step. The method
 certifies no optimum here: the search ends with regions unrefuted, and
-the one optimum reported is established by inclusion from an exactly
-solved relaxation. The bound is loose where the crush limit halves a
+the two optima reported, on $I\_8\_5\_2\_90$ and $I\_4\_5\_3\_90$, are
+established by inclusion from an exactly solved relaxation. The bound is loose where the crush limit halves a
 container family's layer count; the stack-count rows
 \eqref{eq:stackrows} tighten it when added to the compact volumetric
 relaxation, so they and the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows},

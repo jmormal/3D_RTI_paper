@@ -9,10 +9,13 @@ $z$ & Cost \eqref{eq:MPObjective} of the plan returned, which carries
   no artificial slack; an upper bound on the optimum. \\
 trucks & $\sum_{g,t}n_{gt}$ for that plan. \\
 LB & For the method, the certified bound of Section~\ref{sec:bounds},
-  printed only where every pair of its sweep was proved; for a compact
+  printed only where every pair of its sweep was proved, or the
+  Lagrangian bound of that section where it is larger; for a compact
   model, the solver's dual bound at its stop. \\
-gap & $(z-\mathrm{LB})/z$ against the method's own bound; an optimality
-  gap only to the extent that bound is tight. \\
+gap & $(z-\mathrm{LB})/z$ against the method's own bound, except in
+  Section~\ref{sec:res-bench} and Appendix~\ref{appendix:bench}, where
+  LB is the larger of the method's and the compact volumetric model's
+  bounds; an optimality gap only to the extent that bound is tight. \\
 stop & \textsc{optimal}, \textsc{time\_limit} or \textsc{mem\_limit};
   after a time or memory stop the row's time is the budget. \\
 nodes / open & Tree nodes opened; regions still unexpanded at the

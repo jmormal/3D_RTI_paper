@@ -1,5 +1,5 @@
 A truck-based MILP joins procurement, RTI and inventory planning to 3D loading
 Its Dantzig-Wolfe master over loaded trucks needs no loading configurations
 Branch and price over the fleet vector with a flow-first primal construction
-Verified plans of 12 to 156 trucks on instances of up to twenty periods
+Verified plans up to 156 trucks and 20 periods, and on 32 of 36 benchmark instances
 A volumetric truck capacity over-credits containers whose crush limit binds

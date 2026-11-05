@@ -1,0 +1,49 @@
+% Source: results/julia/final/bench36/ on branch final-3d of the outer
+% repository (rows committed at 360c2ea, census at 03a0ff7, README at 844b90d).
+%   instances, plans: bench36_method.csv, has_plan (32 true; false on
+%     I_8_5_3_60, I_8_10_2_60, I_8_10_2_90, I_8_10_4_60), grouped by the fields
+%     of the instance name I_<N>_<T>_<R>_<v>.
+%   gap: bench36_joined.csv, gap_pct = 100 (method_cost - best_lb) / method_cost,
+%     best_lb = max(method global_lb, compact bound) on every row (checked);
+%     median / max / count(gap_pct <= 1) over the rows with a plan:
+%     all 6.4642 / 29.4949 / 9;  N=4 6.4642 / 25.8944 / 4;  N=8 5.7465 / 29.4949 / 5;
+%     T=5 2.1867 / 29.4949 / 7;  T=10 9.124 / 25.8944 / 2;  R=2 6.9985 / 29.4949 / 2;
+%     R=3 4.6875 / 17.508 / 4;  R=4 4.7122 / 25.8944 / 3;  v=60 11.7663 / 29.4949 / 0;
+%     v=90 2.1002 / 8.8431 / 5;  v=120 7.1356 / 17.508 / 4.
+%   volumetric loads: census_compact36.json, instances.<name>.dispatched_verdicts
+%     .unplaceable over .dispatched, summed over the group (undecided 0 and
+%     witness_rejected 0 on every instance).
+\begin{table}[!htbp]
+\centering
+\small
+\caption{BP-3D-SCPTOP on the 36-instance benchmark, by factor.
+\emph{plans} counts the instances with a verified plan within the
+budget. The gap is $(z-\mathrm{LB})/z$ over those plans, LB being the
+best valid bound for the 3D problem on the instance: the method's own
+or the compact volumetric model's dual bound, whichever is larger. The
+last column counts the loads of the compact model's volumetric plans
+proved unplaceable by the method's placeability oracle, out of those
+dispatched, none undecided. Appendix~\ref{appendix:bench} lists every
+instance.}
+\label{tab:bench}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & & & \multicolumn{3}{c}{gap (\%)} & volumetric loads \\
+\cmidrule(lr){4-6}
+ & instances & plans & median & max & within $1\%$ & proved unplaceable \\
+\midrule
+all       & 36 & 32 & 6.46  & 29.49 & 9 & 527 / 723 \\
+\midrule
+$|N|=4$   & 18 & 18 & 6.46  & 25.89 & 4 & 258 / 362 \\
+$|N|=8$   & 18 & 14 & 5.75  & 29.49 & 5 & 269 / 361 \\
+$|T|=5$   & 18 & 17 & 2.19  & 29.49 & 7 & 128 / 219 \\
+$|T|=10$  & 18 & 15 & 9.12  & 25.89 & 2 & 399 / 504 \\
+$|R|=2$   & 12 & 10 & 7.00  & 29.49 & 2 & 195 / 246 \\
+$|R|=3$   & 12 & 11 & 4.69  & 17.51 & 4 & 152 / 234 \\
+$|R|=4$   & 12 & 11 & 4.71  & 25.89 & 3 & 180 / 243 \\
+$v=60$    & 12 &  9 & 11.77 & 29.49 & 0 & 171 / 182 \\
+$v=90$    & 12 & 11 & 2.10  & 8.84  & 5 & 140 / 238 \\
+$v=120$   & 12 & 12 & 7.14  & 17.51 & 4 & 216 / 303 \\
+\bottomrule
+\end{tabular}
+\end{table}

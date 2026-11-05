@@ -1,0 +1,79 @@
+% Source: results/julia/final/bench36/ on branch final-3d of the outer
+% repository (rows committed at 360c2ea, census at 03a0ff7, README at 844b90d);
+% checked by merge_bench36.py there (0 problems; re-run on a copy, the three
+% CSVs come back byte-identical).  Columns:
+%   BP-3D-SCPTOP: m = bench36_method.csv machine; trucks, z = trucks, plan_cost
+%     (has_plan true; complaints 0 and pack_undecided 0 on every row);
+%     LB = global_lb (root_proved true on every row); src = bound_source
+%     (V "volumetric relaxation (by inclusion)", L "Lagrangian", G "geometry
+%     certified"); gap = bench36_joined.csv gap_pct, against best_lb.
+%   Compact volumetric model: m = bench36_compact.csv machine; stop = status;
+%     trucks, z = trucks, obj; bound = bound (Gurobi ObjBound).
+%   Bold: best_lb of bench36_joined.csv, the larger of LB and bound.
+%   unplaceable = census_compact36.json instances.<name>.dispatched_verdicts
+%     .unplaceable / .dispatched (undecided 0, witness_rejected 0 everywhere).
+% Budgets by machine (time_limit columns): method W 900, L 720, S 2700 s;
+% compact W 900, L 670, S 2700 s.  Typeset from the CSVs by a script, no cell
+% copied by hand.
+\begin{table}[!htbp]
+\centering
+\caption{Every instance of the benchmark. $m$ is the machine a run
+used: W the workstation, L the laptop, S the server, with budgets of
+$900$, $720$ and $2\,700$ s for the method and $900$, $670$ and
+$2\,700$ s for the compact model (Appendix~\ref{appendix:impl}). LB is
+the method's own bound, from the certified volumetric relaxation (V),
+the Lagrangian bound (L) or a certified geometric root (G), all valid
+for the 3D problem; the gap is against the larger of LB and the compact
+model's dual bound, set in bold. The compact model's plan is
+volumetric; its last column counts that plan's loads proved unplaceable
+by the method's placeability oracle, out of those dispatched, none
+undecided. Every plan of the method is verified truck by truck.
+$I\_8\_5\_2\_90$ is the ladder's first rung, run again here.}
+\label{tab:bench-full}
+\setlength{\tabcolsep}{3.5pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcrrrcrcrrrrr}
+\toprule
+ & \multicolumn{6}{c}{BP-3D-SCPTOP} & \multicolumn{6}{c}{compact volumetric model} \\
+\cmidrule(lr){2-7}\cmidrule(lr){8-13}
+Instance & $m$ & trucks & $z$ & LB & src & gap (\%) & $m$ & stop & trucks & $z$ & bound & unplaceable \\
+\midrule
+$I\_4\_5\_2\_60$ & W & 9 & 14\,715.58 & 13\,768.49 & V & $6.39$ & S & \textsc{opt} & 8 & 13\,775.68 & \textbf{13\,775.68} & 7\,/\,8 \\
+$I\_4\_5\_2\_90$ & S & 13 & 19\,740.03 & \textbf{19\,325.45} & L & $2.10$ & S & \textsc{opt} & 11 & 17\,769.29 & 17\,769.29 & 8\,/\,11 \\
+$I\_4\_5\_2\_120$ & L & 18 & 27\,203.92 & 25\,172.67 & V & $7.46$ & S & \textsc{opt} & 16 & 25\,175.65 & \textbf{25\,175.65} & 13\,/\,16 \\
+$I\_4\_5\_3\_60$ & S & 15 & 19\,652.85 & \textbf{18\,731.63} & G & $4.69$ & S & \textsc{opt} & 9 & 13\,627.04 & 13\,627.04 & 9\,/\,9 \\
+$I\_4\_5\_3\_90$ & S & 14 & 21\,502.06 & 21\,498.70 & V & $0$ & S & \textsc{opt} & 14 & 21\,502.06 & \textbf{21\,502.06} & 0\,/\,14 \\
+$I\_4\_5\_3\_120$ & S & 16 & 25\,904.98 & \textbf{25\,848.38} & L & $0.22$ & S & \textsc{opt} & 16 & 25\,817.50 & 25\,817.50 & 7\,/\,16 \\
+$I\_4\_5\_4\_60$ & S & 12 & 16\,128.76 & 12\,969.54 & V & $19.51$ & S & \textsc{opt} & 9 & 12\,981.89 & \textbf{12\,981.89} & 8\,/\,9 \\
+$I\_4\_5\_4\_90$ & L & 14 & 21\,509.82 & 20\,525.49 & V & $4.43$ & S & \textsc{opt} & 13 & 20\,557.96 & \textbf{20\,557.96} & 9\,/\,13 \\
+$I\_4\_5\_4\_120$ & L & 17 & 28\,214.49 & 26\,289.28 & V & $6.82$ & S & \textsc{opt} & 15 & 26\,291.53 & \textbf{26\,291.53} & 13\,/\,15 \\
+$I\_4\_10\_2\_60$ & S & 34 & 44\,012.36 & \textbf{38\,833.74} & L & $11.77$ & S & \textsc{time} & 22 & 31\,895.21 & 31\,723.33 & 21\,/\,22 \\
+$I\_4\_10\_2\_90$ & S & 29 & 45\,186.39 & 42\,208.64 & V & $6.54$ & S & \textsc{opt} & 26 & 42\,230.65 & \textbf{42\,230.65} & 23\,/\,26 \\
+$I\_4\_10\_2\_120$ & S & 45 & 62\,414.13 & \textbf{54\,755.23} & L & $12.27$ & L & \textsc{opt} & 36 & 53\,433.76 & 53\,433.76 & 31\,/\,36 \\
+$I\_4\_10\_3\_60$ & S & 23 & 33\,966.50 & 30\,862.57 & V & $9.12$ & S & \textsc{opt} & 20 & 30\,867.40 & \textbf{30\,867.40} & 19\,/\,20 \\
+$I\_4\_10\_3\_90$ & W & 30 & 44\,488.51 & 25\,391.03 & L & $0.0076$ & L & \textsc{opt} & 30 & 44\,485.13 & \textbf{44\,485.13} & 8\,/\,30 \\
+$I\_4\_10\_3\_120$ & S & 42 & 57\,874.93 & 47\,690.41 & V & $17.51$ & S & \textsc{time} & 32 & 47\,742.94 & \textbf{47\,742.19} & 27\,/\,32 \\
+$I\_4\_10\_4\_60$ & L & 36 & 48\,482.00 & 35\,872.61 & V & $25.89$ & L & \textsc{opt} & 24 & 35\,927.86 & \textbf{35\,927.86} & 23\,/\,24 \\
+$I\_4\_10\_4\_90$ & W & 28 & 42\,505.06 & 40\,487.69 & V & $4.71$ & S & \textsc{opt} & 26 & 40\,502.15 & \textbf{40\,502.15} & 16\,/\,26 \\
+$I\_4\_10\_4\_120$ & L & 35 & 50\,652.34 & 50\,555.79 & V & $0.0478$ & S & \textsc{opt} & 35 & 50\,628.12 & \textbf{50\,628.12} & 16\,/\,35 \\
+$I\_8\_5\_2\_60$ & W & 16 & 21\,507.31 & 15\,159.82 & V & $29.49$ & W & \textsc{opt} & 10 & 15\,163.75 & \textbf{15\,163.75} & 9\,/\,10 \\
+$I\_8\_5\_2\_90$ & L & 12 & 18\,796.96 & 18\,795.56 & V & $0$ & W & \textsc{opt} & 12 & 18\,796.96 & \textbf{18\,796.96} & 1\,/\,12 \\
+$I\_8\_5\_2\_120$ & L & 16 & 26\,236.31 & 26\,066.74 & V & $0.61$ & W & \textsc{opt} & 16 & 26\,076.06 & \textbf{26\,076.06} & 5\,/\,16 \\
+$I\_8\_5\_3\_60$ & W & --- & no plan & 14\,101.19 & V & --- & W & \textsc{opt} & 9 & 14\,146.02 & \textbf{14\,146.02} & 9\,/\,9 \\
+$I\_8\_5\_3\_90$ & L & 12 & 18\,649.29 & 18\,648.13 & V & $0.0006$ & W & \textsc{time} & 12 & 18\,649.21 & \textbf{18\,649.17} & 1\,/\,12 \\
+$I\_8\_5\_3\_120$ & L & 13 & 21\,516.34 & 21\,045.69 & V & $2.19$ & W & \textsc{opt} & 13 & 21\,045.85 & \textbf{21\,045.85} & 8\,/\,13 \\
+$I\_8\_5\_4\_60$ & S & 12 & 17\,874.84 & 13\,578.08 & V & $24.03$ & S & \textsc{opt} & 8 & 13\,579.65 & \textbf{13\,579.65} & 8\,/\,8 \\
+$I\_8\_5\_4\_90$ & W & 13 & 21\,005.85 & 20\,993.26 & V & $0.0497$ & S & \textsc{opt} & 13 & 20\,995.41 & \textbf{20\,995.41} & 8\,/\,13 \\
+$I\_8\_5\_4\_120$ & S & 15 & 24\,376.46 & 24\,338.33 & V & $0.0859$ & S & \textsc{opt} & 15 & 24\,355.53 & \textbf{24\,355.53} & 5\,/\,15 \\
+$I\_8\_10\_2\_60$ & W & --- & no plan & 30\,630.67 & V & --- & L & \textsc{time} & 22 & 31\,452.20 & \textbf{30\,650.05} & 21\,/\,22 \\
+$I\_8\_10\_2\_90$ & L & --- & no plan & 43\,242.89 & V & --- & W & \textsc{opt} & 30 & 43\,327.49 & \textbf{43\,327.49} & 26\,/\,30 \\
+$I\_8\_10\_2\_120$ & L & 45 & 65\,155.01 & \textbf{55\,483.24} & V & $14.84$ & S & \textsc{time} & 37 & 55\,505.74 & 55\,357.48 & 30\,/\,37 \\
+$I\_8\_10\_3\_60$ & S & 23 & 31\,904.83 & 25\,741.35 & L & $9.45$ & L & \textsc{opt} & 20 & 28\,889.38 & \textbf{28\,889.38} & 18\,/\,20 \\
+$I\_8\_10\_3\_90$ & S & 27 & 41\,345.78 & 37\,630.20 & V & $8.84$ & L & \textsc{opt} & 24 & 37\,689.52 & \textbf{37\,689.52} & 20\,/\,24 \\
+$I\_8\_10\_3\_120$ & S & 38 & 56\,915.91 & 52\,387.84 & V & $7.89$ & W & \textsc{time} & 35 & 52\,422.75 & \textbf{52\,422.48} & 26\,/\,35 \\
+$I\_8\_10\_4\_60$ & S & --- & no plan & \textbf{30\,093.96} & V & --- & L & \textsc{mem} & 21 & 30\,094.94 & 30\,022.65 & 19\,/\,21 \\
+$I\_8\_10\_4\_90$ & S & 28 & 44\,830.77 & 43\,174.72 & V & $3.60$ & W & \textsc{opt} & 27 & 43\,216.77 & \textbf{43\,216.77} & 20\,/\,27 \\
+$I\_8\_10\_4\_120$ & W & 45 & 67\,220.15 & \textbf{58\,184.33} & V & $13.44$ & L & \textsc{time} & 37 & 58\,225.06 & 58\,154.10 & 35\,/\,37 \\
+\bottomrule
+\end{tabular}}
+\end{table}

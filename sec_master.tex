@@ -188,13 +188,21 @@ Lagrangian bound $z_{\mathrm{RMP}}+\sum_{g,t}|K|\min(0,\underline{c}_{gt})$,
 with the artificials at zero and
 $\underline{c}_{gt}=\eta^{K}cK-\mu_{gt}-\bar\zeta_{gt}$ formed from an
 upper bound $\bar\zeta_{gt}\ge\zeta_{gt}$ on the pricing maximum, never
-from a load that was found; it is too weak here to rely on.
+from a load that was found; it needs no convergence, so a root stopped
+on its deadline still has it.
 
 \input{Alg_certify}
 
+% julia/src/tree.jl (src_tree e4830fe) lines 824-865: root_lb is the
+% geometric certificate if proved, replaced by the certified volumetric bound
+% if larger, then by the Lagrangian if larger.  bound_source: volumetric on
+% the five ladder rows (ladder_3d_final.csv) and on 29 of the 36 benchmark rows
+% (results/julia/final/bench36/bench36_method.csv; 6 Lagrangian, 1 geometric).
 A geometric sweep costs $2|T|$ calls at the pricing limit, which is
-rarely affordable; every 3D lower bound in this paper comes instead
-from the volumetric relaxation, by the following inclusion.
+rarely affordable. The method's 3D bound is the largest of three: the
+geometric certificate, when one completes; the Lagrangian bound; and
+the certified bound of the volumetric relaxation, valid by the
+following inclusion and the largest on most instances here.
 
 \begin{proposition}[bound by inclusion]
 \label{prop:inclusion}

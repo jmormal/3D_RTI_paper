@@ -3,10 +3,9 @@
 % taken after the layout-extraction fix, with the same objective, bound and stop
 % as the first run but twelve loads that pass the verifier.  No compact 3D run
 % exists for I_24_20_2_90_k50.  Compact runs: env.gurobi 12.0.1.
-% Method columns: Table \ref{tab:3d-onecommit}, i.e.
-% results/julia/final/ladder_3d_final.csv on branch final-3d (4c7471e; src_tree
-% e4830fe, geom_rows both, ip_tl = time_limit/6): incumbent, trucks, global_lb,
-% gap_pct, time_limit.
+% The method's columns, which repeated Table tab:3d-onecommit, are dropped; the
+% interval's upper end is that table's z (results/julia/final/
+% ladder_3d_final.csv on branch final-3d, 4c7471e, incumbent).
 % The interval's lower end is the tighter bound THAT BOUNDS THE PROBLEM: the
 % compact volumetric dual bound where one exists, else the method's own
 % certificate -- never the compact 3D model's dual bound.  Row 1: compact
@@ -21,27 +20,26 @@
 \small
 \caption{The compact 3D-SCPTOP model (a catalogue of
 $n_{\mathrm{LC}}=3$ layouts shared by the trucks of a direction,
-$1\,800$ s) against BP-3D-SCPTOP, whose rows are those of
-Table~\ref{tab:3d-onecommit} and whose budget is in the last-but-one
-column. \emph{none}: no feasible solution within the budget. The last
-column is the interval containing $z^{\star}$: the method's plan above,
-and below the tighter bound \emph{on the problem} --- a compact
-volumetric dual bound where one exists, else the method's certificate.
-The compact 3D model's own dual bound bounds its a-priori restriction,
-not $z^{\star}$, and appears in its own column only.}
+$1\,800$ s) on the ladder, whose BP-3D-SCPTOP rows are those of
+Table~\ref{tab:3d-onecommit}. \emph{none}: no feasible solution within
+the budget. The last column is the interval containing $z^{\star}$: the
+method's plan above, and below the tighter bound \emph{on the problem}
+--- a compact volumetric dual bound where one exists, else the
+method's certificate. The compact 3D model's own dual bound bounds its
+a-priori restriction, not $z^{\star}$, and appears in its own column
+only.}
 \label{tab:3d-head}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lrrrlrrrrrl}
+\begin{tabular}{lrrrll}
 \toprule
-& \multicolumn{4}{c}{compact 3D-SCPTOP, $1\,800$ s} & \multicolumn{5}{c}{BP-3D-SCPTOP} & \\
-\cmidrule(lr){2-5}\cmidrule(lr){6-10}
-Instance & $z$ & trucks & LB & stop & $z$ & trucks & LB (cert.) & gap & budget (s) & $z^{\star}$ in \\
+& \multicolumn{4}{c}{compact 3D-SCPTOP, $1\,800$ s} & \\
+\cmidrule(lr){2-5}
+Instance & $z$ & trucks & LB & stop & $z^{\star}$ in \\
 \midrule
-$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time} & 18\,796.96 & 12 & 18\,795.56 & $0.0075\%$ & 900 & $[18\,796.96,\,18\,796.96]$ \\
-$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time} & 38\,854.44 & 26 & 38\,791.19 & $0.163\%$ & 900 & $[38\,851.93,\,38\,854.44]$ \\
-$I\_12\_12\_2\_90\_k25$ & \emph{none} & --- & 48\,516.86 & \textsc{time} & 52\,116.76 & 34 & 52\,105.31 & $0.022\%$ & 1\,800 & $[52\,105.31,\,52\,116.76]$ \\
-$I\_16\_15\_2\_90\_k25$ & \emph{none} & --- & 64\,053.23 & \textsc{time} & 79\,703.31 & 55 & 68\,131.48 & $14.5\%$ & 1\,800 & $[68\,139.17,\,79\,703.31]$ \\
-$I\_24\_20\_2\_90\_k50$ & \multicolumn{4}{c}{not run} & 223\,944.20 & 156 & 200\,013.57 & $10.7\%$ & 3\,600 & $[200\,013.57,\,223\,944.20]$ \\
+$I\_8\_5\_2\_90$ & 18\,816.13 & 12 & 18\,795.76 & \textsc{time} & $[18\,796.96,\,18\,796.96]$ \\
+$I\_8\_10\_2\_90\_k25$ & \emph{none} & --- & 36\,458.75 & \textsc{time} & $[38\,851.93,\,38\,854.44]$ \\
+$I\_12\_12\_2\_90\_k25$ & \emph{none} & --- & 48\,516.86 & \textsc{time} & $[52\,105.31,\,52\,116.76]$ \\
+$I\_16\_15\_2\_90\_k25$ & \emph{none} & --- & 64\,053.23 & \textsc{time} & $[68\,139.17,\,79\,703.31]$ \\
+$I\_24\_20\_2\_90\_k50$ & \multicolumn{4}{c}{not run} & $[200\,013.57,\,223\,944.20]$ \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}

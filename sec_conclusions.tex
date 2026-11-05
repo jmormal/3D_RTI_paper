@@ -22,7 +22,10 @@ hypothesis.
 % inclusion); method Lagrangian 4, method geometry certified 1.
 Every lower bound on the ladder, and the best bound on $31$ of the $36$
 benchmark instances, rests on Proposition~\ref{prop:inclusion}, which
-makes a bound affordable where a geometric certificate rarely is. And a
+made a certified bound affordable on every ladder run and on $34$ of
+the $36$ benchmark instances, where a geometric certificate rarely is.
+% 34 of 36: bench36_method.csv vol_lb_proved true on 34 rows.
+And a
 volumetric transport capacity is not a conservative simplification:
 most loads of the volumetric plans checked cannot be placed, $527$ of
 $723$ over the benchmark's $36$, and the two of
@@ -30,9 +33,11 @@ $723$ over the benchmark's $36$, and the two of
 % 03a0ff7), dispatched_verdicts summed over the 36 instances.
 Table~\ref{tab:repack} cannot be repaired by re-packing their own
 quantities, which in six periods do not split into loadable full
-trucks; on the industrial catalogue the error runs one way only.
+trucks. On the industrial catalogue a volumetric capacity over-credits
+six of the fifteen container types, four of them by more than $20\%$.
+% results/catalogue_realism.json types[].theta: 1.176 x 2, 1.231 x 3, 2.0 x 1.
 
-Three limits are real, and each names its next step. The method
+Four limits are real, and each names its next step. The method
 certifies no optimum here: the search ends with regions unrefuted, and
 the two optima reported, on $I\_8\_5\_2\_90$ and $I\_4\_5\_3\_90$, are
 established by inclusion from an exactly solved relaxation. The bound is loose where the crush limit halves a
@@ -40,8 +45,16 @@ container family's layer count; the stack-count rows
 \eqref{eq:stackrows} tighten it when added to the compact volumetric
 relaxation, so they and the rows \eqref{eq:geomrows}--\eqref{eq:fibrerows},
 which the volumetric relaxation does not imply, are the candidates for
-tightening the bound inside the search, once it is known whether the
-loads they admit can be placed. Closing the regions the search leaves
-unrefuted may need a branching rule on \emph{pairs} of columns. And the
+tightening the bound inside the search, although most loads they admit
+on $I\_16\_15\_2\_90\_k25$ still cannot be placed
+(Section~\ref{sec:res-abstraction}). Closing the regions the search
+leaves unrefuted may need a branching rule on \emph{pairs} of columns.
+% No plan: bench36_method.csv has_plan false on I_8_5_3_60, I_8_10_2_60,
+% I_8_10_2_90, I_8_10_4_60 (all |N| = 8); root master with artificial slack:
+% the "root LB" lines of their logs (see sec_experiments.tex, Section 8.5).
+On four benchmark instances with eight products the method returns no
+plan within its budget: its root master still needs artificial slack
+when root column generation reaches its deadline, so the pool cannot
+cover the demand; \Pending{[the next step: the author's choice]}. And the
 comparison against a procedure in industrial use is to be run on
 instances a plant solves itself, against a plan supplied to it.

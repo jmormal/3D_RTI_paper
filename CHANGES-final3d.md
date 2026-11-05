@@ -929,3 +929,96 @@ overfull 6.75 pt (`sec_litreview.tex:106-107`) and 1.35 pt
 `[repository URL]`s only; the census filled the places this pass would
 otherwise have left for it. Abstract: **249 words** from the PDF with "3 600"
 as one word (250 as two). Highlights: 75-83 characters.
+
+## 20. Third referee pass (`REVIEW-amm-r3.md`) and the new evidence
+
+The referee reviewed 3f307d0 and recommended minor revision: 3 major and 9 minor
+findings, 12 items for the author, and a length plan. I checked every finding
+against the code, logs and data before acting. The resolution is recorded
+under each finding in `REVIEW-amm-r3.md`, which is committed with this pass.
+
+New sources, all in the outer repository on branch `final-3d`:
+
+| tag | file | commit |
+| --- | --- | --- |
+| **CAL2** | `results/julia/final/bench36/calib/calib_{workstation,laptop}.log` (three runs each, idle machines, after the benchmark) | 13d55a2 |
+| **PIN** | `results/julia/server_arms/preflight/calib_pinned.txt`; script `results/julia/server_arms/launchers/calib.jl` | --- |
+| **AB** | `results/julia/final/census_compact_ab.json` (launcher `census_compact_ab.sh`, workstation, 10 threads, 20 GB, check_tl 60) | 72cd32f |
+| **CODE** | `julia/src/{colgen,tree,master,solver,pricing,verify,construct}.jl` (the tree at 5958641 differs from e4830fe only in `construct.jl`) | --- |
+| **CAT** | `results/catalogue_realism.json` | --- |
+
+### Changes, by finding
+
+| finding | file | change | source |
+| --- | --- | --- | --- |
+| B1 | `sec_master.tex` §5.4 | Lagrangian sentence: "Any sweep, complete or not, also yields the Lagrangian bound ... when the artificials are at zero, with ... ζ̄ the smallest of the LP relaxations of the volume and the payload knapsack and, for a pair the oracle priced, its dual bound ... It needs neither convergence nor a complete sweep, so a root stopped on its deadline still has it, weakened by every pair left unpriced." | CODE `colgen.jl` 82-96, 275-288, 360, 474-475; `pricing.jl` 544 |
+| B1 | `sec_master.tex` after Prop. 2 | "closes in seconds" replaced: closed with every pair proved within 24 s on every ladder run and on 34 of 36 benchmark instances; ended unproved on I_4_10_3_90 and I_8_10_3_60 inside its deadline, "and the logs do not record why"; "geometric pricing therefore serves mainly to generate columns" | logs: 0.5-23.9 s (benchmark), 1.3-13.8 s (ladder); 3.0 s and 84.6 s; M `vol_lb_proved` |
+| B1 | `Alg_certify.tex` | the deadline exit also fires "after 400 sweeps" | `colgen.jl` 451 (`max_iter` 400) |
+| B1 | `sec_experiments.tex` §8.5 | "There and on I_8_10_3_60 (19.32%) the volumetric certificate ended unproved, after 3.0 and 84.6 s and inside its deadline, the logs recording no reason, and the Lagrangian bound stands in." | logs; M `gap_pct` 19.3183; `tree.jl` 833 |
+| B1 | Appendix C, Table 10 | "every bound reported as certified came back with every pair proved; on two benchmark instances the volumetric certificate did not"; new row "volumetric certificate: 10% of the budget, at most 400 sweeps" | CODE |
+| B1 | `sec_conclusions.tex` | "made a certified bound affordable on every ladder run and on 34 of the 36 benchmark instances, where a geometric certificate rarely is" | M `vol_lb_proved` (34) |
+| B2 | §8.5 | budget sentence: 900 s on the workstation, 720 s on the laptop, 2 700 s on the server, "79% to 88% of the reference compute"; compact 900, 670, 2 700 s; I_8_10_4_60's no plan "within 711 to 794 workstation-seconds" | PIN, CAL2; M, C `time_limit` |
+| B2 | Appendix C | calibration described; the server measured x3.4 (Gurobi) and x3.8 (Julia), so about 794 workstation-seconds for the compact model and 711-794 for the method, 79-88%; the laptop measured x0.71-0.75 and x0.84-0.91, the compact model had 670 s and the method 720 s, a factor of 0.8 between them; every share of the budget scales, and the per-call limits do not; the 16 GB server cap was never reached (peak 6.3 GB); differences "between machines" are not read as effects | PIN (30.89-31.66 s, 17.02-19.34 s against 9.1 s and 4.8 s); CAL2 (6.54/9.25 to 6.70/8.96; 4.19/4.99 to 4.21/4.64); C `peak_rss_gb` 6.31 |
+| B2 | Table 11 caption (full benchmark) | "the server's being 79% to 88% of the reference compute" | as above |
+| B3 | abstract | "...: it over-credits six of fifteen industrial container types." | CAT theta: 1.176 x 2, 1.231 x 3, 2.0 x 1 |
+| B3 | §8.6 | "No type can have κ<1, the volumetric credit bounding the grid count by construction, and Proposition 2 already shows that the error never runs in the planner's favour; what the catalogue measures is its size. Over its fifteen types κ is 1.000 on nine, 1.176 on two and 1.231 to 2.000 on four."; "fails on its worst container" deleted | CAT |
+| B3 | conclusions | "On the industrial catalogue a volumetric capacity over-credits six of the fifteen container types, four of them by more than 20%." | CAT |
+| b1 | Prop. 2 and its proof | adds z*_vol = the optimum of SCPTOP (by Prop. 1's argument, SCPTOP's truck rows (A-vol)-(A-ftl) admitting exactly Ω_vol); any SCPTOP dual bound bounds z*; a 3D plan attaining z*_vol is optimal | Appendix A rows |
+| b1 | §5.4 | z_RMP and z_MP "both carrying the cover cuts (59), which are valid for every integer plan" | --- |
+| b2 | §8.5 | the four no-plan rows are exactly those whose root master still carried artificial slack; twin sentence on I_8_10_2_90 vs I_8_10_2_90_k25 (same generator parameters, other seed; R2 crush-limited to 2 of 5 layers) | logs "root LB" 1.29e8 / 2.61e8 / 1.91e7 / 2.82e7 (BIGM 1e6, `master.jl` 22) vs 13 967-66 993; `instances/I_8_10_2_90.json`, `instances_scale/I_8_10_2_90_k25.json` |
+| b2 | conclusions | "Four limits are real"; the new limit (no plan on four eight-product instances, root master needing artificial slack); its next step is **purple**, `\Pending{[the next step: the author's choice]}` | M `has_plan` |
+| b3 | `tab_quantities.tex` removed | z, LB and gap defined in three sentences in §8.1; nodes/open/dropped in the ladder table's caption | --- |
+| b4 | Appendix C, Table 10, §8.2, Table 4 caption | column generation's master LPs and pricing at the solver default (12 on the server); steps 2-4, placeability and the seed pool at 10; §8.2 and the volumetric caption: "ten threads, the method's column generation apart" | `tree.jl` 599, `master.jl` 106/390, `colgen.jl` 465/505, `solver.jl` 47; server logs "Threads 12 ... gurobi.env"; same at 10e633c |
+| b5 | abstract | 240 words (two-token "3 600"), 239 (one-token); trims listed below | PDF |
+| b6 | Figure 1 (`sec_litreview.tex`) | the three side boxes relabelled "Volumetric Check", "Size Ladder", "36-Instance Benchmark" (the initial manuscript's figure, restored in d0a434f; nothing else changed) | --- |
+| b7 | `Alg_tree.tex`; `sec_branching.tex`; `sec_pricing.tex` | "no restart occurred" deleted; "A region whose fleet vector is fully fixed is covered by its certificate and not split."; "The oracles carry two implied rows bounding the occupied floor area, (72); (71) restates the floor on the layer capacity rather than on the load, as the compact model's (35) does" | M `restarts` 0 |
+| b8 | `sec_pricing.tex`; `sec_branching.tex` | "an optimum can always be taken at an extreme point ..., and a load in its relative interior is never the unique optimum"; "Pricing returns only extreme loads" -> "Pricing returns extreme loads" | --- |
+| b9 | §8.5 | "a median of three nodes over its 15 plans, against 38 over the 17 at \|T\|=5" | M `nodes` |
+| F2 | §8.6 | one sentence: five instances where a 3D lower bound exceeds the volumetric optimum (I_4_10_2_60: the compact incumbent) by 0.12% to 37.46%, so no loadable plan reaches the volumetric cost, however the compact model divided its periods into trucks | M `global_lb` vs C `obj`: 0.12, 2.47, 8.76, 21.75, 37.46% |
+| F3 (deflated capacity) | §8.6, conclusions | "has not been tested" replaced: the deflated plans were put to the same check, 39 of 48 loads on I_16_15_2_90_k25 unplaceable (39 of 45 distinct) and 3 of 34 on I_12_12_2_90_k25, none undecided, "so deflating the capacity does not make the plan loadable where the crush limit binds"; conclusions: "although most loads they admit on I_16_15_2_90_k25 still cannot be placed" | AB |
+| F10 | §8.1 | "the same routine replays the plan's inventory balances, coverage stock and cost" | `verify.jl` `verify_plan` |
+
+Abstract trims (b5): "This paper proposes" -> "We propose"; "in manufacturing
+supply chains" dropped; "an assembly plant" -> "a plant"; "Because the
+placement subproblem is NP-hard," dropped. F1: "certified gaps of" -> "gaps to
+its certified bound of".
+
+### Length cuts (duplication only)
+
+- §7.2's enumerated steps -> one numbered paragraph pointing at Algorithm 3,
+  with the partition programme (82)-(86) kept.
+- §5.4's prose that repeats Algorithm 1 -> a pointer to the algorithm.
+- Table 4 (quantities) -> three sentences in §8.1.
+- The compact 3D table: its five method columns (z, trucks, LB, gap, budget),
+  which repeat the ladder table, are dropped.
+- §8.3's last paragraph and §8.4's second paragraph -> one sentence each in
+  Appendix C.
+- b7's two sentences.
+- The settings table now floats `[!t]`. `\FloatBarrier` ends Appendix D, so
+  the full benchmark table does not float into the bibliography.
+
+Tables 9, 10 and 11 (the row map, the settings and the full benchmark) stay:
+moving them is the author's decision.
+
+Numbering: with Table 4 removed, the old Tables 5-12 are now 4-11. The volumetric
+table is 4, the ladder 5, the compact 3D table 6, the benchmark summary 7, the
+re-pack 8, the row map 9, the settings 10 and the full benchmark 11.
+
+### Not changed (author's decisions)
+
+F1 (beyond making the abstract unambiguous), F3's other runs (a re-split of
+the 36 plans, a compact 3D run on the benchmark), F4, F6, F7, F8, F9, F11,
+F12. F5 is data documentation in the outer repository; the README there was
+corrected by 7727255 and 72cd32f.
+
+### Build
+
+Clean build (`latexmk -C`, then `PATH=/usr/bin:$PATH latexmk -pdf
+Renderer.tex`): **33 pages**. The body is the same length: Appendix A still
+starts on page 27, because the additions offset the cuts. The appendix grew by
+about a page. Exit 0, no undefined reference or citation, no biber warning.
+Warnings, all inherited: "No \author given", overfull 6.75 pt
+(`sec_litreview.tex:106-107`) and 1.35 pt (`tab_nomenclature.tex:60`). Purple
+sites: the two `[repository URL]`s and the new limit's next step. Abstract:
+**240 words** from the PDF, counted as in b5: line-end hyphens joined, split on
+whitespace, "3 600" as two tokens (239 as one).

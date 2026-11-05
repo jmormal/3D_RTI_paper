@@ -54,10 +54,11 @@ rows, so that at $Z=1$ the pair
 The truck binaries $Z$ and $Y$ of the compact model differ only at a
 truck with a layout and no freight, whose image and cost are those of
 the empty column; the block keeps $Z$, charges it $\eta^{K}cK\cdot Z$,
-and excludes the empty column by fixing $Z=1$. Four implied rows are
-available --- two restating the floor on the layer \emph{capacity}
-rather than on the load, and two bounding the occupied floor area ---
-and the oracles carry the second pair:
+and excludes the empty column by fixing $Z=1$. The oracles carry two
+implied rows bounding the occupied floor area, \eqref{bp:PP-areacut};
+\eqref{bp:PP-cap} restates the floor on the layer \emph{capacity}
+rather than on the load, as the compact model's
+\eqref{sb:eq:util-cap} does:
 \begin{align}
   & \sum_{h,\,r \in R(h)} \gamma_{gr}\,n_{hr}\,\overline{L}_{hr}
       \;\ge\;\alpha\,\Gamma_{K}\,(Z-1+\theta), \qquad
@@ -123,10 +124,11 @@ integer knapsack, and the same master serves both load models.
 \input{Tikz_truck}
 
 \paragraph{What pricing cannot return.}
-The pricing objective is linear in the image, so its optimum is an
-extreme point of $\operatorname{conv}(\Omega^{g})$. A balanced load
-inside the hull is dominated by a fractional blend of single-commodity
-trucks, and no dual vector returns it. Such interior loads are what an
+The pricing objective is linear in the image, so an optimum can
+always be taken at an extreme point of $\operatorname{conv}(\Omega^{g})$,
+and a load in its relative interior is never the unique optimum: a
+balanced load inside the hull is matched by a fractional blend of
+single-commodity trucks, and no dual vector asks for it. Such interior loads are what an
 integer plan needs when a period's demand does not decompose into full
 trucks; the construction of Section~\ref{sec:relaxfix-flow} builds
 them directly, and branching on the fleet moves the duals so that

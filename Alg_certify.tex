@@ -11,7 +11,8 @@ branching fix released.}
   \State solve the LP over $\bar\Omega$ inside $\mathcal{R}$
   \If{it is not solved to optimality} \State \Return $(0,\ \text{false})$
      \Comment{no verdict: the pool may be unable to serve $\mathcal{R}$} \EndIf
-  \If{the deadline has passed} \State \Return (raw LP value, false) \EndIf
+  \If{the deadline has passed, or $400$ sweeps have been made}
+     \State \Return (raw LP value, false) \EndIf
   \State $\text{proved}\gets\text{true}$
   \ForAll{$(g,t)\in G\times T$}
      \State $\zeta_{gt}\gets\textsc{Price}(\pi,\mu,g,t)$ to proven optimality,

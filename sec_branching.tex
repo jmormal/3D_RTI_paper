@@ -61,9 +61,9 @@ verified plan any construction found and the global bound the minimum
 over the frontier, a dropped region contributing the root's bound.
 Optimality is claimed only when the root is certified, no region
 remains open or merely bounded, no region was dropped, and the
-incumbent meets the global bound; no run here meets those conditions. A third
-level, on deliveries, is disabled in every run reported, so a
-full-depth leaf is covered by a certificate rather than split again.
+incumbent meets the global bound; no run here meets those conditions. A
+region whose fleet vector is fully fixed is covered by its certificate
+and not split.
 
 \input{Alg_tree}
 
@@ -78,52 +78,40 @@ are seeded.
 \label{sec:relaxfix-flow}
 
 The primal heuristic decides how much moves and how many trucks carry
-it before it builds any truck. Pricing returns only extreme loads, so
+it before it builds any truck. Pricing returns extreme loads, so
 the mixed loads a plan needs must come from elsewhere: the construction
 fixes integer deliveries and fleet over \emph{continuous} column
 weights, then cuts each period's deliveries into legal trucks. It runs
-inside the region $\mathcal{R}$ of its node, on a fresh copy of the RMP
-(Algorithm~\ref{alg:construct}).
-
-\begin{enumerate}
-\item \emph{Restricted master.} The LP over the pool, inside
-  $\mathcal{R}$, gives the duals and the fractional point.
-
-\item \emph{Aggregate integer master.} The dispatch totals $n_{gt}$
-  become integer variables and $\overline{V}_{nt},
-  \overline{V^{\mathrm{e}}}_{rt}$ integer, the column variables stay
-  continuous, $\mathcal{R}$ is imposed on the $n_{gt}$, and under 3D
-  loading the aggregate forms of
-  \eqref{eq:stackrows}--\eqref{eq:fibrerows} are added. The objective is
-  decided here, without a pricing call; artificial slack above a
-  tolerance abandons the node.
-
-\item \emph{Partition, as a cover.} Each period's integer deliveries
-  $Q^{\star}_{gt}$ are covered by $n^{\star}_{gt}$ legal trucks, an
-  integer programme over per-truck commodity counts $a_{kc}$:
-  \begin{align}
-    \min\;\;&\sum_{c}\gamma_{gc}\Bigl(\sum_{k}a_{kc}-Q^{\star}_{gtc}\Bigr)
-      \label{eq:part-obj}\\
-    \text{s.t.}\;\;&\sum_{k}a_{kc}\;\ge\;Q^{\star}_{gtc} &&\forall c
-      \label{eq:part-cover}\\
-    &\textstyle\sum_{c}\gamma_{gc}a_{kc}\le\Gamma_{K},\qquad
-     \sum_{c}w_{c}a_{kc}\le pK^{w} &&\forall k
-      \label{eq:part-cap}\\
-    &\textstyle\sum_{c}\gamma_{gc}a_{kc}\ge\alpha\Gamma_{K}\theta_{k},\qquad
-     \sum_{c}w_{c}a_{kc}\ge\alpha pK^{w}(1-\theta_{k}) &&\forall k
-      \label{eq:part-floor}\\
-    &\textstyle\sum_{c}w_{c}a_{kc}\;\ge\;\sum_{c}w_{c}a_{k+1,c}
-      &&\forall k<n^{\star}_{gt}
-      \label{eq:part-sym}\\
-    &a_{kc}\in\{0,\dots,\bar a_{gc}\},\qquad \theta_{k}\in\{0,1\}.\nonumber
-  \end{align}
-  with $\theta_{k}$ selecting the resource on which part $k$ is full and
-  $\bar a_{gc}$ the placeability cap below. If $n^{\star}_{gt}$ parts
-  cannot be formed, $n^{\star}_{gt}+1$ and $+2$ are tried.
-
-\item \emph{Integer master over pool plus parts}, warm-started with the
-  partition; its solution is the node's plan.
-\end{enumerate}
+inside the region $\mathcal{R}$ of its node, on a fresh copy of the RMP,
+in the four steps of Algorithm~\ref{alg:construct}. Step~1, the LP
+over the pool, gives the duals and the fractional point. Step~2, an
+aggregate integer master with the dispatch totals $n_{gt}$ and the
+deliveries $\overline{V}_{nt},\overline{V^{\mathrm{e}}}_{rt}$ integer,
+the column variables continuous and, under 3D loading, the aggregate
+forms of \eqref{eq:stackrows}--\eqref{eq:fibrerows} added, decides the
+objective without a pricing call. Step~3 covers each period's integer
+deliveries $Q^{\star}_{gt}$ by $n^{\star}_{gt}$ legal trucks, and
+step~4, the integer master over pool plus parts, warm-started with the
+partition, gives the node's plan. The partition is an integer
+programme over per-truck commodity counts $a_{kc}$:
+\begin{align}
+  \min\;\;&\sum_{c}\gamma_{gc}\Bigl(\sum_{k}a_{kc}-Q^{\star}_{gtc}\Bigr)
+    \label{eq:part-obj}\\
+  \text{s.t.}\;\;&\sum_{k}a_{kc}\;\ge\;Q^{\star}_{gtc} &&\forall c
+    \label{eq:part-cover}\\
+  &\textstyle\sum_{c}\gamma_{gc}a_{kc}\le\Gamma_{K},\qquad
+   \sum_{c}w_{c}a_{kc}\le pK^{w} &&\forall k
+    \label{eq:part-cap}\\
+  &\textstyle\sum_{c}\gamma_{gc}a_{kc}\ge\alpha\Gamma_{K}\theta_{k},\qquad
+   \sum_{c}w_{c}a_{kc}\ge\alpha pK^{w}(1-\theta_{k}) &&\forall k
+    \label{eq:part-floor}\\
+  &\textstyle\sum_{c}w_{c}a_{kc}\;\ge\;\sum_{c}w_{c}a_{k+1,c}
+    &&\forall k<n^{\star}_{gt}
+    \label{eq:part-sym}\\
+  &a_{kc}\in\{0,\dots,\bar a_{gc}\},\qquad \theta_{k}\in\{0,1\},\nonumber
+\end{align}
+with $\theta_{k}$ selecting the resource on which part $k$ is full and
+$\bar a_{gc}$ the placeability cap below.
 
 \noindent The partition must be a cover: a fractional blend of legal
 loads need not split into legal loads for any number of trucks, floor

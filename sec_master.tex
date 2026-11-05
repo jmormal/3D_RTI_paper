@@ -174,22 +174,24 @@ have \emph{proved}
 nothing outside $\bar\Omega^{g}$ prices out, the duals are feasible for
 the dual of MP, and weak duality gives
 $z_{\mathrm{RMP}}=z_{\mathrm{MP}}\le z^{\star}_{\text{3D-SCPTOP}}$
-(Algorithm~\ref{alg:certify}), with $z_{\mathrm{RMP}}$ and
-$z_{\mathrm{MP}}$ the LP values of the RMP and of MP and
-$z^{\star}_{\text{3D-SCPTOP}}$ the optimum. Every pair must be priced to proven
-optimality with every branching fix released; a call stopped on its
-time limit forfeits the certificate, while one stopped by the objective
-cutoff without returning a point proves that no column beats the
-threshold. The bound is the raw LP value, penalty included, and
-positive artificials at the end of a proved sweep mean the region
-admits no plan; an LP the solver does not solve to optimality gives no
-verdict. A complete sweep that still finds columns yields only the
-Lagrangian bound $z_{\mathrm{RMP}}+\sum_{g,t}|K|\min(0,\underline{c}_{gt})$,
-with the artificials at zero and
-$\underline{c}_{gt}=\eta^{K}cK-\mu_{gt}-\bar\zeta_{gt}$ formed from an
-upper bound $\bar\zeta_{gt}\ge\zeta_{gt}$ on the pricing maximum, never
-from a load that was found; it needs no convergence, so a root stopped
-on its deadline still has it.
+(Algorithm~\ref{alg:certify}, which states what each exit of the sweep
+proves), with $z_{\mathrm{RMP}}$ and $z_{\mathrm{MP}}$ the LP values of
+the RMP and of MP, both carrying the cover cuts \eqref{eq:covercut},
+which are valid for every integer plan, and
+$z^{\star}_{\text{3D-SCPTOP}}$ the optimum. Any sweep, complete or
+not, also yields the Lagrangian bound
+$z_{\mathrm{RMP}}+\sum_{g,t}|K|\min(0,\underline{c}_{gt})$ when the
+artificials are at zero, with
+$\underline{c}_{gt}=\eta^{K}cK-\mu_{gt}-\bar\zeta_{gt}$ and
+$\bar\zeta_{gt}\ge\zeta_{gt}$ the smallest of the LP relaxations of
+the volume and the payload knapsack and, for a pair the oracle priced,
+its dual bound, never a load that was found.
+% julia/src/colgen.jl 275-288 (every pair pre-filled with the knapsack bound
+% pricing_upper_bound, lines 82-96), 360 (min with the oracle's dual_bound
+% where priced), 474-475 (formed when artificials <= tol and every pair has an
+% entry); pricing.jl 544 (dual_bound finite only with the true slot set).
+It needs neither convergence nor a complete sweep, so a root stopped on
+its deadline still has it, weakened by every pair left unpriced.
 
 \input{Alg_certify}
 
@@ -211,7 +213,13 @@ fit the trailer's volume and the payload and clear the full-truckload
 floor on the binding resource, and $z_{\mathrm{vol}}$ the certified LP
 value of the master \eqref{eq:MPObjective}--\eqref{bp:MP-count} over
 them. Then $z_{\mathrm{vol}}\le z^{\star}_{\text{3D-SCPTOP}}$, and the
-same holds inside any region defined by bounds on the fleet vector.
+same holds inside any region defined by bounds on the fleet vector. So
+does $z^{\star}_{\mathrm{vol}}$, the optimum of the master over
+$\Omega^{g}_{\mathrm{vol}}$, which by the argument of
+Proposition~\ref{prop:equiv} is the optimum of SCPTOP
+(Appendix~\ref{appendix:A}): any dual bound of SCPTOP is a lower bound
+on $z^{\star}_{\text{3D-SCPTOP}}$, and a 3D plan that attains
+$z^{\star}_{\mathrm{vol}}$ is optimal.
 \end{proposition}
 \begin{proof}
 The inclusion rests on two conventions of Section~\ref{sec:model}:
@@ -228,10 +236,26 @@ at most $pK^{w}$, and \eqref{eq:col-truck} is the same floor in both
 sets; hence $\Omega^{g}\subseteq\Omega^{g}_{\mathrm{vol}}$. Only the
 column set depends on the load model, so the 3D master is the
 volumetric master with columns removed: its LP value is at least
-$z_{\mathrm{vol}}$, and its optimum at least its LP value.
+$z_{\mathrm{vol}}$, its optimum at least its LP value and at least
+$z^{\star}_{\mathrm{vol}}$. SCPTOP's truck rows,
+\eqref{eq:A-vol}--\eqref{eq:A-ftl}, admit exactly the loads of
+$\Omega^{g}_{\mathrm{vol}}$, so the proof of
+Proposition~\ref{prop:equiv} applies to it with
+$\Omega^{g}_{\mathrm{vol}}$ in place of $\Omega^{g}$.
 \end{proof}
 
+% Certificate times: "root CG stopped" to "volumetric relaxation LB" in the
+% logs, 1.3-13.8 s on the ladder (ladder_3d_final.log) and 0.5-23.9 s with
+% proved=true on 34 of the 36 benchmark rows (results/julia/final/bench36/
+% <machine>/logs/method_<instance>.log); proved=false after 3.0 s
+% (I_4_10_3_90) and 84.6 s (I_8_10_3_60), vol_lb_proved false in
+% bench36_method.csv.  Exits of certified_lb (julia/src/colgen.jl 446-510):
+% deadline, max_iter 400, a sweep with an unproved pair; the volumetric call's
+% exit is not recorded.
 \noindent Over the volumetric loads the same sweep is a two-constraint
-knapsack oracle and closes in seconds, so the method asks geometric
-pricing only for columns and takes its bound from the volumetric
-relaxation.
+knapsack oracle. On every ladder run and on $34$ of the $36$ benchmark
+instances it closed with every pair proved within $24$ s; on
+$I\_4\_10\_3\_90$ and $I\_8\_10\_3\_60$ it ended unproved inside its
+deadline, and the logs do not record why. Geometric pricing therefore
+serves mainly to generate columns, and the bound comes mainly from the
+volumetric relaxation.

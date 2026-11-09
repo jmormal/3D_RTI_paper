@@ -37,6 +37,10 @@
 \usetikzlibrary{shapes,shapes.geometric, positioning, fit, backgrounds, calc, 3d, shapes.multipart, arrows.meta, patterns, perspective}
 
 \input{tikzimports}
+
+% Same options as configuraciones/paquetes_comunes.tex, which loads acronym
+% first in the thesis: a second load with other options clashes.
+\usepackage[printonlyused,nolist]{acronym}
 \providecommand{\keywords}[1]
 {
   \small	

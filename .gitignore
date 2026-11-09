@@ -1,5 +1,6 @@
 # LaTeX build artifacts.  The PDFs are kept: they are the readable output and
 # the point of cloning this repo on another machine.
+*.pdf
 *.aux
 *.bcf
 *.bcf-SAVE-ERROR

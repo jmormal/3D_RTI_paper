@@ -1,6 +1,10 @@
 % The manuscript's body; Renderer.tex holds the preamble and the bibliography.
 
+% In the thesis, earlier chapters have already used some acronyms; start afresh.
+\acresetall
 \input{sec_abstract}
+% The abstract stands alone: the body defines each acronym again at its first use.
+\acresetall
 \input{sec_intro}
 \input{sec_litreview}
 \input{sec_problem}
@@ -17,3 +21,5 @@
 \input{sec_appendix_rowmap}
 \input{sec_appendix_impl}
 \input{sec_appendix_bench}
+
+\input{acronyms}
